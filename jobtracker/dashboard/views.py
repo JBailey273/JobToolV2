@@ -1,8 +1,10 @@
+from decimal import Decimal
+
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404, redirect, render
 
-from tracker.models import Project
+from tracker.models import Asset, Employee, JobEntry, Material, Project
 
 
 @login_required
@@ -67,5 +69,67 @@ def project_detail(request, pk):
             'total_billable': total_billable,
             'total_payments': total_payments,
             'outstanding': outstanding,
+        },
+    )
+
+
+@login_required
+def add_job_entry(request, pk):
+    contractor = request.user.contractor
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    assets = contractor.assets.all()
+    employees = contractor.employees.all()
+    materials = contractor.materials.all()
+
+    if request.method == "POST":
+        date = request.POST.get("date")
+        hours = Decimal(request.POST.get("hours") or 0)
+        asset_id = request.POST.get("asset")
+        employee_id = request.POST.get("employee")
+        material_id = request.POST.get("material")
+        description = request.POST.get("description", "")
+
+        asset = assets.filter(pk=asset_id).first() if asset_id else None
+        employee = employees.filter(pk=employee_id).first() if employee_id else None
+        material = materials.filter(pk=material_id).first() if material_id else None
+
+        if asset:
+            cost_amount = asset.cost_rate * hours
+            billable_amount = asset.billable_rate * hours
+        elif employee:
+            cost_amount = employee.cost_rate * hours
+            billable_amount = employee.billable_rate * hours
+        elif material:
+            cost_amount = material.actual_cost * hours
+            billable_amount = (
+                material.actual_cost * (1 + contractor.material_markup / Decimal("100")) * hours
+            )
+        else:
+            cost_amount = Decimal("0")
+            billable_amount = Decimal("0")
+
+        JobEntry.objects.create(
+            project=project,
+            date=date,
+            hours=hours,
+            asset=asset,
+            employee=employee,
+            material=material,
+            cost_amount=cost_amount,
+            billable_amount=billable_amount,
+            description=description,
+        )
+        return redirect("dashboard:project_detail", pk=project.pk)
+
+    return render(
+        request,
+        "dashboard/jobentry_form.html",
+        {
+            "contractor": contractor,
+            "project": project,
+            "assets": assets,
+            "employees": employees,
+            "materials": materials,
+            "markup": contractor.material_markup,
         },
     )
