@@ -6,9 +6,11 @@ services:
     autoDeploy: false
     buildCommand: "pip install -r requirements.txt && python jobtracker/manage.py collectstatic --no-input"
     preDeployCommand: "python jobtracker/manage.py migrate --no-input"
-    # The Django project lives inside the `jobtracker/` package, so the
-    # correct WSGI module path is `jobtracker.jobtracker.wsgi`.
-    startCommand: "gunicorn jobtracker.jobtracker.wsgi:application"
+
+    # The Django project resides in the `jobtracker/` directory, so change into
+    # that folder before invoking Gunicorn.
+    startCommand: "gunicorn jobtracker.wsgi:application --chdir jobtracker"
+
     envVars:
       - key: DATABASE_URL
         fromDatabase:
