@@ -17,5 +17,7 @@ if settings.DEBUG:
 else:
     urlpatterns += [
         re_path(r'^static/(?P<path>.*)$', staticfiles_views.serve, {'insecure': True}),
+
         re_path(r'^media/(?P<path>.*)$', static_serve, {'document_root': settings.MEDIA_ROOT}),
+
     ]
