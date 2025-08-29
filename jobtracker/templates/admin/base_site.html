@@ -9,7 +9,7 @@
 {% block branding %}
 <h1 id="site-name">
     {% if global_settings and global_settings.logo %}
-        <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" height="40">
+        <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
     {% endif %}
     {{ site_header }}
 </h1>

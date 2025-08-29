@@ -12,12 +12,13 @@
 <nav class="navbar navbar-light bg-light mb-4">
     <div class="container-fluid">
         {% if contractor and contractor.logo %}
-            <img src="{{ contractor.logo.url }}" alt="logo" height="50" class="me-3">
+
+            <img src="{{ contractor.logo.url }}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
         {% elif global_settings and global_settings.logo %}
-            <img src="{{ global_settings.logo.url }}" alt="logo" height="50" class="me-3">
+            <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
         {% endif %}
         {% if contractor %}
-            <span class="navbar-brand mb-0 h1">{{ contractor.email }}</span>
+            <span class="navbar-brand mb-0 h1">{{ contractor.name|default:contractor.email }}</span>
         {% endif %}
     </div>
 </nav>

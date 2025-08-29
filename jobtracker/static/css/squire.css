@@ -8,6 +8,7 @@
     --accent: #00509e;
     --header-bg: #003366;
     --header-link-color: #fff;
+    --header-color: #fff;
     --link-fg: #003366;
     --link-hover-color: #001a33;
 }
@@ -39,6 +40,11 @@ a.button {
 #header a:hover,
 #header a:link,
 #header a:visited {
+    color: #fff;
+}
+
+#branding h1,
+#branding h1 a {
     color: #fff;
 }
 

@@ -13,6 +13,7 @@ from .models import (
     JobEntry,
     Payment,
 )
+from .forms import ContractorForm
 
 
 class AssetInline(admin.TabularInline):
@@ -50,10 +51,11 @@ class ContractorUserAdmin(UserAdmin):
 
 @admin.register(Contractor)
 class ContractorAdmin(admin.ModelAdmin):
-    list_display = ('email', 'material_markup')
-    search_fields = ('email',)
+    form = ContractorForm
+    list_display = ('name', 'email', 'phone', 'material_markup')
+    search_fields = ('name', 'email')
     fieldsets = (
-        (None, {'fields': ('email', 'logo', 'material_markup')}),
+        (None, {'fields': ('name', 'email', 'phone', 'logo', 'material_markup', 'password')}),
     )
     inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline]
 

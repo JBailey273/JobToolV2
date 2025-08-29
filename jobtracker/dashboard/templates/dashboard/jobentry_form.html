@@ -79,23 +79,23 @@
     const billableTotalInput = document.getElementById('billable-total');
     const markup = parseFloat(document.getElementById('entry-form').dataset.markup || 0);
 
-    function clearOthers(current) {
-        if (current !== assetSelect) assetSelect.value = '';
-        if (current !== employeeSelect) employeeSelect.value = '';
-        if (current !== materialSelect) materialSelect.value = '';
-    }
+    function updateRates() {
+        const assetOption = assetSelect.options[assetSelect.selectedIndex];
+        const employeeOption = employeeSelect.options[employeeSelect.selectedIndex];
+        const materialOption = materialSelect.options[materialSelect.selectedIndex];
 
-    function updateRates(event) {
-        const select = event.target;
-        clearOthers(select);
-        const option = select.options[select.selectedIndex];
-        let cost = parseFloat(option.dataset.cost || 0);
-        let billable = parseFloat(option.dataset.billable || 0);
-        if (select === materialSelect) {
-            billable = cost * (1 + markup / 100);
-        }
-        costRateInput.value = cost ? cost.toFixed(2) : '';
-        billableRateInput.value = billable ? billable.toFixed(2) : '';
+        const assetCost = parseFloat(assetOption?.dataset.cost || 0);
+        const assetBillable = parseFloat(assetOption?.dataset.billable || 0);
+        const employeeCost = parseFloat(employeeOption?.dataset.cost || 0);
+        const employeeBillable = parseFloat(employeeOption?.dataset.billable || 0);
+        const materialCost = parseFloat(materialOption?.dataset.cost || 0);
+        const materialBillable = materialCost * (1 + markup / 100);
+
+        const costRate = assetCost + employeeCost + materialCost;
+        const billableRate = assetBillable + employeeBillable + materialBillable;
+
+        costRateInput.value = costRate ? costRate.toFixed(2) : '';
+        billableRateInput.value = billableRate ? billableRate.toFixed(2) : '';
         updateTotals();
     }
 
