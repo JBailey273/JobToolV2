@@ -1,10 +1,30 @@
 from decimal import Decimal
+from io import BytesIO
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.template.loader import get_template
+
+try:
+    from xhtml2pdf import pisa
+except Exception:  # pragma: no cover - optional dependency
+    pisa = None
 
 from tracker.models import Asset, Employee, JobEntry, Material, Payment, Project
+
+
+def _render_pdf(template_src, context):
+    if pisa is None:
+        return None
+    template = get_template(template_src)
+    html = template.render(context)
+    result = BytesIO()
+    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    if pdf.err:
+        return None
+    return HttpResponse(result.getvalue(), content_type="application/pdf")
 
 
 @login_required
@@ -155,3 +175,39 @@ def add_payment(request, pk):
             "project": project,
         },
     )
+
+
+@login_required
+def contractor_report(request):
+    contractor = request.user.contractor
+    projects = contractor.projects.all().annotate(
+        total_cost=Sum("job_entries__cost_amount"),
+        total_billable=Sum("job_entries__billable_amount"),
+    )
+    for p in projects:
+        p.margin = (p.total_billable or 0) - (p.total_cost or 0)
+    context = {"contractor": contractor, "projects": projects}
+    if request.GET.get("export") == "pdf":
+        pdf = _render_pdf("dashboard/contractor_report.html", context)
+        if pdf:
+            pdf["Content-Disposition"] = "attachment; filename=contractor_report.pdf"
+            return pdf
+    return render(request, "dashboard/contractor_report.html", context)
+
+
+@login_required
+def customer_report(request, pk):
+    contractor = request.user.contractor
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    entries = project.job_entries.select_related("material").all()
+    context = {
+        "contractor": contractor,
+        "project": project,
+        "entries": entries,
+    }
+    if request.GET.get("export") == "pdf":
+        pdf = _render_pdf("dashboard/customer_report.html", context)
+        if pdf:
+            pdf["Content-Disposition"] = "attachment; filename=customer_report.pdf"
+            return pdf
+    return render(request, "dashboard/customer_report.html", context)
