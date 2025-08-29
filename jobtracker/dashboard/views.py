@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.shortcuts import get_object_or_404, redirect, render
 
-from tracker.models import Asset, Employee, JobEntry, Material, Project
+from tracker.models import Asset, Employee, JobEntry, Material, Payment, Project
 
 
 @login_required
@@ -131,5 +131,27 @@ def add_job_entry(request, pk):
             "employees": employees,
             "materials": materials,
             "markup": contractor.material_markup,
+        },
+    )
+
+
+@login_required
+def add_payment(request, pk):
+    contractor = request.user.contractor
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+
+    if request.method == "POST":
+        date = request.POST.get("date")
+        amount = Decimal(request.POST.get("amount") or 0)
+        notes = request.POST.get("notes", "")
+        Payment.objects.create(project=project, amount=amount, date=date, notes=notes)
+        return redirect("dashboard:project_detail", pk=project.pk)
+
+    return render(
+        request,
+        "dashboard/payment_form.html",
+        {
+            "contractor": contractor,
+            "project": project,
         },
     )
