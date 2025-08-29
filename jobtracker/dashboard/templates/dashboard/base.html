@@ -12,7 +12,11 @@
 {% if not report %}
 <nav class="navbar navbar-light bg-light mb-4">
     <div class="container-fluid">
-        <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
+        {% if contractor_logo_url %}
+            <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="me-3 img-fluid" style="max-height:50px;">
+        {% else %}
+            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
+        {% endif %}
         {% if contractor %}
             <span class="navbar-brand mb-0 h1">{{ contractor.name|default:contractor.email }}</span>
         {% endif %}
