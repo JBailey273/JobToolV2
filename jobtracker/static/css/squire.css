@@ -19,6 +19,10 @@ body {
     color: var(--text-color);
 }
 
+.navbar a {
+    color: var(--primary-color) !important;
+}
+
 #header,
 .navbar {
     background-color: var(--background-color) !important;
