@@ -212,7 +212,12 @@ def contractor_report(request):
         total_billable=Sum("job_entries__billable_amount"),
     )
     for p in projects:
-        p.margin = (p.total_billable or 0) - (p.total_cost or 0)
+        total_billable = p.total_billable or Decimal("0")
+        total_cost = p.total_cost or Decimal("0")
+        p.profit = total_billable - total_cost
+        p.margin = (
+            (p.profit / total_billable) * Decimal("100") if total_billable else Decimal("0")
+        )
     logo_url = contractor.logo.url if contractor and contractor.logo else None
     export_pdf = request.GET.get("export") == "pdf"
     context = {
