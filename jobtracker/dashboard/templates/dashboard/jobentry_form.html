@@ -82,8 +82,8 @@
 
         const hours = parseFloat(hoursInput.value) || 0;
 
-        const costTotal = assetCost + employeeCost * hours + materialCost;
-        const billableTotal = assetBillable + employeeBillable * hours + materialBillable;
+        const costTotal = (assetCost + employeeCost) * hours + materialCost;
+        const billableTotal = (assetBillable + employeeBillable) * hours + materialBillable;
 
         costTotalInput.value = costTotal ? costTotal.toFixed(2) : '';
         billableTotalInput.value = billableTotal ? billableTotal.toFixed(2) : '';

@@ -122,8 +122,8 @@ class JobEntry(models.Model):
         self.cost_amount = Decimal("0")
         self.billable_amount = Decimal("0")
         if self.asset:
-            self.cost_amount += self.asset.cost_rate
-            self.billable_amount += self.asset.billable_rate
+            self.cost_amount += self.asset.cost_rate * self.hours
+            self.billable_amount += self.asset.billable_rate * self.hours
         if self.employee:
             self.cost_amount += self.employee.cost_rate * self.hours
             self.billable_amount += self.employee.billable_rate * self.hours
