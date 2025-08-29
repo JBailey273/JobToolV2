@@ -22,3 +22,16 @@ def global_settings(request):
         settings_obj = None
 
     return {"global_settings": settings_obj}
+
+
+def contractor(request):
+    """Provide the logged-in contractor for templates.
+
+    Including this context processor ensures templates such as the dashboard
+    base layout can always access ``contractor`` without each view needing to
+    supply it explicitly.
+    """
+
+    user = getattr(request, "user", None)
+    contract = getattr(user, "contractor", None) if getattr(user, "is_authenticated", False) else None
+    return {"contractor": contract}
