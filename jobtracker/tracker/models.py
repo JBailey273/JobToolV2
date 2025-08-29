@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
+from decimal import Decimal
 
 
 class GlobalSettings(models.Model):
@@ -115,6 +116,23 @@ class JobEntry(models.Model):
 
     def __str__(self) -> str:
         return f"{self.project.name} - {self.date}"
+
+    def save(self, *args, **kwargs):
+        contractor = self.project.contractor
+        self.cost_amount = Decimal("0")
+        self.billable_amount = Decimal("0")
+        if self.asset:
+            self.cost_amount += self.asset.cost_rate
+            self.billable_amount += self.asset.billable_rate
+        if self.employee:
+            self.cost_amount += self.employee.cost_rate * self.hours
+            self.billable_amount += self.employee.billable_rate * self.hours
+        if self.material:
+            self.cost_amount += self.material.actual_cost
+            self.billable_amount += self.material.actual_cost * (
+                1 + contractor.material_markup / Decimal("100")
+            )
+        super().save(*args, **kwargs)
 
 
 class Payment(models.Model):
