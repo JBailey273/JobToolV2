@@ -1,5 +1,10 @@
 {% extends "admin/base.html" %}
+{% load static %}
 
+{% block extrahead %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'css/squire.css' %}">
+{% endblock %}
 
 {% block branding %}
 <h1 id="site-name">
