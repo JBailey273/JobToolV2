@@ -1,16 +1,23 @@
-{% extends "admin/base.html" %}
-{% load static %}
-
-{% block extrahead %}
-    {{ block.super }}
-    <link rel="stylesheet" href="{% static 'css/squire.css' %}">
-{% endblock %}
-
-{% block branding %}
-<h1 id="site-name">
-    {% if global_settings and global_settings.logo %}
-        <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
-    {% endif %}
-    {{ site_header }}
-</h1>
-{% endblock %}
+diff --git a/jobtracker/templates/admin/base_site.html b/jobtracker/templates/admin/base_site.html
+index cc046caf41e30211ddef619b5afc863f61ba42ba..3a4c092916f7c6da930713eab2d1160c1ba974c1 100644
+--- a/jobtracker/templates/admin/base_site.html
++++ b/jobtracker/templates/admin/base_site.html
+@@ -1,16 +1,18 @@
+ {% extends "admin/base.html" %}
+ {% load static %}
+ 
+ {% block extrahead %}
+     {{ block.super }}
+     <link rel="stylesheet" href="{% static 'css/squire.css' %}">
+ {% endblock %}
+ 
+ {% block branding %}
+ <h1 id="site-name">
+     {% if global_settings and global_settings.logo %}
+         <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
++    {% else %}
++        <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
+     {% endif %}
+     {{ site_header }}
+ </h1>
+ {% endblock %}
