@@ -6,6 +6,8 @@
     <link rel="stylesheet" href="{% static 'css/squire.css' %}">
 {% endblock %}
 
+{% block bodyclass %}{{ block.super }} bg-light{% endblock %}
+
 {% block branding %}
 <h1 id="site-name">
     {% if global_settings and global_settings.logo %}
