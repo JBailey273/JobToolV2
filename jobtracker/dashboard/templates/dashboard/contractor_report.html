@@ -3,29 +3,29 @@
 {% block title %}Contractor Report{% endblock %}
 {% block content %}
 {% if contractor_logo_url %}
-  <img src="{{ contractor_logo_url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Contractor logo" height="50" class="mb-3">
-{% else %}
-  <img src="{% static 'img/logo.png' %}" alt="Contractor logo" height="50" class="mb-3">
+<div class="text-center mb-3">
+  <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid" style="max-height:100px;">
+</div>
 {% endif %}
-<h1>Contractor Report</h1>
+<h1 class="text-center">Contractor Report</h1>
 <a href="?export=pdf" class="btn btn-secondary mb-3">Download PDF</a>
 <div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
+    <table class="table table-bordered">
+        <thead class="table-light">
             <tr>
-                <th>Project</th>
-                <th>Actual Cost</th>
-                <th>Billable Total</th>
-                <th>Margin</th>
+                <th style="text-align:left;">Project</th>
+                <th style="text-align:right;">Actual Cost</th>
+                <th style="text-align:right;">Billable Total</th>
+                <th style="text-align:right;">Margin</th>
             </tr>
         </thead>
         <tbody>
         {% for p in projects %}
             <tr>
-                <td>{{ p.name }}</td>
-                <td>${{ p.total_cost|default:0 }}</td>
-                <td>${{ p.total_billable|default:0 }}</td>
-                <td>${{ p.margin }}</td>
+                <td style="text-align:left;">{{ p.name }}</td>
+                <td style="text-align:right;">${{ p.total_cost|default:0 }}</td>
+                <td style="text-align:right;">${{ p.total_billable|default:0 }}</td>
+                <td style="text-align:right;">${{ p.margin }}</td>
             </tr>
         {% empty %}
             <tr><td colspan="4">No projects.</td></tr>
