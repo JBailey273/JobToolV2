@@ -102,8 +102,20 @@ class MaterialAdmin(admin.ModelAdmin):
 
 @admin.register(JobEntry)
 class JobEntryAdmin(admin.ModelAdmin):
-    list_display = ('project', 'date', 'hours')
+    list_display = ('project', 'date', 'hours', 'cost_amount', 'billable_amount')
     list_filter = ('project',)
+    fields = (
+        'project',
+        'date',
+        'hours',
+        'asset',
+        'employee',
+        'material',
+        'description',
+        'cost_amount',
+        'billable_amount',
+    )
+    readonly_fields = ('cost_amount', 'billable_amount')
 
 
 @admin.register(Payment)
