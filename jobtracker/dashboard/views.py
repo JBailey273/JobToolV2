@@ -1,7 +1,10 @@
 from decimal import Decimal
 from io import BytesIO
+import os
 
+from django.conf import settings
 from django.contrib.auth.decorators import login_required
+from django.contrib.staticfiles import finders
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -15,13 +18,29 @@ except Exception:  # pragma: no cover - optional dependency
 from tracker.models import Asset, Employee, JobEntry, Material, Payment, Project
 
 
+def link_callback(uri, rel):
+    if settings.MEDIA_URL and uri.startswith(settings.MEDIA_URL):
+        path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
+    elif settings.STATIC_URL and uri.startswith(settings.STATIC_URL):
+        path = finders.find(uri.replace(settings.STATIC_URL, "")) or os.path.join(
+            settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, "")
+        )
+    else:
+        return uri
+    if not os.path.isfile(path):
+        return uri
+    return path
+
+
 def _render_pdf(template_src, context):
     if pisa is None:
         return None
     template = get_template(template_src)
     html = template.render(context)
     result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("UTF-8")), result)
+    pdf = pisa.pisaDocument(
+        BytesIO(html.encode("UTF-8")), result, link_callback=link_callback
+    )
     if pdf.err:
         return None
     return HttpResponse(result.getvalue(), content_type="application/pdf")
