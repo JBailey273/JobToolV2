@@ -1,7 +1,12 @@
 {% extends 'dashboard/base.html' %}
 {% block title %}Contractor Summary{% endblock %}
 {% block content %}
-<h1>Contractor Summary</h1>
+{% if contractor_logo_url %}
+<div class="text-center mb-4">
+    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid" style="max-height:100px;">
+</div>
+{% endif %}
+<h1 class="text-center">Contractor Summary</h1>
 <div class="row mb-4">
     <div class="col-md-4">
         <div class="card">
@@ -27,7 +32,8 @@
             </div>
         </div>
     </div>
-</div>
+ </div>
 <a href="{% url 'dashboard:contractor_report' %}" class="btn btn-secondary me-2">Contractor Report</a>
+<a href="{% url 'dashboard:project_list' %}" class="btn btn-secondary me-2">Customer Reports</a>
 <a href="{% url 'dashboard:project_list' %}" class="btn btn-primary">View Projects</a>
 {% endblock %}
