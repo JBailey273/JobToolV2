@@ -3,20 +3,23 @@
 {% block title %}Customer Report{% endblock %}
 {% block content %}
 {% if contractor_logo_url %}
-  <img src="{{ contractor_logo_url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Contractor logo" height="50" class="mb-3">
-{% else %}
-  <img src="{% static 'img/logo.png' %}" alt="Contractor logo" height="50" class="mb-3">
+<div class="text-center mb-3">
+  <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid" style="max-height:100px;">
+</div>
 {% endif %}
-<h1>{{ project.name }} - Customer Report</h1>
+<h1 class="text-center">Invoice - {{ project.name }}</h1>
 <a href="?export=pdf" class="btn btn-secondary mb-3">Download PDF</a>
 <div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
+    <table class="table table-bordered">
+        <thead class="table-light">
             <tr>
                 <th>Date</th>
                 <th>Description</th>
+                <th>Asset</th>
+                <th>Employee</th>
                 <th>Material</th>
-                <th>Billable Amount</th>
+                <th class="text-end">Hours</th>
+                <th class="text-end">Billable Amount</th>
             </tr>
         </thead>
         <tbody>
@@ -24,12 +27,19 @@
             <tr>
                 <td>{{ e.date }}</td>
                 <td>{{ e.description }}</td>
+                <td>{% if e.asset %}{{ e.asset.name }}{% endif %}</td>
+                <td>{% if e.employee %}{{ e.employee.name }}{% endif %}</td>
                 <td>{% if e.material %}{{ e.material.description }}{% endif %}</td>
-                <td>${{ e.billable_amount }}</td>
+                <td class="text-end">{{ e.hours }}</td>
+                <td class="text-end">${{ e.billable_amount }}</td>
             </tr>
         {% empty %}
-            <tr><td colspan="4">No job entries.</td></tr>
+            <tr><td colspan="7">No job entries.</td></tr>
         {% endfor %}
+        <tr>
+            <td colspan="6" class="text-end fw-bold">Total</td>
+            <td class="text-end fw-bold">${{ total }}</td>
+        </tr>
         </tbody>
     </table>
 </div>

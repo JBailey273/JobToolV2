@@ -211,7 +211,8 @@ def contractor_report(request):
     )
     for p in projects:
         p.margin = (p.total_billable or 0) - (p.total_cost or 0)
-    context = {"contractor": contractor, "projects": projects}
+    logo_url = contractor.logo.url if contractor and contractor.logo else None
+    context = {"contractor": contractor, "projects": projects, "contractor_logo_url": logo_url, "report": True}
     if request.GET.get("export") == "pdf":
         pdf = _render_pdf("dashboard/contractor_report.html", context)
         if pdf:
@@ -226,11 +227,16 @@ def customer_report(request, pk):
     if contractor is None:
         return redirect("login")
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries = project.job_entries.select_related("material").all()
+    entries = project.job_entries.select_related("asset", "employee", "material").all()
+    total = entries.aggregate(total=Sum("billable_amount"))["total"] or 0
+    logo_url = contractor.logo.url if contractor and contractor.logo else None
     context = {
         "contractor": contractor,
         "project": project,
         "entries": entries,
+        "total": total,
+        "contractor_logo_url": logo_url,
+        "report": True,
     }
     if request.GET.get("export") == "pdf":
         pdf = _render_pdf("dashboard/customer_report.html", context)

@@ -9,22 +9,18 @@
     <title>{% block title %}Dashboard{% endblock %}</title>
 </head>
 <body class="bg-light">
+{% if not report %}
 <nav class="navbar navbar-light bg-light mb-4">
     <div class="container-fluid">
-        {% if contractor_logo_url %}
-            <img src="{{ contractor_logo_url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Contractor Logo" class="me-3 img-fluid" style="max-height:50px;">
-        {% elif global_settings and global_settings.logo %}
-            <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
-        {% else %}
-            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
-        {% endif %}
+        <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
         {% if contractor %}
             <span class="navbar-brand mb-0 h1">{{ contractor.name|default:contractor.email }}</span>
         {% endif %}
     </div>
 </nav>
+{% endif %}
 <div class="container">
-    {% if request.resolver_match.url_name != 'contractor_summary' %}
+    {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
     <div class="d-print-none mb-3">
         <a href="{% url 'dashboard:contractor_summary' %}" class="btn btn-primary">Dashboard</a>
     </div>
