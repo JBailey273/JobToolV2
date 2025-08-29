@@ -4,63 +4,67 @@
 <h1>Add Job Entry for {{ project.name }}</h1>
 <form method="post" id="entry-form" data-markup="{{ markup }}">
     {% csrf_token %}
-    <div class="mb-3">
-        <label for="date" class="form-label">Date</label>
-        <input type="date" class="form-control" id="date" name="date" required>
+    <div class="row g-3">
+        <div class="col-12 col-md-6">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" name="date" required>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="hours" class="form-label">Hours / Quantity</label>
+            <input type="number" step="0.01" class="form-control" id="hours" name="hours" required>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="asset" class="form-label">Asset</label>
+            <select class="form-select" id="asset" name="asset">
+                <option value="">---------</option>
+                {% for asset in assets %}
+                    <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">{{ asset.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="employee" class="form-label">Employee</label>
+            <select class="form-select" id="employee" name="employee">
+                <option value="">---------</option>
+                {% for emp in employees %}
+                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">{{ emp.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-6">
+            <label for="material" class="form-label">Material</label>
+            <select class="form-select" id="material" name="material">
+                <option value="">---------</option>
+                {% for mat in materials %}
+                    <option value="{{ mat.id }}" data-cost="{{ mat.actual_cost }}">{{ mat.description }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Cost Rate</label>
+            <input type="text" class="form-control" id="cost-rate" readonly>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Billable Rate</label>
+            <input type="text" class="form-control" id="billable-rate" readonly>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Cost Total</label>
+            <input type="text" class="form-control" id="cost-total" readonly>
+        </div>
+        <div class="col-12 col-md-6">
+            <label class="form-label">Billable Total</label>
+            <input type="text" class="form-control" id="billable-total" readonly>
+        </div>
+        <div class="col-12">
+            <label for="description" class="form-label">Description</label>
+            <textarea class="form-control" id="description" name="description"></textarea>
+        </div>
+        <div class="col-12">
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
+        </div>
     </div>
-    <div class="mb-3">
-        <label for="hours" class="form-label">Hours / Quantity</label>
-        <input type="number" step="0.01" class="form-control" id="hours" name="hours" required>
-    </div>
-    <div class="mb-3">
-        <label for="asset" class="form-label">Asset</label>
-        <select class="form-select" id="asset" name="asset">
-            <option value="">---------</option>
-            {% for asset in assets %}
-                <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">{{ asset.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label for="employee" class="form-label">Employee</label>
-        <select class="form-select" id="employee" name="employee">
-            <option value="">---------</option>
-            {% for emp in employees %}
-                <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">{{ emp.name }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label for="material" class="form-label">Material</label>
-        <select class="form-select" id="material" name="material">
-            <option value="">---------</option>
-            {% for mat in materials %}
-                <option value="{{ mat.id }}" data-cost="{{ mat.actual_cost }}">{{ mat.description }}</option>
-            {% endfor %}
-        </select>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Cost Rate</label>
-        <input type="text" class="form-control" id="cost-rate" readonly>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Billable Rate</label>
-        <input type="text" class="form-control" id="billable-rate" readonly>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Cost Total</label>
-        <input type="text" class="form-control" id="cost-total" readonly>
-    </div>
-    <div class="mb-3">
-        <label class="form-label">Billable Total</label>
-        <input type="text" class="form-control" id="billable-total" readonly>
-    </div>
-    <div class="mb-3">
-        <label for="description" class="form-label">Description</label>
-        <textarea class="form-control" id="description" name="description"></textarea>
-    </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
 </form>
 
 <script>

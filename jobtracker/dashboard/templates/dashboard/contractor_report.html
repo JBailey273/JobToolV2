@@ -6,27 +6,29 @@
 {% endif %}
 <h1>Contractor Report</h1>
 <a href="?export=pdf" class="btn btn-secondary mb-3">Download PDF</a>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Project</th>
-            <th>Actual Cost</th>
-            <th>Billable Total</th>
-            <th>Margin</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for p in projects %}
-        <tr>
-            <td>{{ p.name }}</td>
-            <td>${{ p.total_cost|default:0 }}</td>
-            <td>${{ p.total_billable|default:0 }}</td>
-            <td>${{ p.margin }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="4">No projects.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Project</th>
+                <th>Actual Cost</th>
+                <th>Billable Total</th>
+                <th>Margin</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in projects %}
+            <tr>
+                <td>{{ p.name }}</td>
+                <td>${{ p.total_cost|default:0 }}</td>
+                <td>${{ p.total_billable|default:0 }}</td>
+                <td>${{ p.margin }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">No projects.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
 

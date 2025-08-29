@@ -2,26 +2,28 @@
 {% block title %}Projects{% endblock %}
 {% block content %}
 <h1>Projects</h1>
-<table class="table table-striped">
-    <thead>
-        <tr>
-            <th>Name</th>
-            <th>Total Billable</th>
-            <th>Total Payments</th>
-            <th>Outstanding</th>
-        </tr>
-    </thead>
-    <tbody>
-    {% for project in projects %}
-        <tr>
-            <td><a href="{% url 'dashboard:project_detail' project.pk %}">{{ project.name }}</a></td>
-            <td>${{ project.total_billable|default:0 }}</td>
-            <td>${{ project.total_payments|default:0 }}</td>
-            <td>${{ project.outstanding }}</td>
-        </tr>
-    {% empty %}
-        <tr><td colspan="4">No projects found.</td></tr>
-    {% endfor %}
-    </tbody>
-</table>
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Total Billable</th>
+                <th>Total Payments</th>
+                <th>Outstanding</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for project in projects %}
+            <tr>
+                <td><a href="{% url 'dashboard:project_detail' project.pk %}">{{ project.name }}</a></td>
+                <td>${{ project.total_billable|default:0 }}</td>
+                <td>${{ project.total_payments|default:0 }}</td>
+                <td>${{ project.outstanding }}</td>
+            </tr>
+        {% empty %}
+            <tr><td colspan="4">No projects found.</td></tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
 {% endblock %}
