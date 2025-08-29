@@ -8,6 +8,7 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+
         # Only require the initial auth migration so history remains consistent across deployments
         ('auth', '0001_initial'),
     ]
