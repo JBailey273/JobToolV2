@@ -1,0 +1,112 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Add Job Entry{% endblock %}
+{% block content %}
+<h1>Add Job Entry for {{ project.name }}</h1>
+<form method="post" id="entry-form" data-markup="{{ markup }}">
+    {% csrf_token %}
+    <div class="mb-3">
+        <label for="date" class="form-label">Date</label>
+        <input type="date" class="form-control" id="date" name="date" required>
+    </div>
+    <div class="mb-3">
+        <label for="hours" class="form-label">Hours / Quantity</label>
+        <input type="number" step="0.01" class="form-control" id="hours" name="hours" required>
+    </div>
+    <div class="mb-3">
+        <label for="asset" class="form-label">Asset</label>
+        <select class="form-select" id="asset" name="asset">
+            <option value="">---------</option>
+            {% for asset in assets %}
+                <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">{{ asset.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="employee" class="form-label">Employee</label>
+        <select class="form-select" id="employee" name="employee">
+            <option value="">---------</option>
+            {% for emp in employees %}
+                <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">{{ emp.name }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label for="material" class="form-label">Material</label>
+        <select class="form-select" id="material" name="material">
+            <option value="">---------</option>
+            {% for mat in materials %}
+                <option value="{{ mat.id }}" data-cost="{{ mat.actual_cost }}">{{ mat.description }}</option>
+            {% endfor %}
+        </select>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Cost Rate</label>
+        <input type="text" class="form-control" id="cost-rate" readonly>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Billable Rate</label>
+        <input type="text" class="form-control" id="billable-rate" readonly>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Cost Total</label>
+        <input type="text" class="form-control" id="cost-total" readonly>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Billable Total</label>
+        <input type="text" class="form-control" id="billable-total" readonly>
+    </div>
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description"></textarea>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
+</form>
+
+<script>
+(function() {
+    const assetSelect = document.getElementById('asset');
+    const employeeSelect = document.getElementById('employee');
+    const materialSelect = document.getElementById('material');
+    const hoursInput = document.getElementById('hours');
+    const costRateInput = document.getElementById('cost-rate');
+    const billableRateInput = document.getElementById('billable-rate');
+    const costTotalInput = document.getElementById('cost-total');
+    const billableTotalInput = document.getElementById('billable-total');
+    const markup = parseFloat(document.getElementById('entry-form').dataset.markup || 0);
+
+    function clearOthers(current) {
+        if (current !== assetSelect) assetSelect.value = '';
+        if (current !== employeeSelect) employeeSelect.value = '';
+        if (current !== materialSelect) materialSelect.value = '';
+    }
+
+    function updateRates(event) {
+        const select = event.target;
+        clearOthers(select);
+        const option = select.options[select.selectedIndex];
+        let cost = parseFloat(option.dataset.cost || 0);
+        let billable = parseFloat(option.dataset.billable || 0);
+        if (select === materialSelect) {
+            billable = cost * (1 + markup / 100);
+        }
+        costRateInput.value = cost ? cost.toFixed(2) : '';
+        billableRateInput.value = billable ? billable.toFixed(2) : '';
+        updateTotals();
+    }
+
+    function updateTotals() {
+        const hours = parseFloat(hoursInput.value) || 0;
+        const costRate = parseFloat(costRateInput.value) || 0;
+        const billableRate = parseFloat(billableRateInput.value) || 0;
+        costTotalInput.value = (hours * costRate).toFixed(2);
+        billableTotalInput.value = (hours * billableRate).toFixed(2);
+    }
+
+    assetSelect.addEventListener('change', updateRates);
+    employeeSelect.addEventListener('change', updateRates);
+    materialSelect.addEventListener('change', updateRates);
+    hoursInput.addEventListener('input', updateTotals);
+})();
+</script>
+{% endblock %}
