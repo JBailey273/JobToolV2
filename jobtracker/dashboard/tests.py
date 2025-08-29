@@ -2,8 +2,9 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.templatetags.static import static
+from decimal import Decimal
 
-from tracker.models import Contractor, ContractorUser
+from tracker.models import Contractor, ContractorUser, Project, JobEntry, Employee
 
 
 class DashboardLogoTests(TestCase):
@@ -55,3 +56,17 @@ class DashboardLogoTests(TestCase):
 
         self.assertContains(response, static("img/logo.png"))
 
+
+
+class ContractorReportTests(TestCase):
+    def test_report_displays_profit_and_margin_percentage(self):
+        contractor = Contractor.objects.create(name="Test Contractor", email="contractor@example.com")
+        ContractorUser.objects.create_user(email="contractor@example.com", password="secret", contractor=contractor)
+        project = Project.objects.create(name="Test Project", contractor=contractor, start_date="2024-01-01")
+        employee = Employee.objects.create(name="Worker", contractor=contractor, cost_rate=Decimal("100"), billable_rate=Decimal("150"))
+        JobEntry.objects.create(project=project, date="2024-01-02", hours=Decimal("1"), employee=employee)
+        self.client.post(reverse("login"), {"username": "contractor@example.com", "password": "secret"})
+        response = self.client.get(reverse("dashboard:contractor_report"))
+        self.assertContains(response, "Profit")
+        self.assertContains(response, "$50")
+        self.assertContains(response, "33.33%")
