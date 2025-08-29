@@ -2,8 +2,8 @@
 {% load static %}
 {% block title %}Contractor Report{% endblock %}
 {% block content %}
-{% if contractor.logo %}
-  <img src="{{ contractor.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Contractor logo" height="50" class="mb-3">
+{% if contractor_logo_url %}
+  <img src="{{ contractor_logo_url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Contractor logo" height="50" class="mb-3">
 {% else %}
   <img src="{% static 'img/logo.png' %}" alt="Contractor logo" height="50" class="mb-3">
 {% endif %}
