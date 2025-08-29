@@ -62,7 +62,6 @@ def contractor_summary(request):
         request,
         'dashboard/contractor_summary.html',
         {
-            'contractor': contractor,
             'projects': projects,
             'overall_billable': overall_billable,
             'overall_payments': overall_payments,
@@ -86,7 +85,6 @@ def project_list(request):
         request,
         'dashboard/project_list.html',
         {
-            'contractor': contractor,
             'projects': projects,
         },
     )
@@ -107,7 +105,6 @@ def project_detail(request, pk):
         request,
         'dashboard/project_detail.html',
         {
-            'contractor': contractor,
             'project': project,
             'job_entries': job_entries,
             'payments': payments,
@@ -171,7 +168,6 @@ def add_job_entry(request, pk):
         request,
         "dashboard/jobentry_form.html",
         {
-            "contractor": contractor,
             "project": project,
             "assets": assets,
             "employees": employees,
@@ -199,7 +195,6 @@ def add_payment(request, pk):
         request,
         "dashboard/payment_form.html",
         {
-            "contractor": contractor,
             "project": project,
         },
     )
