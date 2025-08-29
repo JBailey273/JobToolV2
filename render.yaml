@@ -3,9 +3,10 @@ services:
     name: jobtracker
     env: python
     plan: starter
-    autoDeploy: true
+    autoDeploy: false
     buildCommand: "pip install -r requirements.txt && python jobtracker/manage.py collectstatic --no-input"
     preDeployCommand: "python jobtracker/manage.py migrate --no-input"
+
     # The Django project resides in the `jobtracker/` directory. Ensure we
     # change into that folder before loading the WSGI module so Django can find
     # its settings.
