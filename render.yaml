@@ -2,7 +2,7 @@ services:
   - type: web
     name: jobtracker
     env: python
-    plan: free
+    plan: starter
     autoDeploy: true
     buildCommand: "pip install -r requirements.txt && python jobtracker/manage.py collectstatic --no-input"
     preDeployCommand: "python jobtracker/manage.py migrate --no-input"
