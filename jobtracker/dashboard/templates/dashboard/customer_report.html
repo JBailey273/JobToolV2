@@ -13,32 +13,32 @@
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
-                <th>Date</th>
-                <th>Description</th>
-                <th>Asset</th>
-                <th>Employee</th>
-                <th>Material</th>
-                <th class="text-end">Hours</th>
-                <th class="text-end">Billable Amount</th>
+                <th style="text-align:left;">Date</th>
+                <th style="text-align:left;">Description</th>
+                <th style="text-align:left;">Asset</th>
+                <th style="text-align:left;">Employee</th>
+                <th style="text-align:left;">Material</th>
+                <th style="text-align:right;">Hours</th>
+                <th style="text-align:right;">Billable Amount</th>
             </tr>
         </thead>
         <tbody>
         {% for e in entries %}
             <tr>
-                <td>{{ e.date }}</td>
-                <td>{{ e.description }}</td>
-                <td>{% if e.asset %}{{ e.asset.name }}{% endif %}</td>
-                <td>{% if e.employee %}{{ e.employee.name }}{% endif %}</td>
-                <td>{% if e.material %}{{ e.material.description }}{% endif %}</td>
-                <td class="text-end">{{ e.hours }}</td>
-                <td class="text-end">${{ e.billable_amount }}</td>
+                <td style="text-align:left;">{{ e.date }}</td>
+                <td style="text-align:left;">{{ e.description }}</td>
+                <td style="text-align:left;">{% if e.asset %}{{ e.asset.name }}{% endif %}</td>
+                <td style="text-align:left;">{% if e.employee %}{{ e.employee.name }}{% endif %}</td>
+                <td style="text-align:left;">{% if e.material %}{{ e.material.description }}{% endif %}</td>
+                <td style="text-align:right;">{{ e.hours }}</td>
+                <td style="text-align:right;">${{ e.billable_amount }}</td>
             </tr>
         {% empty %}
             <tr><td colspan="7">No job entries.</td></tr>
         {% endfor %}
         <tr>
-            <td colspan="6" class="text-end fw-bold">Total</td>
-            <td class="text-end fw-bold">${{ total }}</td>
+            <td colspan="6" style="text-align:right; font-weight:bold;">Total</td>
+            <td style="text-align:right; font-weight:bold;">${{ total }}</td>
         </tr>
         </tbody>
     </table>
