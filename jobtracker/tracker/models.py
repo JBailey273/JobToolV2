@@ -4,7 +4,7 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 class Contractor(models.Model):
     email = models.EmailField(unique=True)
-    logo = models.CharField(max_length=255, blank=True)
+    logo = models.ImageField(upload_to='contractor_logos/', blank=True, null=True)
     material_markup = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     def __str__(self) -> str:
