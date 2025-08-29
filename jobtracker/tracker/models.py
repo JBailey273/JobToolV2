@@ -2,6 +2,13 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 
 
+class GlobalSettings(models.Model):
+    logo = models.ImageField(upload_to='global_logos/', blank=True, null=True)
+
+    def __str__(self) -> str:
+        return "Global Settings"
+
+
 class Contractor(models.Model):
     email = models.EmailField(unique=True)
     logo = models.ImageField(upload_to='contractor_logos/', blank=True, null=True)

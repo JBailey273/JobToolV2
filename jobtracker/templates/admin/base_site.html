@@ -1,6 +1,11 @@
 {% extends "admin/base.html" %}
-{% load static %}
+
 
 {% block branding %}
-<h1 id="site-name"><img src="{% static 'images/company_logo.png' %}" alt="Squire Enterprises Logo" height="40"> {{ site_header }}</h1>
+<h1 id="site-name">
+    {% if global_settings and global_settings.logo %}
+        <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" height="40">
+    {% endif %}
+    {{ site_header }}
+</h1>
 {% endblock %}

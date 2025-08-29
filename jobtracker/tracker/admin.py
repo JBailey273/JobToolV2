@@ -3,6 +3,7 @@ from django.contrib.auth.admin import UserAdmin
 from django.conf import settings
 
 from .models import (
+    GlobalSettings,
     Contractor,
     ContractorUser,
     Asset,
@@ -55,6 +56,11 @@ class ContractorAdmin(admin.ModelAdmin):
         (None, {'fields': ('email', 'logo', 'material_markup')}),
     )
     inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline]
+
+
+@admin.register(GlobalSettings)
+class GlobalSettingsAdmin(admin.ModelAdmin):
+    pass
 
 
 class JobEntryInline(admin.TabularInline):
