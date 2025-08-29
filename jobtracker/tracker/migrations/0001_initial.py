@@ -8,8 +8,10 @@ class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
+
         # Depend on auth 0011 to avoid migration history conflicts on existing deployments
         ('auth', '0011_update_proxy_permissions'),
+        ('auth', '0012_alter_user_first_name_max_length'),
     ]
 
     operations = [
