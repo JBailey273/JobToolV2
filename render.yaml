@@ -18,4 +18,4 @@ services:
         value: "0"
 databases:
   - name: jobtracker-db
-    plan: starter
+    plan: free
