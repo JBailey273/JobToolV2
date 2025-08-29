@@ -14,13 +14,18 @@ class ContractorForm(forms.ModelForm):
         fields = ["name", "email", "phone", "logo", "material_markup"]
 
     def save(self, commit=True):
-        password = self.cleaned_data.pop("password", None)
         contractor = super().save(commit)
-        if password:
-            user, _ = ContractorUser.objects.get_or_create(
-                contractor=contractor, defaults={"email": contractor.email}
-            )
-            user.email = contractor.email
-            user.set_password(password)
-            user.save()
+        password = self.cleaned_data.get("password")
+        if commit:
+            self._password = None
+            if password:
+                user, _ = ContractorUser.objects.get_or_create(
+                    contractor=contractor, defaults={"email": contractor.email}
+                )
+                user.email = contractor.email
+                user.set_password(password)
+                user.save()
+        else:
+            # Store the password for use after the instance is saved
+            self._password = password
         return contractor

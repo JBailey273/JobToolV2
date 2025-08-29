@@ -59,6 +59,17 @@ class ContractorAdmin(admin.ModelAdmin):
     )
     inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline]
 
+    def save_model(self, request, obj, form, change):
+        super().save_model(request, obj, form, change)
+        password = getattr(form, "_password", None)
+        if password:
+            user, _ = ContractorUser.objects.get_or_create(
+                contractor=obj, defaults={"email": obj.email}
+            )
+            user.email = obj.email
+            user.set_password(password)
+            user.save()
+
 
 @admin.register(GlobalSettings)
 class GlobalSettingsAdmin(admin.ModelAdmin):

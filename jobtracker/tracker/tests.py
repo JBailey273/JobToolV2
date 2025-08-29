@@ -1,6 +1,9 @@
 from decimal import Decimal
-from django.test import TestCase
-from tracker.models import Contractor, Project, Asset, Employee, Material, JobEntry
+from django.test import TestCase, RequestFactory
+from django.contrib.admin.sites import AdminSite
+from tracker.models import Contractor, Project, Asset, Employee, Material, JobEntry, ContractorUser
+from tracker.forms import ContractorForm
+from tracker.admin import ContractorAdmin
 
 
 class JobEntryCalculationTests(TestCase):
@@ -37,4 +40,25 @@ class JobEntryCalculationTests(TestCase):
         )
         self.assertEqual(entry.cost_amount, Decimal("200"))
         self.assertEqual(entry.billable_amount, Decimal("287.50"))
+
+
+class ContractorAdminTests(TestCase):
+    def test_password_creates_user(self):
+        factory = RequestFactory()
+        data = {
+            "name": "Example Contractor",
+            "email": "contractor@example.com",
+            "phone": "",
+            "material_markup": "0",
+            "password": "secret123",
+        }
+        form = ContractorForm(data)
+        self.assertTrue(form.is_valid())
+        admin = ContractorAdmin(Contractor, AdminSite())
+        obj = form.save(commit=False)
+        request = factory.post("/admin/tracker/contractor/add/")
+        admin.save_model(request, obj, form, False)
+        user = ContractorUser.objects.get(contractor=obj)
+        self.assertEqual(user.email, "contractor@example.com")
+        self.assertTrue(user.check_password("secret123"))
 
