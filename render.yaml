@@ -2,8 +2,10 @@ services:
   - type: web
     name: jobtracker
     env: python
-    plan: free
+    plan: starter
+    autoDeploy: false
     buildCommand: "pip install -r requirements.txt && python jobtracker/manage.py collectstatic --no-input"
+    preDeployCommand: "python jobtracker/manage.py migrate --no-input"
     startCommand: "gunicorn jobtracker.wsgi:application"
     envVars:
       - key: DATABASE_URL
@@ -16,4 +18,4 @@ services:
         value: "0"
 databases:
   - name: jobtracker-db
-    plan: free
+    plan: starter
