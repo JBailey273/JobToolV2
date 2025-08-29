@@ -19,6 +19,12 @@ body {
     color: var(--text-color);
 }
 
+#user-tools,
+#user-tools a,
+#user-tools a:visited {
+    color: var(--text-color) !important;
+}
+
 .navbar a {
     color: var(--primary-color) !important;
 }

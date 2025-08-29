@@ -41,14 +41,6 @@
             </select>
         </div>
         <div class="col-12 col-md-6">
-            <label class="form-label">Cost Rate</label>
-            <input type="text" class="form-control" id="cost-rate" readonly>
-        </div>
-        <div class="col-12 col-md-6">
-            <label class="form-label">Billable Rate</label>
-            <input type="text" class="form-control" id="billable-rate" readonly>
-        </div>
-        <div class="col-12 col-md-6">
             <label class="form-label">Cost Total</label>
             <input type="number" step="0.01" class="form-control" id="cost-total" name="cost_amount" readonly>
         </div>
@@ -73,13 +65,10 @@
     const employeeSelect = document.getElementById('employee');
     const materialSelect = document.getElementById('material');
     const hoursInput = document.getElementById('hours');
-    const costRateInput = document.getElementById('cost-rate');
-    const billableRateInput = document.getElementById('billable-rate');
     const costTotalInput = document.getElementById('cost-total');
     const billableTotalInput = document.getElementById('billable-total');
     const markup = parseFloat(document.getElementById('entry-form').dataset.markup || 0);
-
-    function updateRates() {
+    function updateTotals() {
         const assetOption = assetSelect.options[assetSelect.selectedIndex];
         const employeeOption = employeeSelect.options[employeeSelect.selectedIndex];
         const materialOption = materialSelect.options[materialSelect.selectedIndex];
@@ -91,26 +80,20 @@
         const materialCost = parseFloat(materialOption?.dataset.cost || 0);
         const materialBillable = materialCost * (1 + markup / 100);
 
-        const costRate = assetCost + employeeCost + materialCost;
-        const billableRate = assetBillable + employeeBillable + materialBillable;
-
-        costRateInput.value = costRate ? costRate.toFixed(2) : '';
-        billableRateInput.value = billableRate ? billableRate.toFixed(2) : '';
-        updateTotals();
-    }
-
-    function updateTotals() {
         const hours = parseFloat(hoursInput.value) || 0;
-        const costRate = parseFloat(costRateInput.value) || 0;
-        const billableRate = parseFloat(billableRateInput.value) || 0;
-        costTotalInput.value = (hours * costRate).toFixed(2);
-        billableTotalInput.value = (hours * billableRate).toFixed(2);
+
+        const costTotal = (assetCost + employeeCost) * hours + materialCost;
+        const billableTotal = (assetBillable + employeeBillable) * hours + materialBillable;
+
+        costTotalInput.value = costTotal ? costTotal.toFixed(2) : '';
+        billableTotalInput.value = billableTotal ? billableTotal.toFixed(2) : '';
     }
 
-    assetSelect.addEventListener('change', updateRates);
-    employeeSelect.addEventListener('change', updateRates);
-    materialSelect.addEventListener('change', updateRates);
+    assetSelect.addEventListener('change', updateTotals);
+    employeeSelect.addEventListener('change', updateTotals);
+    materialSelect.addEventListener('change', updateTotals);
     hoursInput.addEventListener('input', updateTotals);
+    updateTotals();
 })();
 </script>
 {% endblock %}
