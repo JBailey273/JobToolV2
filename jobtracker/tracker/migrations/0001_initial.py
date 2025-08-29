@@ -9,8 +9,8 @@ class Migration(migrations.Migration):
 
     dependencies = [
 
-        # Depend on auth 0011 to avoid migration history conflicts on existing deployments
-        ('auth', '0011_update_proxy_permissions'),
+        # Only require the initial auth migration so history remains consistent across deployments
+        ('auth', '0001_initial'),
     ]
 
     operations = [
