@@ -1,0 +1,29 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Customer Report{% endblock %}
+{% block content %}
+<h1>{{ project.name }} - Customer Report</h1>
+<a href="?export=pdf" class="btn btn-secondary mb-3">Download PDF</a>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Date</th>
+            <th>Description</th>
+            <th>Material</th>
+            <th>Billable Amount</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for e in entries %}
+        <tr>
+            <td>{{ e.date }}</td>
+            <td>{{ e.description }}</td>
+            <td>{% if e.material %}{{ e.material.description }}{% endif %}</td>
+            <td>${{ e.billable_amount }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="4">No job entries.</td></tr>
+    {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
+
