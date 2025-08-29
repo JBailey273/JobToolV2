@@ -67,7 +67,7 @@ def contractor_summary(request):
             'overall_payments': overall_payments,
             'outstanding': outstanding,
             'contractor': contractor,
-            'contractor_logo_url': request.build_absolute_uri(contractor.logo.url) if contractor.logo else None,
+            'contractor_logo_url': contractor.logo.url if contractor.logo else None,
         },
     )
 
