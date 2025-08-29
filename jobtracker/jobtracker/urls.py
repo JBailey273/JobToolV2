@@ -3,6 +3,7 @@ from django.urls import path, include, re_path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.staticfiles import views as staticfiles_views
+from django.views.static import serve as static_serve
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -16,5 +17,7 @@ if settings.DEBUG:
 else:
     urlpatterns += [
         re_path(r'^static/(?P<path>.*)$', staticfiles_views.serve, {'insecure': True}),
-        re_path(r'^media/(?P<path>.*)$', staticfiles_views.serve, {'insecure': True}),
+
+        re_path(r'^media/(?P<path>.*)$', static_serve, {'document_root': settings.MEDIA_ROOT}),
+
     ]
