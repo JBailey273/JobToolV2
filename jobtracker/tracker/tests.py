@@ -1,7 +1,18 @@
 from decimal import Decimal
+
 from django.test import TestCase, RequestFactory
 from django.contrib.admin.sites import AdminSite
-from tracker.models import Contractor, Project, Asset, Employee, Material, JobEntry, ContractorUser
+from django.urls import reverse
+
+from tracker.models import (
+    Contractor,
+    Project,
+    Asset,
+    Employee,
+    Material,
+    JobEntry,
+    ContractorUser,
+)
 from tracker.forms import ContractorForm
 from tracker.admin import ContractorAdmin
 
@@ -61,4 +72,20 @@ class ContractorAdminTests(TestCase):
         user = ContractorUser.objects.get(contractor=obj)
         self.assertEqual(user.email, "contractor@example.com")
         self.assertTrue(user.check_password("secret123"))
+
+
+class LoginRedirectTests(TestCase):
+    def test_login_redirects_to_root(self):
+        contractor = Contractor.objects.create(
+            name="Example Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=contractor
+        )
+        response = self.client.post(
+            reverse("login"),
+            {"username": "user@example.com", "password": "secret"},
+        )
+        self.assertEqual(response.status_code, 302)
+        self.assertEqual(response.url, "/")
 
