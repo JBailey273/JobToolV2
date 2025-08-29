@@ -13,7 +13,7 @@
     <div class="card p-4 shadow-sm" style="width: 100%; max-width: 360px;">
         <div class="text-center mb-3">
             {% if global_settings and global_settings.logo %}
-                <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:80px;">
+                <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:80px;">
             {% else %}
                 <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:80px;">
             {% endif %}

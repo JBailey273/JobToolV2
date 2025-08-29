@@ -9,11 +9,11 @@
 {% block bodyclass %}{{ block.super }} bg-light{% endblock %}
 
 {% block branding %}
-<h1 id="site-name">
-    {% if global_settings and global_settings.logo %}
-        <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
-    {% else %}
-        <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
-    {% endif %}
-</h1>
+    <h1 id="site-name">
+        {% if global_settings and global_settings.logo %}
+            <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
+        {% else %}
+            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
+        {% endif %}
+    </h1>
 {% endblock %}
