@@ -143,15 +143,15 @@ def add_job_entry(request, pk):
         cost_amount = Decimal("0")
         billable_amount = Decimal("0")
         if asset:
-            cost_amount += asset.cost_rate * hours
-            billable_amount += asset.billable_rate * hours
+            cost_amount += asset.cost_rate
+            billable_amount += asset.billable_rate
         if employee:
             cost_amount += employee.cost_rate * hours
             billable_amount += employee.billable_rate * hours
         if material:
-            cost_amount += material.actual_cost * hours
-            billable_amount += (
-                material.actual_cost * (1 + contractor.material_markup / Decimal("100")) * hours
+            cost_amount += material.actual_cost
+            billable_amount += material.actual_cost * (
+                1 + contractor.material_markup / Decimal("100")
             )
 
         JobEntry.objects.create(
