@@ -143,8 +143,8 @@ def add_job_entry(request, pk):
         cost_amount = Decimal("0")
         billable_amount = Decimal("0")
         if asset:
-            cost_amount += asset.cost_rate * hours
-            billable_amount += asset.billable_rate * hours
+            cost_amount += asset.cost_rate
+            billable_amount += asset.billable_rate
         if employee:
             cost_amount += employee.cost_rate * hours
             billable_amount += employee.billable_rate * hours
