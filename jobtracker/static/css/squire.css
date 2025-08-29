@@ -5,12 +5,27 @@ body {
     color: #333;
 }
 
-.navbar, .btn-primary, .submit-row input[type=submit] {
+
+.btn-primary,
+.submit-row input[type=submit],
+button,
+input[type=submit],
+input[type=button],
+a.button {
+    background-color: #003366;
+    border-color: #003366;
+    color: #fff;
+}
+
+#header {
     background-color: #003366;
     color: #fff;
 }
 
-.navbar a, .navbar-brand {
+#header a,
+#header a:hover,
+#header a:link,
+#header a:visited {
     color: #fff;
 }
 
