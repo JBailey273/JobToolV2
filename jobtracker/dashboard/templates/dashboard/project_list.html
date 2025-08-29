@@ -15,7 +15,7 @@
         <tbody>
         {% for project in projects %}
             <tr>
-                <td><a href="{% url 'dashboard:project_detail' project.pk %}">{{ project.name }}</a></td>
+                <td><a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-link p-0">{{ project.name }}</a></td>
                 <td>${{ project.total_billable|default:0 }}</td>
                 <td>${{ project.total_payments|default:0 }}</td>
                 <td>${{ project.outstanding }}</td>

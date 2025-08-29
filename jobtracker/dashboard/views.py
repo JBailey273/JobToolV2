@@ -132,20 +132,19 @@ def add_job_entry(request, pk):
         employee = employees.filter(pk=employee_id).first() if employee_id else None
         material = materials.filter(pk=material_id).first() if material_id else None
 
+        cost_amount = Decimal("0")
+        billable_amount = Decimal("0")
         if asset:
-            cost_amount = asset.cost_rate * hours
-            billable_amount = asset.billable_rate * hours
-        elif employee:
-            cost_amount = employee.cost_rate * hours
-            billable_amount = employee.billable_rate * hours
-        elif material:
-            cost_amount = material.actual_cost * hours
-            billable_amount = (
+            cost_amount += asset.cost_rate * hours
+            billable_amount += asset.billable_rate * hours
+        if employee:
+            cost_amount += employee.cost_rate * hours
+            billable_amount += employee.billable_rate * hours
+        if material:
+            cost_amount += material.actual_cost * hours
+            billable_amount += (
                 material.actual_cost * (1 + contractor.material_markup / Decimal("100")) * hours
             )
-        else:
-            cost_amount = Decimal("0")
-            billable_amount = Decimal("0")
 
         JobEntry.objects.create(
             project=project,

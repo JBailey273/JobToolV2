@@ -1,23 +1,40 @@
-{% extends "admin/base_site.html" %}
-{% load i18n %}
-
-{% block content %}
-<div id="content-main">
-    <div class="login-logo">
-        {% if global_settings and global_settings.logo %}
-            <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" height="80">
-        {% endif %}
-    </div>
-    {% if form.errors %}
-        <p class="errornote">{% blocktranslate count form.errors|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}</p>
-    {% endif %}
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <input type="hidden" name="next" value="{{ next }}">
-        <div class="submit-row">
-            <input type="submit" value="{% translate 'Log in' %}">
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{% static 'css/squire.css' %}" rel="stylesheet">
+    <title>Log in</title>
+</head>
+<body class="bg-light">
+<div class="container d-flex justify-content-center align-items-center" style="min-height:100vh;">
+    <div class="card p-4 shadow-sm" style="width: 100%; max-width: 360px;">
+        <div class="text-center mb-3">
+            {% if global_settings and global_settings.logo %}
+                <img src="{{ global_settings.logo.url }}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:80px;">
+            {% endif %}
         </div>
-    </form>
+        {% if form.errors %}
+            <div class="alert alert-danger" role="alert">
+                {% if form.errors|length == 1 %}
+                    Please correct the error below.
+                {% else %}
+                    Please correct the errors below.
+                {% endif %}
+            </div>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <input type="hidden" name="next" value="{{ next }}">
+            <div class="d-grid">
+                <button type="submit" class="btn btn-primary">Log in</button>
+            </div>
+        </form>
+    </div>
 </div>
-{% endblock %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
