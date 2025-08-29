@@ -1,8 +1,11 @@
 {% extends 'dashboard/base.html' %}
+{% load static %}
 {% block title %}Customer Report{% endblock %}
 {% block content %}
 {% if contractor.logo %}
-  <img src="{{ contractor.logo.url }}" alt="Contractor logo" height="50">
+  <img src="{{ contractor.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Contractor logo" height="50" class="mb-3">
+{% else %}
+  <img src="{% static 'img/logo.png' %}" alt="Contractor logo" height="50" class="mb-3">
 {% endif %}
 <h1>{{ project.name }} - Customer Report</h1>
 <a href="?export=pdf" class="btn btn-secondary mb-3">Download PDF</a>
