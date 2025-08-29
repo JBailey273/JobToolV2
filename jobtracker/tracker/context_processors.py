@@ -34,4 +34,9 @@ def contractor(request):
 
     user = getattr(request, "user", None)
     contract = getattr(user, "contractor", None) if getattr(user, "is_authenticated", False) else None
-    return {"contractor": contract}
+    logo_url = (
+        request.build_absolute_uri(contract.logo.url)
+        if contract and contract.logo
+        else None
+    )
+    return {"contractor": contract, "contractor_logo_url": logo_url}
