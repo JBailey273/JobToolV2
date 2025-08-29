@@ -3,12 +3,14 @@ services:
     name: jobtracker
     env: python
     plan: starter
-    autoDeploy: true
+    autoDeploy: false
     buildCommand: "pip install -r requirements.txt && python jobtracker/manage.py collectstatic --no-input"
     preDeployCommand: "python jobtracker/manage.py migrate --no-input"
+
     # The Django project resides in the `jobtracker/` directory, so change into
     # that folder before invoking Gunicorn.
     startCommand: "gunicorn jobtracker.wsgi:application --chdir jobtracker"
+
     envVars:
       - key: DATABASE_URL
         fromDatabase:
