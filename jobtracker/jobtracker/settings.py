@@ -13,7 +13,15 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'changeme-secret-key')
 
 DEBUG = os.environ.get('DEBUG', '0') == '1'
 
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
+# Allow Render subdomains by default so the app doesn't return a 400 on deployment
+ALLOWED_HOSTS = os.environ.get(
+    'ALLOWED_HOSTS', 'localhost,127.0.0.1,.onrender.com'
+).split(',')
+
+# Ensure CSRF checks accept requests from the Render domain
+CSRF_TRUSTED_ORIGINS = os.environ.get(
+    'CSRF_TRUSTED_ORIGINS', 'https://*.onrender.com'
+).split(',')
 SITE_NAME = "Squire Enterprises Job Tracker"
 
 INSTALLED_APPS = [
