@@ -14,6 +14,7 @@ SECRET_KEY = os.environ.get('SECRET_KEY', 'changeme-secret-key')
 DEBUG = os.environ.get('DEBUG', '0') == '1'
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', 'localhost').split(',')
+SITE_NAME = "Squire Enterprises Job Tracker"
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -40,7 +41,7 @@ ROOT_URLCONF = 'jobtracker.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -84,5 +85,8 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'

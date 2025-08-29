@@ -1,0 +1,20 @@
+{% extends "admin/base_site.html" %}
+{% load i18n static %}
+
+{% block content %}
+<div id="content-main">
+    <div class="login-logo">
+        <img src="{% static 'images/company_logo.png' %}" alt="Squire Enterprises Logo" height="80">
+    </div>
+    {% if form.errors %}
+        <p class="errornote">{% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}</p>
+    {% endif %}
+    <form action="{{ form_url }}" method="post" id="login-form">{% csrf_token %}
+        {{ form.as_p }}
+        <input type="hidden" name="next" value="{{ next }}">
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log in' %}">
+        </div>
+    </form>
+</div>
+{% endblock %}

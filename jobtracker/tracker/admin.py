@@ -1,7 +1,37 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
+from django.conf import settings
 
-from .models import Contractor, ContractorUser
+from .models import (
+    Contractor,
+    ContractorUser,
+    Asset,
+    Employee,
+    Material,
+    Project,
+    JobEntry,
+    Payment,
+)
+
+
+class AssetInline(admin.TabularInline):
+    model = Asset
+    extra = 0
+
+
+class EmployeeInline(admin.TabularInline):
+    model = Employee
+    extra = 0
+
+
+class MaterialInline(admin.TabularInline):
+    model = Material
+    extra = 0
+
+
+class ProjectInline(admin.TabularInline):
+    model = Project
+    extra = 0
 
 
 @admin.register(ContractorUser)
@@ -21,3 +51,59 @@ class ContractorUserAdmin(UserAdmin):
 class ContractorAdmin(admin.ModelAdmin):
     list_display = ('email', 'material_markup')
     search_fields = ('email',)
+    fieldsets = (
+        (None, {'fields': ('email', 'logo', 'material_markup')}),
+    )
+    inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline]
+
+
+class JobEntryInline(admin.TabularInline):
+    model = JobEntry
+    extra = 0
+
+
+class PaymentInline(admin.TabularInline):
+    model = Payment
+    extra = 0
+
+
+@admin.register(Project)
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contractor', 'start_date', 'end_date')
+    search_fields = ('name',)
+    inlines = [JobEntryInline, PaymentInline]
+
+
+@admin.register(Asset)
+class AssetAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contractor', 'cost_rate', 'billable_rate')
+    search_fields = ('name',)
+
+
+@admin.register(Employee)
+class EmployeeAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contractor', 'cost_rate', 'billable_rate')
+    search_fields = ('name',)
+
+
+@admin.register(Material)
+class MaterialAdmin(admin.ModelAdmin):
+    list_display = ('description', 'contractor', 'actual_cost')
+    search_fields = ('description',)
+
+
+@admin.register(JobEntry)
+class JobEntryAdmin(admin.ModelAdmin):
+    list_display = ('project', 'date', 'hours')
+    list_filter = ('project',)
+
+
+@admin.register(Payment)
+class PaymentAdmin(admin.ModelAdmin):
+    list_display = ('project', 'amount', 'date')
+    list_filter = ('project',)
+
+
+admin.site.site_header = settings.SITE_NAME
+admin.site.site_title = settings.SITE_NAME
+admin.site.index_title = 'Administration'
