@@ -17,5 +17,8 @@ COPY . .
 RUN python jobtracker/manage.py collectstatic --noinput || true
 
 # Run the application. The Django project lives inside the `jobtracker/`
-# directory, so change into that folder before invoking Gunicorn.
-CMD gunicorn jobtracker.wsgi:application --chdir jobtracker --bind 0.0.0.0:$PORT
+
+# directory. Change into that folder *before* loading the WSGI module so
+# Python can import the settings correctly.
+CMD gunicorn --chdir jobtracker jobtracker.wsgi:application --bind 0.0.0.0:$PORT
+

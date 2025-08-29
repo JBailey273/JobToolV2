@@ -7,10 +7,10 @@ services:
     buildCommand: "pip install -r requirements.txt && python jobtracker/manage.py collectstatic --no-input"
     preDeployCommand: "python jobtracker/manage.py migrate --no-input"
 
-    # The Django project resides in the `jobtracker/` directory, so change into
-    # that folder before invoking Gunicorn.
-    startCommand: "gunicorn jobtracker.wsgi:application --chdir jobtracker"
-
+    # The Django project resides in the `jobtracker/` directory. Ensure we
+    # change into that folder before loading the WSGI module so Django can find
+    # its settings.
+    startCommand: "gunicorn --chdir jobtracker jobtracker.wsgi:application"
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -20,6 +20,10 @@ services:
         generateValue: true
       - key: DEBUG
         value: "0"
+      - key: ALLOWED_HOSTS
+        value: ".onrender.com,localhost"
+      - key: CSRF_TRUSTED_ORIGINS
+        value: "https://*.onrender.com"
 databases:
   - name: jobtracker-db
     plan: free
