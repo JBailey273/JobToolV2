@@ -280,12 +280,6 @@ def customer_report(request, pk):
         if contractor and contractor.logo_thumbnail
         else None
     )
-    show_description = any(e.description for e in entries)
-    show_asset = any(e.asset for e in entries)
-    show_employee = any(e.employee for e in entries)
-    show_material = any(e.material_description for e in entries)
-    cols_before_billable = 2 + int(show_description) + int(show_asset) + int(show_employee) + int(show_material)
-    total_columns = cols_before_billable + 1
     export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
@@ -294,12 +288,8 @@ def customer_report(request, pk):
         "total": total,
         "contractor_logo_url": logo_url,
         "report": export_pdf,
-        "show_description": show_description,
-        "show_asset": show_asset,
-        "show_employee": show_employee,
-        "show_material": show_material,
-        "colspan_before_total": cols_before_billable,
-        "total_columns": total_columns,
+        "colspan_before_total": 6,
+        "total_columns": 7,
         "payments": payments,
         "total_payments": total_payments or 0,
         "outstanding": outstanding,
