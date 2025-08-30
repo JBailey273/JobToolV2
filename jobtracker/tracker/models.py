@@ -37,7 +37,14 @@ class Contractor(models.Model):
             img = Image.open(self.logo)
         except Exception:
             return
-        img = img.convert("RGB")
+        if img.mode in ("RGBA", "LA") or (
+            img.mode == "P" and "transparency" in img.info
+        ):
+            img = img.convert("RGBA")
+            background = Image.new("RGBA", img.size, (255, 255, 255, 255))
+            img = Image.alpha_composite(background, img).convert("RGB")
+        else:
+            img = img.convert("RGB")
         max_width = 300
         if img.width > max_width:
             ratio = max_width / float(img.width)
@@ -45,9 +52,9 @@ class Contractor(models.Model):
             img = img.resize((max_width, height), Image.LANCZOS)
         thumb_io = BytesIO()
         img.save(thumb_io, format="JPEG")
-        thumb_name = os.path.basename(self.logo.name)
+        thumb_name = os.path.splitext(os.path.basename(self.logo.name))[0]
         self.logo_thumbnail.save(
-            f"thumb_{thumb_name}", ContentFile(thumb_io.getvalue()), save=False
+            f"thumb_{thumb_name}.jpg", ContentFile(thumb_io.getvalue()), save=False
         )
         thumb_io.close()
         super(Contractor, self).save(update_fields=["logo_thumbnail"])
