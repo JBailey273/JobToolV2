@@ -52,6 +52,7 @@ def contractor_summary(request):
     if contractor is None:
         return redirect("login")
     projects = contractor.projects.filter(end_date__isnull=True)
+    first_project = projects.first()
     overall_billable = (
         JobEntry.objects.filter(project__contractor=contractor, project__end_date__isnull=True)
         .aggregate(total=Sum("billable_amount"))
@@ -70,6 +71,7 @@ def contractor_summary(request):
         'dashboard/contractor_summary.html',
         {
             'projects': projects,
+            'first_project': first_project,
             'overall_billable': overall_billable,
             'overall_payments': overall_payments,
             'outstanding': outstanding,

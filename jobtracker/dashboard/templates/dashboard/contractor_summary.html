@@ -35,4 +35,7 @@
 
  </div>
 <a href="{% url 'dashboard:project_list' %}" class="btn btn-primary">View Projects</a>
+{% if first_project %}
+<a href="{% url 'dashboard:add_job_entry' first_project.pk %}" class="btn btn-secondary ms-2">Add Job Entry</a>
+{% endif %}
 {% endblock %}
