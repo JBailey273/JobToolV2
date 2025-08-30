@@ -24,9 +24,9 @@ services:
       - key: DEBUG
         value: "0"
       - key: ALLOWED_HOSTS
-        value: ".onrender.com,localhost"
+        value: ".onrender.com,app.squire.enterprises,localhost"
       - key: CSRF_TRUSTED_ORIGINS
-        value: "https://*.onrender.com"
+        value: "https://*.onrender.com,https://app.squire.enterprises"
       - key: MEDIA_ROOT
         value: /var/media
 databases:
