@@ -256,7 +256,7 @@ def contractor_report(request):
     }
     if export_pdf:
         pdf = _render_pdf(
-            "dashboard/contractor_report.html", context, "contractor_report.pdf"
+            "dashboard/contractor_report.html", context, "contractor_summary_report.pdf"
         )
         if pdf:
             return pdf
@@ -301,3 +301,61 @@ def customer_report(request, pk):
         if pdf:
             return pdf
     return render(request, "dashboard/customer_report.html", context)
+
+
+@login_required
+def contractor_job_report(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    entries_qs = project.job_entries.select_related("asset", "employee")
+    entries = []
+    total_billable = Decimal("0")
+    total_cost = Decimal("0")
+    for e in entries_qs.iterator():
+        billable = e.billable_amount or Decimal("0")
+        cost = e.cost_amount or Decimal("0")
+        profit = billable - cost
+        margin = (profit / billable * Decimal("100")) if billable else Decimal("0")
+        e.profit = profit
+        e.margin = margin
+        entries.append(e)
+        total_billable += billable
+        total_cost += cost
+    total_profit = total_billable - total_cost
+    overall_margin = (
+        (total_profit / total_billable) * Decimal("100") if total_billable else Decimal("0")
+    )
+    payments = list(project.payments.all())
+    total_payments = project.payments.aggregate(total=Sum("amount"))["total"] or 0
+    outstanding = total_billable - (total_payments or 0)
+    logo_url = (
+        contractor.logo_thumbnail.url
+        if contractor and contractor.logo_thumbnail
+        else None
+    )
+    export_pdf = request.GET.get("export") == "pdf"
+    context = {
+        "contractor": contractor,
+        "project": project,
+        "entries": entries,
+        "total_billable": total_billable,
+        "total_cost": total_cost,
+        "total_profit": total_profit,
+        "overall_margin": overall_margin,
+        "contractor_logo_url": logo_url,
+        "report": export_pdf,
+        "payments": payments,
+        "total_payments": total_payments or 0,
+        "outstanding": outstanding,
+        "colspan_before_total": 6,
+        "total_columns": 10,
+    }
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/contractor_job_report.html", context, "contractor_job_report.pdf"
+        )
+        if pdf:
+            return pdf
+    return render(request, "dashboard/contractor_job_report.html", context)

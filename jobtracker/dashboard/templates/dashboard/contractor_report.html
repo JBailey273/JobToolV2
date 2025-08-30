@@ -1,13 +1,13 @@
 {% extends 'dashboard/base.html' %}
 {% load static %}
-{% block title %}Contractor Report{% endblock %}
+{% block title %}Contractor Summary Report{% endblock %}
 {% block content %}
 {% if contractor_logo_url %}
 <div class="text-center mb-3">
   <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" class="img-fluid" style="max-height:100px;">
 </div>
 {% endif %}
-<h1 class="text-center">Contractor Report</h1>
+<h1 class="text-center">Contractor Summary Report</h1>
 {% if not report %}
 <a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
 {% endif %}

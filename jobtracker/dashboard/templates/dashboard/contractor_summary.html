@@ -32,29 +32,9 @@
             </div>
         </div>
     </div>
-</div>
 
-<div class="mb-3">
-    <div class="input-group">
-        <select id="projectSelect" class="form-select">
-            <option value="" selected>Select Project…</option>
-            {% for project in projects %}
-                <option value="{{ project.pk }}">{{ project.name }}</option>
-            {% endfor %}
-        </select>
-        <button id="jobEntryBtn" class="btn btn-primary">Add Job Entry</button>
-    </div>
-</div>
-
-<script>
-document.getElementById('jobEntryBtn').addEventListener('click', function() {
-    var pk = document.getElementById('projectSelect').value;
-    if (pk) {
-        window.location.href = '/projects/' + pk + '/add-entry/';
-    }
-});
-</script>
-<a href="{% url 'dashboard:contractor_report' %}" class="btn btn-secondary me-2">Contractor Report</a>
+ </div>
+<a href="{% url 'dashboard:contractor_report' %}" class="btn btn-secondary me-2">Contractor Summary Report</a>
 <a href="{% url 'dashboard:project_list' %}" class="btn btn-secondary me-2">Customer Reports</a>
 <a href="{% url 'dashboard:project_list' %}" class="btn btn-primary">View Projects</a>
 {% endblock %}
