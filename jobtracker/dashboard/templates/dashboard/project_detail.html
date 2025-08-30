@@ -36,19 +36,33 @@
         <thead>
             <tr>
                 <th>Date</th>
-                <th>Description</th>
+                <th>Hours / Qty</th>
+                <th>Asset</th>
+                <th>Employee</th>
+                <th>Material Description</th>
+                <th>Material Cost</th>
+                <th>Cost Amount</th>
                 <th>Billable Amount</th>
+                <th>Description</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
         {% for entry in job_entries %}
             <tr>
                 <td>{{ entry.date }}</td>
-                <td>{{ entry.description }}</td>
+                <td>{{ entry.hours }}</td>
+                <td>{{ entry.asset }}</td>
+                <td>{{ entry.employee }}</td>
+                <td>{{ entry.material_description }}</td>
+                <td>{% if entry.material_cost %}${{ entry.material_cost }}{% endif %}</td>
+                <td>${{ entry.cost_amount }}</td>
                 <td>${{ entry.billable_amount }}</td>
+                <td>{{ entry.description }}</td>
+                <td><a href="{% url 'dashboard:edit_job_entry' entry.pk %}" class="btn btn-sm btn-secondary">Edit</a></td>
             </tr>
         {% empty %}
-            <tr><td colspan="3">No job entries.</td></tr>
+            <tr><td colspan="10">No job entries.</td></tr>
         {% endfor %}
         </tbody>
     </table>

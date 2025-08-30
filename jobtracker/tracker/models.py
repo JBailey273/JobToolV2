@@ -168,8 +168,9 @@ class JobEntry(models.Model):
             self.cost_amount += self.employee.cost_rate * self.hours
             self.billable_amount += self.employee.billable_rate * self.hours
         if self.material_cost:
-            self.cost_amount += self.material_cost
-            self.billable_amount += self.material_cost * (
+            material_total = self.material_cost * self.hours
+            self.cost_amount += material_total
+            self.billable_amount += material_total * (
                 1 + contractor.material_markup / Decimal("100")
             )
         super().save(*args, **kwargs)
