@@ -2,12 +2,13 @@
 {% load static %}
 {% block title %}Customer Report{% endblock %}
 {% block content %}
-{% if contractor_logo_url %}
 <div class="text-center mb-3">
-  <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid" style="max-height:100px;">
+  {% if contractor_logo_url %}
+  <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid mb-2" style="max-height:100px;">
+  {% endif %}
+  <h2>{{ contractor.name|default:contractor.email }}</h2>
 </div>
-{% endif %}
-<h1 class="text-center">Invoice - {{ project.name }}</h1>
+<h1 class="text-center">Summary of Work - {{ project.name }}</h1>
 <a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
 <div class="table-responsive">
     <table class="table table-bordered">
