@@ -168,6 +168,40 @@ def add_job_entry(request, pk):
 
 
 @login_required
+def edit_job_entry(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+    entry = get_object_or_404(JobEntry, pk=pk, project__contractor=contractor)
+    assets = contractor.assets.all()
+    employees = contractor.employees.all()
+
+    if request.method == "POST":
+        entry.date = request.POST.get("date")
+        entry.hours = Decimal(request.POST.get("hours") or 0)
+        asset_id = request.POST.get("asset")
+        employee_id = request.POST.get("employee")
+        entry.asset = assets.filter(pk=asset_id).first() if asset_id else None
+        entry.employee = employees.filter(pk=employee_id).first() if employee_id else None
+        entry.material_description = request.POST.get("material_description", "")
+        mat_cost = request.POST.get("material_cost")
+        entry.material_cost = Decimal(mat_cost or 0) if mat_cost else None
+        entry.description = request.POST.get("description", "")
+        entry.save()
+        return redirect("dashboard:project_detail", pk=entry.project.pk)
+
+    return render(
+        request,
+        "dashboard/jobentry_edit_form.html",
+        {
+            "entry": entry,
+            "assets": assets,
+            "employees": employees,
+        },
+    )
+
+
+@login_required
 def add_payment(request, pk):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:

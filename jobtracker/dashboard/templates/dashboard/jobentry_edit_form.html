@@ -1,0 +1,54 @@
+{% extends 'dashboard/base.html' %}
+{% block title %}Edit Job Entry{% endblock %}
+{% block content %}
+<h1>Edit Job Entry</h1>
+<form method="post">
+    {% csrf_token %}
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-6">
+            <label for="date" class="form-label">Date</label>
+            <input type="date" class="form-control" id="date" name="date" value="{{ entry.date }}" required>
+        </div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-2">
+            <label for="hours" class="form-label">Hours / Qty</label>
+            <input type="number" step="0.01" class="form-control" id="hours" name="hours" value="{{ entry.hours }}">
+        </div>
+        <div class="col-md-3">
+            <label for="asset" class="form-label">Asset</label>
+            <select class="form-select" id="asset" name="asset">
+                <option value="">---------</option>
+                {% for asset in assets %}
+                <option value="{{ asset.id }}" {% if entry.asset_id == asset.id %}selected{% endif %}>{{ asset.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="employee" class="form-label">Employee</label>
+            <select class="form-select" id="employee" name="employee">
+                <option value="">---------</option>
+                {% for emp in employees %}
+                <option value="{{ emp.id }}" {% if entry.employee_id == emp.id %}selected{% endif %}>{{ emp.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="material_description" class="form-label">Material Description</label>
+            <input type="text" class="form-control" id="material_description" name="material_description" value="{{ entry.material_description }}">
+        </div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label for="material_cost" class="form-label">Material Cost</label>
+            <input type="number" step="0.01" class="form-control" id="material_cost" name="material_cost" value="{{ entry.material_cost|default_if_none:'' }}">
+        </div>
+        <div class="col-md-8">
+            <label for="description" class="form-label">Description</label>
+            <input type="text" class="form-control" id="description" name="description" value="{{ entry.description }}">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+    <a href="{% url 'dashboard:project_detail' entry.project.pk %}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

@@ -17,7 +17,7 @@ from tracker.admin import ContractorAdmin
 
 
 class JobEntryCalculationTests(TestCase):
-    def test_asset_rates_multiply_by_hours(self):
+    def test_rates_and_material_cost_multiply_by_hours(self):
         contractor = Contractor.objects.create(
             name="Test Contractor", email="contractor@example.com", material_markup=Decimal("25")
         )
@@ -46,8 +46,8 @@ class JobEntryCalculationTests(TestCase):
             material_cost=Decimal("50"),
             description="Test entry",
         )
-        self.assertEqual(entry.cost_amount, Decimal("200"))
-        self.assertEqual(entry.billable_amount, Decimal("287.50"))
+        self.assertEqual(entry.cost_amount, Decimal("400"))
+        self.assertEqual(entry.billable_amount, Decimal("537.50"))
 
 
 class ContractorAdminTests(TestCase):
