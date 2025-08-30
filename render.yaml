@@ -32,3 +32,6 @@ services:
 databases:
   - name: jobtracker-db
     plan: free
+disks:
+  - name: media
+    sizeGB: 1
