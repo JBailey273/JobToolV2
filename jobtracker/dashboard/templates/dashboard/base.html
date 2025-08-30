@@ -6,48 +6,198 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% if not report %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     {% endif %}
     <link href="{% static 'css/squire.css' %}" rel="stylesheet">
-    <title>{% block title %}Dashboard{% endblock %}</title>
+    <title>{% block title %}Dashboard{% endblock %} | Squire Enterprises</title>
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    
+    {% if report %}
+    <style>
+        @page { 
+            size: landscape; 
+            margin: 0.5in 0.3in;
+        }
+        
+        body { 
+            font-family: Arial, sans-serif; 
+            font-size: 9px; 
+            line-height: 1.2;
+            color: #000;
+            background: white;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+            margin-bottom: 12px;
+        }
+        
+        .pdf-table th,
+        .pdf-table td {
+            border: 0.5px solid #333;
+            padding: 3px 2px;
+            vertical-align: top;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+            font-size: 8px;
+            line-height: 1.1;
+        }
+        
+        .pdf-table th {
+            background-color: #f0f0f0 !important;
+            font-weight: bold;
+            font-size: 8px;
+            text-align: center;
+            padding: 4px 2px;
+        }
+        
+        .report-header {
+            text-align: center;
+            margin-bottom: 15px;
+            page-break-inside: avoid;
+        }
+        
+        .report-header img {
+            max-height: 35px;
+            margin-bottom: 6px;
+        }
+        
+        .report-header h1 {
+            font-size: 14px;
+            margin: 6px 0 3px 0;
+            font-weight: bold;
+            color: #000;
+        }
+        
+        .report-header h2 {
+            font-size: 11px;
+            margin: 3px 0;
+            color: #333;
+        }
+        
+        .totals-row {
+            background-color: #e9ecef !important;
+            font-weight: bold;
+            border-top: 1px solid #000 !important;
+        }
+        
+        .totals-row td {
+            font-size: 8px !important;
+            font-weight: bold;
+            background-color: #e9ecef !important;
+        }
+        
+        .summary-section {
+            margin: 12px 0;
+            font-size: 10px;
+        }
+        
+        .text-left { text-align: left !important; }
+        .text-right { text-align: right !important; }
+        .text-center { text-align: center !important; }
+        
+        .d-print-none { display: none !important; }
+        
+        tr { page-break-inside: avoid; }
+    </style>
+    {% endif %}
 </head>
-<body class="bg-light">
+<body class="{% if not report %}bg-light{% endif %}">
+
 {% if not report %}
-<nav class="navbar navbar-light bg-light mb-4">
+<nav class="navbar navbar-expand-lg mb-4">
     <div class="container-fluid">
-        <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:50px;">
-        {% if contractor %}
-            <span class="navbar-brand mb-0 h1">{{ contractor.name|default:contractor.email }}</span>
-        {% endif %}
+        <div class="d-flex align-items-center">
+            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:45px;">
+            {% if contractor %}
+                <span class="navbar-brand mb-0 fw-bold">{{ contractor.name|default:contractor.email }}</span>
+            {% else %}
+                <span class="navbar-brand mb-0 fw-bold">Squire Enterprises</span>
+            {% endif %}
+        </div>
+        
+        <div class="navbar-nav ms-auto">
+            <a class="nav-link fw-semibold" href="{% url 'dashboard:contractor_summary' %}">
+                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
+            </a>
+            <a class="nav-link fw-semibold" href="{% url 'dashboard:project_list' %}">
+                <i class="fas fa-project-diagram me-2"></i>Projects
+            </a>
+            {% if user.is_staff %}
+                <a class="nav-link fw-semibold" href="{% url 'admin:index' %}">
+                    <i class="fas fa-cog me-2"></i>Admin
+                </a>
+            {% endif %}
+            <a class="nav-link fw-semibold" href="{% url 'logout' %}">
+                <i class="fas fa-sign-out-alt me-2"></i>Logout
+            </a>
+        </div>
     </div>
 </nav>
 {% endif %}
-<div class="container">
+
+<div class="{% if not report %}container{% endif %}">
     {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
-    <div class="d-print-none mb-3">
-        <a href="{% url 'dashboard:contractor_summary' %}" class="btn btn-primary">Dashboard</a>
+    <div class="d-print-none mb-4">
+        <a href="{% url 'dashboard:contractor_summary' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
     </div>
     {% endif %}
+    
     {% block content %}{% endblock %}
 </div>
+
 {% if not report %}
+<footer class="mt-5 py-4 bg-white border-top">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-6">
+                <p class="text-muted mb-0">
+                    <small>&copy; 2024 Squire Enterprises. All rights reserved.</small>
+                </p>
+            </div>
+            <div class="col-md-6 text-end">
+                <p class="text-muted mb-0">
+                    <small>Job Tracking System v2.0</small>
+                </p>
+            </div>
+        </div>
+    </div>
+</footer>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Enhanced responsive table handling
     document.querySelectorAll('.table-responsive table').forEach(function (table) {
         const ths = Array.from(table.querySelectorAll('thead th'));
         const headers = ths.map(th => th.innerText.trim());
 
+        // Mobile optimization
         if (window.innerWidth <= 576) {
             ths.forEach(function (th, index) {
                 const cells = Array.from(table.querySelectorAll('tbody tr')).map(row => row.children[index]);
                 const hasContent = cells.some(cell => cell && cell.textContent.trim() !== '');
+                
                 if (!hasContent) {
                     th.style.display = 'none';
-                    cells.forEach(cell => { if (cell) cell.style.display = 'none'; });
+                    cells.forEach(cell => { 
+                        if (cell) cell.style.display = 'none'; 
+                    });
                 }
             });
         }
 
+        // Add data labels for responsive design
         table.querySelectorAll('tbody tr').forEach(function (row) {
             Array.from(row.children).forEach(function (cell, index) {
                 if (!cell.hasAttribute('data-label') && headers[index]) {
@@ -56,7 +206,61 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         });
     });
+    
+    // Add smooth animations to cards
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('fade-in');
+            }
+        });
+    }, { threshold: 0.1 });
+    
+    document.querySelectorAll('.card, .summary-card').forEach(card => {
+        observer.observe(card);
+    });
+    
+    // Enhanced button hover effects
+    document.querySelectorAll('.btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+    
+    // Add loading state to form submissions
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', function() {
+            const submitBtn = this.querySelector('button[type="submit"], input[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                const originalText = submitBtn.textContent || submitBtn.value;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                
+                // Re-enable after 5 seconds as fallback
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = originalText;
+                }, 5000);
+            }
+        });
+    });
 });
+
+// Print optimizations
+window.addEventListener('beforeprint', function() {
+    document.body.classList.add('printing');
+});
+
+window.addEventListener('afterprint', function() {
+    document.body.classList.remove('printing');
+});
+
+// Add smooth scroll behavior
+document.documentElement.style.scrollBehavior = 'smooth';
 </script>
 {% endif %}
 </body>
