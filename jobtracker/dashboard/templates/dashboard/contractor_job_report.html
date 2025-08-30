@@ -12,20 +12,32 @@
 {% if not report %}
 <a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
 {% endif %}
-<div class="table-responsive">
-    <table class="table table-bordered" style="width:100%;">
+<div {% if not report %}class="table-responsive"{% endif %}>
+    <table class="table table-bordered" style="width:100%; table-layout:fixed;">
+        <colgroup>
+            <col style="width:10%">
+            <col style="width:20%">
+            <col style="width:12%">
+            <col style="width:12%">
+            <col style="width:12%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:8%">
+            <col style="width:5%">
+            <col style="width:5%">
+        </colgroup>
         <thead class="table-light">
             <tr>
-                <th style="text-align:left; width:10%;">Date</th>
-                <th style="text-align:left; width:20%;">Description</th>
-                <th style="text-align:left; width:12%;">Asset</th>
-                <th style="text-align:left; width:12%;">Employee</th>
-                <th style="text-align:left; width:12%;">Material</th>
-                <th style="text-align:right; width:8%;">Hours / Qty</th>
-                <th style="text-align:right; width:8%;">Actual Cost</th>
-                <th style="text-align:right; width:8%;">Billable Amount</th>
-                <th style="text-align:right; width:5%;">Profit</th>
-                <th style="text-align:right; width:5%;">Margin</th>
+                <th style="text-align:left;">Date</th>
+                <th style="text-align:left;">Description</th>
+                <th style="text-align:left;">Asset</th>
+                <th style="text-align:left;">Employee</th>
+                <th style="text-align:left;">Material</th>
+                <th style="text-align:right;">Hours / Qty</th>
+                <th style="text-align:right;">Actual Cost</th>
+                <th style="text-align:right;">Billable Amount</th>
+                <th style="text-align:right;">Profit</th>
+                <th style="text-align:right;">Margin</th>
             </tr>
         </thead>
         <tbody>
@@ -58,8 +70,12 @@
 
 {% if payments %}
 <h2>Payments</h2>
-<div class="table-responsive">
-    <table class="table table-bordered">
+<div {% if not report %}class="table-responsive"{% endif %}>
+    <table class="table table-bordered" style="width:100%; table-layout:fixed;">
+        <colgroup>
+            <col style="width:50%">
+            <col style="width:50%">
+        </colgroup>
         <thead class="table-light">
             <tr>
                 <th style="text-align:left;">Date</th>
