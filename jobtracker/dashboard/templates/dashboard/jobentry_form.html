@@ -85,7 +85,7 @@
                                         <tr class="entry-row">
                                             <td>
                                                 <input type="number" step="0.01" class="form-control form-control-sm" 
-                                                       name="hours[]" placeholder="0.00">
+                                                       name="hours[]" placeholder="0.00" min="0">
                                             </td>
                                             <td>
                                                 <select class="form-select form-select-sm" name="asset[]">
@@ -112,8 +112,11 @@
                                                        name="material_description[]" placeholder="Material description">
                                             </td>
                                             <td>
-                                                <input type="number" step="0.01" class="form-control form-control-sm" 
-                                                       name="material_cost[]" placeholder="0.00">
+                                                <div class="input-group input-group-sm">
+                                                    <span class="input-group-text">$</span>
+                                                    <input type="number" step="0.01" class="form-control form-control-sm" 
+                                                           name="material_cost[]" placeholder="0.00" min="0">
+                                                </div>
                                             </td>
                                             <td>
                                                 <input type="text" class="form-control form-control-sm" 
@@ -408,10 +411,47 @@ document.addEventListener('DOMContentLoaded', function() {
     border-top: 1px solid #dee2e6;
 }
 
+/* Fixed form control styling to prevent label overlap */
 .form-control-sm, .form-select-sm {
     font-size: 0.875rem;
     background-color: #ffffff !important;
     color: #212529 !important;
+    padding: 8px 12px;
+    height: auto;
+    min-height: 32px;
+}
+
+.form-control-sm:focus, .form-select-sm:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* Ensure proper select styling */
+.form-select-sm {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    background-size: 16px 12px;
+    padding-right: 32px;
+}
+
+/* Input group styling for material cost */
+.input-group-sm .input-group-text {
+    padding: 8px 12px;
+    font-size: 0.875rem;
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.input-group-sm .form-control {
+    border-left: none;
+}
+
+.input-group-sm .form-control:focus {
+    border-left: 1px solid var(--primary-color);
 }
 
 .alert {
@@ -427,6 +467,37 @@ document.addEventListener('DOMContentLoaded', function() {
         opacity: 1;
         transform: translateY(0);
     }
+}
+
+/* Placeholder text styling */
+.form-control::placeholder,
+.form-select::placeholder {
+    color: #6c757d;
+    opacity: 0.7;
+}
+
+/* Remove any floating label conflicts */
+.table .form-control,
+.table .form-select {
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+}
+
+/* Ensure table inputs don't have floating labels */
+.table td {
+    position: relative;
+}
+
+.table .form-control,
+.table .form-select {
+    position: static;
+}
+
+/* Better spacing for table inputs */
+.table th,
+.table td {
+    padding: 12px 8px;
+    vertical-align: middle;
 }
 </style>
 
