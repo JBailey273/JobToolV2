@@ -19,7 +19,7 @@ from tracker.admin import ContractorAdmin
 class JobEntryCalculationTests(TestCase):
     def test_rates_and_material_cost_multiply_by_hours(self):
         contractor = Contractor.objects.create(
-            name="Test Contractor", email="contractor@example.com", material_markup=Decimal("25")
+            name="Test Contractor", email="contractor@example.com", material_margin=Decimal("25")
         )
         project = Project.objects.create(
             contractor=contractor, name="Test Project", start_date="2024-01-01"
@@ -47,7 +47,7 @@ class JobEntryCalculationTests(TestCase):
             description="Test entry",
         )
         self.assertEqual(entry.cost_amount, Decimal("400"))
-        self.assertEqual(entry.billable_amount, Decimal("537.50"))
+        self.assertEqual(entry.billable_amount, Decimal("558.33"))
 
 
 class ContractorAdminTests(TestCase):
@@ -57,7 +57,7 @@ class ContractorAdminTests(TestCase):
             "name": "Example Contractor",
             "email": "contractor@example.com",
             "phone": "",
-            "material_markup": "0",
+            "material_margin": "0",
             "password": "secret123",
         }
         form = ContractorForm(data)

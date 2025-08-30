@@ -11,7 +11,7 @@ class ContractorForm(forms.ModelForm):
 
     class Meta:
         model = Contractor
-        fields = ["name", "email", "phone", "logo", "material_markup"]
+        fields = ["name", "email", "phone", "logo", "material_margin"]
 
     def save(self, commit=True):
         contractor = super().save(commit)
