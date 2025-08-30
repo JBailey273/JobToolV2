@@ -212,11 +212,13 @@ class ReportButtonPlacementTests(TestCase):
         self.assertNotContains(response, "Contractor Summary Report")
         self.assertNotContains(response, "Customer Reports")
         self.assertNotContains(response, "Add Job Entry")
+        self.assertNotContains(response, "Add Payment")
 
-    def test_contractor_summary_shows_job_entry_button_with_project(self):
+    def test_contractor_summary_shows_job_and_payment_buttons_with_project(self):
         self.contractor.projects.create(name="Proj", start_date="2024-01-01")
         response = self.client.get(reverse("dashboard:contractor_summary"))
         self.assertContains(response, "Add Job Entry")
+        self.assertContains(response, "Add Payment")
 
     def test_project_list_shows_contractor_summary_report_button(self):
         self.contractor.projects.create(name="Proj", start_date="2024-01-01")
