@@ -147,3 +147,48 @@ class CustomerReportPaymentsTests(TestCase):
 
         self.assertContains(response, "$15")
         self.assertContains(response, "Outstanding Balance: $25")
+
+
+class ContractorSummaryReportTests(TestCase):
+    def test_contractor_summary_report_title(self):
+        contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=contractor
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+        response = self.client.get(reverse("dashboard:contractor_report"))
+        self.assertContains(response, "Contractor Summary Report")
+
+
+class ContractorJobReportTests(TestCase):
+    def test_contractor_job_report_shows_cost_profit_margin(self):
+        contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=contractor
+        )
+        project = contractor.projects.create(name="Proj", start_date="2024-01-01")
+        asset = contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        JobEntry.objects.create(
+            project=project,
+            date="2024-01-02",
+            hours=Decimal("2"),
+            asset=asset,
+            material_cost=Decimal("5"),
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+        url = reverse("dashboard:contractor_job_report", args=[project.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "$30")
+        self.assertContains(response, "$50")
+        self.assertContains(response, "$20")
+        self.assertContains(response, "40.00%")

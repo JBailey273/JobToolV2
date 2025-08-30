@@ -29,6 +29,7 @@
     </div>
 </div>
 <a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-secondary mb-3">Customer Report</a>
+<a href="{% url 'dashboard:contractor_job_report' project.pk %}" class="btn btn-secondary mb-3 ms-2">Contractor Job Report</a>
 <h2>Job Entries</h2>
 <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-primary mb-2">Add Job Entry</a>
 <div class="table-responsive mb-4">

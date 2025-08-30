@@ -11,6 +11,7 @@
                 <th>Total Payments</th>
                 <th>Outstanding</th>
                 <th>Customer Report</th>
+                <th>Contractor Job Report</th>
             </tr>
         </thead>
         <tbody>
@@ -21,9 +22,10 @@
                 <td>${{ project.total_payments|default:0 }}</td>
                 <td>${{ project.outstanding }}</td>
                 <td><a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-sm btn-secondary">View</a></td>
+                <td><a href="{% url 'dashboard:contractor_job_report' project.pk %}" class="btn btn-sm btn-secondary">View</a></td>
             </tr>
         {% empty %}
-            <tr><td colspan="5">No projects found.</td></tr>
+            <tr><td colspan="6">No projects found.</td></tr>
         {% endfor %}
         </tbody>
     </table>
