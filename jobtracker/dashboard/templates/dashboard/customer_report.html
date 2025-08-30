@@ -4,7 +4,7 @@
 {% block content %}
 <div class="text-center mb-3">
   {% if contractor_logo_url %}
-  <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid mb-2" style="max-height:100px;">
+  <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" class="img-fluid mb-2" style="max-height:100px;">
   {% endif %}
   <h2>{{ contractor.name|default:contractor.email }}</h2>
 </div>

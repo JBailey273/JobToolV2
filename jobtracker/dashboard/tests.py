@@ -111,6 +111,6 @@ class CustomerReportHeaderTests(TestCase):
         url = reverse("dashboard:customer_report", args=[project.pk])
         response = self.client.get(url)
 
-        self.assertContains(response, contractor.logo.url)
+        self.assertContains(response, contractor.logo_thumbnail.url)
         self.assertContains(response, contractor.name)
         self.assertContains(response, "Summary of Work")

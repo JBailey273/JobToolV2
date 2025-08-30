@@ -220,7 +220,11 @@ def contractor_report(request):
             (p.profit / total_billable) * Decimal("100") if total_billable else Decimal("0")
         )
         projects.append(p)
-    logo_url = contractor.logo.url if contractor and contractor.logo else None
+    logo_url = (
+        contractor.logo_thumbnail.url
+        if contractor and contractor.logo_thumbnail
+        else None
+    )
     export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
@@ -245,7 +249,11 @@ def customer_report(request, pk):
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
     entries = project.job_entries.select_related("asset", "employee", "material").iterator()
     total = project.job_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
-    logo_url = contractor.logo.url if contractor and contractor.logo else None
+    logo_url = (
+        contractor.logo_thumbnail.url
+        if contractor and contractor.logo_thumbnail
+        else None
+    )
     export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
