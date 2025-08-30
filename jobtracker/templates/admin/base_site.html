@@ -3,17 +3,449 @@
 
 {% block extrahead %}
     {{ block.super }}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'css/squire.css' %}">
+    
+    <style>
+        /* Enhanced Admin Styling */
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        
+        #header {
+            background: var(--card-background) !important;
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        #branding {
+            padding: 20px 30px;
+        }
+        
+        #branding h1 {
+            background: var(--primary-gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-weight: 800;
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        #user-tools {
+            background: var(--primary-gradient);
+            padding: 12px 20px;
+            border-radius: var(--radius-lg);
+            margin: 10px 20px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        #user-tools a {
+            color: white !important;
+            font-weight: 500;
+            text-decoration: none;
+            padding: 6px 12px;
+            border-radius: var(--radius-sm);
+            transition: all 0.3s ease;
+        }
+        
+        #user-tools a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        
+        /* Content Area */
+        #content {
+            padding: 30px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+        
+        .dashboard #content {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            align-items: start;
+        }
+        
+        /* Enhanced Module Styling */
+        .module {
+            background: var(--card-background);
+            border: none;
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+        
+        .module:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+        }
+        
+        .module h2 {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 20px 24px;
+            margin: 0;
+            font-size: 1.1rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .module h2::before {
+            content: '\f013';
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+            font-size: 1.2rem;
+        }
+        
+        .module table {
+            background: var(--card-background);
+            border: none;
+            width: 100%;
+        }
+        
+        .module table th {
+            background: #f8fafc;
+            color: var(--text-primary);
+            font-weight: 700;
+            padding: 16px 20px;
+            border: none;
+            border-bottom: 2px solid var(--border-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 11px;
+        }
+        
+        .module table td {
+            padding: 16px 20px;
+            border: none;
+            border-bottom: 1px solid var(--border-color);
+            vertical-align: middle;
+        }
+        
+        .module table tbody tr {
+            transition: all 0.2s ease;
+        }
+        
+        .module table tbody tr:hover {
+            background: #f7fafc;
+            transform: translateX(4px);
+        }
+        
+        .module table tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        /* Dashboard App Icons */
+        .module h2[data-app="tracker"]::before { content: '\f0ae'; }
+        .module h2[data-app="auth"]::before { content: '\f007'; }
+        .module h2[data-app="admin"]::before { content: '\f013'; }
+        
+        /* Action Links Styling */
+        .addlink, .changelink, .deletelink {
+            background: var(--primary-gradient);
+            color: white !important;
+            padding: 8px 16px;
+            border-radius: var(--radius-md);
+            text-decoration: none;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 11px;
+        }
+        
+        .addlink:hover, .changelink:hover, .deletelink:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            color: white !important;
+        }
+        
+        .addlink::before { content: '\f067'; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+        .changelink::before { content: '\f044'; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+        .deletelink::before { content: '\f2ed'; font-family: 'Font Awesome 6 Free'; font-weight: 900; }
+        
+        /* Form Styling */
+        .form-row {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .form-row:hover {
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* Fieldset Styling */
+        fieldset {
+            border: none;
+            background: var(--card-background);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow-md);
+        }
+        
+        fieldset h2 {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px 20px;
+            margin: -24px -24px 20px -24px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Button Styling */
+        .default, input[type="submit"], button[type="submit"] {
+            background: var(--primary-gradient) !important;
+            border: none !important;
+            color: white !important;
+            padding: 12px 24px;
+            border-radius: var(--radius-md);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow-md);
+        }
+        
+        .default:hover, input[type="submit"]:hover, button[type="submit"]:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+            opacity: 0.9;
+        }
+        
+        /* Breadcrumb Styling */
+        .breadcrumbs {
+            background: rgba(255, 255, 255, 0.9);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 12px 20px;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .breadcrumbs a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .breadcrumbs a:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        /* Messages Styling */
+        .messagelist {
+            margin: 0 0 24px 0;
+            padding: 0;
+        }
+        
+        .messagelist li {
+            list-style: none;
+            padding: 16px 20px;
+            border-radius: var(--radius-lg);
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-md);
+            font-weight: 500;
+        }
+        
+        .messagelist .success {
+            background: var(--success-gradient);
+            color: white;
+        }
+        
+        .messagelist .warning {
+            background: var(--warning-gradient);
+            color: white;
+        }
+        
+        .messagelist .error {
+            background: var(--secondary-gradient);
+            color: white;
+        }
+        
+        /* Inline Forms */
+        .inline-group {
+            background: var(--card-background);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: var(--shadow-sm);
+        }
+        
+        .inline-group h2 {
+            background: var(--primary-gradient);
+            color: white;
+            padding: 12px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+        
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            #content {
+                padding: 16px;
+            }
+            
+            .dashboard #content {
+                grid-template-columns: 1fr;
+                gap: 16px;
+            }
+            
+            .module h2 {
+                padding: 16px 20px;
+                font-size: 1rem;
+            }
+            
+            .module table th,
+            .module table td {
+                padding: 12px 16px;
+            }
+            
+            #branding {
+                padding: 16px 20px;
+            }
+            
+            #branding h1 {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
+        
+        /* Dark Mode Compatibility */
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: linear-gradient(135deg, #1a202c 0%, #2d3748 100%);
+            }
+            
+            .module table th {
+                background: #374151;
+                color: #f9fafb;
+            }
+            
+            .module table tbody tr:hover {
+                background: #374151;
+            }
+            
+            .form-row {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
+            
+            fieldset {
+                background: #2d3748;
+                border-color: #4a5568;
+            }
+            
+            .breadcrumbs {
+                background: rgba(45, 55, 72, 0.9);
+                border-color: #4a5568;
+            }
+        }
+        
+        /* Animation Classes */
+        .fade-in-up {
+            animation: fadeInUp 0.6s ease-out;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 {% endblock %}
 
-{% block bodyclass %}{{ block.super }} bg-light{% endblock %}
+{% block bodyclass %}{{ block.super }} fade-in-up{% endblock %}
 
 {% block branding %}
     <h1 id="site-name">
         {% if global_settings and global_settings.logo %}
-            <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
+            <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" style="max-height:45px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
         {% else %}
-            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:40px;">
+            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" style="max-height:45px; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));">
         {% endif %}
+        <span>Admin Portal</span>
     </h1>
+{% endblock %}
+
+{% block content %}
+    {{ block.super }}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Add icons to module headers based on app name
+            document.querySelectorAll('.module h2').forEach(header => {
+                const text = header.textContent.toLowerCase();
+                if (text.includes('contractor') || text.includes('project') || text.includes('job')) {
+                    header.setAttribute('data-app', 'tracker');
+                } else if (text.includes('user') || text.includes('auth')) {
+                    header.setAttribute('data-app', 'auth');
+                } else {
+                    header.setAttribute('data-app', 'admin');
+                }
+            });
+            
+            // Add hover effects to table rows
+            document.querySelectorAll('.module table tbody tr').forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateX(4px)';
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateX(0)';
+                });
+            });
+            
+            // Smooth scroll for anchor links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    document.querySelector(this.getAttribute('href')).scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                });
+            });
+        });
+    </script>
 {% endblock %}
