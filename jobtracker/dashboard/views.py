@@ -15,7 +15,7 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     pisa = None
 
-from tracker.models import Asset, Employee, JobEntry, Material, Payment, Project
+from tracker.models import Asset, Employee, JobEntry, Payment, Project
 
 
 def link_callback(uri, rel):
@@ -125,45 +125,34 @@ def add_job_entry(request, pk):
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
     assets = contractor.assets.all()
     employees = contractor.employees.all()
-    materials = contractor.materials.all()
 
     if request.method == "POST":
         date = request.POST.get("date")
-        hours = Decimal(request.POST.get("hours") or 0)
-        asset_id = request.POST.get("asset")
-        employee_id = request.POST.get("employee")
-        material_id = request.POST.get("material")
-        description = request.POST.get("description", "")
+        hours_list = request.POST.getlist("hours[]") or request.POST.getlist("hours")
+        asset_ids = request.POST.getlist("asset[]") or request.POST.getlist("asset")
+        employee_ids = request.POST.getlist("employee[]") or request.POST.getlist("employee")
+        mat_descs = request.POST.getlist("material_description[]") or request.POST.getlist("material_description")
+        mat_costs = request.POST.getlist("material_cost[]") or request.POST.getlist("material_cost")
+        descriptions = request.POST.getlist("description[]") or request.POST.getlist("description")
 
-        asset = assets.filter(pk=asset_id).first() if asset_id else None
-        employee = employees.filter(pk=employee_id).first() if employee_id else None
-        material = materials.filter(pk=material_id).first() if material_id else None
-
-        cost_amount = Decimal("0")
-        billable_amount = Decimal("0")
-        if asset:
-            cost_amount += asset.cost_rate
-            billable_amount += asset.billable_rate
-        if employee:
-            cost_amount += employee.cost_rate * hours
-            billable_amount += employee.billable_rate * hours
-        if material:
-            cost_amount += material.actual_cost
-            billable_amount += material.actual_cost * (
-                1 + contractor.material_markup / Decimal("100")
+        rows = zip(hours_list, asset_ids, employee_ids, mat_descs, mat_costs, descriptions)
+        for hours, asset_id, employee_id, mat_desc, mat_cost, desc in rows:
+            if not any([hours, asset_id, employee_id, mat_desc, mat_cost, desc]):
+                continue
+            asset = assets.filter(pk=asset_id).first() if asset_id else None
+            employee = employees.filter(pk=employee_id).first() if employee_id else None
+            hours_dec = Decimal(hours or 0)
+            mat_cost_dec = Decimal(mat_cost or 0) if mat_cost else None
+            JobEntry.objects.create(
+                project=project,
+                date=date,
+                hours=hours_dec,
+                asset=asset,
+                employee=employee,
+                material_description=mat_desc or "",
+                material_cost=mat_cost_dec,
+                description=desc or "",
             )
-
-        JobEntry.objects.create(
-            project=project,
-            date=date,
-            hours=hours,
-            asset=asset,
-            employee=employee,
-            material=material,
-            cost_amount=cost_amount,
-            billable_amount=billable_amount,
-            description=description,
-        )
         return redirect("dashboard:project_detail", pk=project.pk)
 
     return render(
@@ -173,7 +162,6 @@ def add_job_entry(request, pk):
             "project": project,
             "assets": assets,
             "employees": employees,
-            "materials": materials,
             "markup": contractor.material_markup,
         },
     )
@@ -247,9 +235,12 @@ def customer_report(request, pk):
     if contractor is None:
         return redirect("login")
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries_qs = project.job_entries.select_related("asset", "employee", "material")
+    entries_qs = project.job_entries.select_related("asset", "employee")
     entries = list(entries_qs)
     total = project.job_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
+    payments = list(project.payments.all())
+    total_payments = project.payments.aggregate(total=Sum("amount"))["total"] or 0
+    outstanding = total - (total_payments or 0)
     logo_url = (
         contractor.logo_thumbnail.url
         if contractor and contractor.logo_thumbnail
@@ -258,7 +249,7 @@ def customer_report(request, pk):
     show_description = any(e.description for e in entries)
     show_asset = any(e.asset for e in entries)
     show_employee = any(e.employee for e in entries)
-    show_material = any(e.material for e in entries)
+    show_material = any(e.material_description for e in entries)
     cols_before_billable = 2 + int(show_description) + int(show_asset) + int(show_employee) + int(show_material)
     total_columns = cols_before_billable + 1
     export_pdf = request.GET.get("export") == "pdf"
@@ -275,6 +266,9 @@ def customer_report(request, pk):
         "show_material": show_material,
         "colspan_before_total": cols_before_billable,
         "total_columns": total_columns,
+        "payments": payments,
+        "total_payments": total_payments or 0,
+        "outstanding": outstanding,
     }
     if export_pdf:
         pdf = _render_pdf(

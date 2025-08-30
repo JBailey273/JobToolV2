@@ -148,7 +148,8 @@ class JobEntry(models.Model):
     hours = models.DecimalField(max_digits=5, decimal_places=2)
     asset = models.ForeignKey(Asset, related_name='job_entries', on_delete=models.SET_NULL, blank=True, null=True)
     employee = models.ForeignKey(Employee, related_name='job_entries', on_delete=models.SET_NULL, blank=True, null=True)
-    material = models.ForeignKey(Material, related_name='job_entries', on_delete=models.SET_NULL, blank=True, null=True)
+    material_description = models.CharField(max_length=255, blank=True)
+    material_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     cost_amount = models.DecimalField(max_digits=10, decimal_places=2)
     billable_amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
@@ -166,9 +167,9 @@ class JobEntry(models.Model):
         if self.employee:
             self.cost_amount += self.employee.cost_rate * self.hours
             self.billable_amount += self.employee.billable_rate * self.hours
-        if self.material:
-            self.cost_amount += self.material.actual_cost
-            self.billable_amount += self.material.actual_cost * (
+        if self.material_cost:
+            self.cost_amount += self.material_cost
+            self.billable_amount += self.material_cost * (
                 1 + contractor.material_markup / Decimal("100")
             )
         super().save(*args, **kwargs)

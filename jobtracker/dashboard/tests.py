@@ -1,9 +1,11 @@
+from decimal import Decimal
+
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.templatetags.static import static
 
-from tracker.models import Contractor, ContractorUser
+from tracker.models import Contractor, ContractorUser, Asset, JobEntry, Payment
 
 
 class DashboardLogoTests(TestCase):
@@ -114,3 +116,34 @@ class CustomerReportHeaderTests(TestCase):
         self.assertContains(response, contractor.logo_thumbnail.url)
         self.assertContains(response, contractor.name)
         self.assertContains(response, "Summary of Work")
+
+
+class CustomerReportPaymentsTests(TestCase):
+    def test_customer_report_shows_payments_and_outstanding(self):
+        contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=contractor
+        )
+        project = contractor.projects.create(name="Proj", start_date="2024-01-01")
+        asset = contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        JobEntry.objects.create(
+            project=project,
+            date="2024-01-02",
+            hours=Decimal("2"),
+            asset=asset,
+        )
+        Payment.objects.create(project=project, amount=Decimal("15"), date="2024-01-03")
+
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+        url = reverse("dashboard:customer_report", args=[project.pk])
+        response = self.client.get(url)
+
+        self.assertContains(response, "$15")
+        self.assertContains(response, "Outstanding Balance: $25")

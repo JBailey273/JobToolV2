@@ -32,7 +32,7 @@
                 {% if show_description %}<td style="text-align:left;">{{ e.description }}</td>{% endif %}
                 {% if show_asset %}<td style="text-align:left;">{% if e.asset %}{{ e.asset.name }}{% endif %}</td>{% endif %}
                 {% if show_employee %}<td style="text-align:left;">{% if e.employee %}{{ e.employee.name }}{% endif %}</td>{% endif %}
-                {% if show_material %}<td style="text-align:left;">{% if e.material %}{{ e.material.description }}{% endif %}</td>{% endif %}
+                {% if show_material %}<td style="text-align:left;">{{ e.material_description }}</td>{% endif %}
                 <td style="text-align:right;">{{ e.hours }}</td>
                 <td style="text-align:right;">${{ e.billable_amount }}</td>
             </tr>
@@ -46,5 +46,35 @@
         </tbody>
     </table>
 </div>
+
+{% if payments %}
+<h2>Payments</h2>
+<div class="table-responsive">
+    <table class="table table-bordered">
+        <thead class="table-light">
+            <tr>
+                <th style="text-align:left;">Date</th>
+                <th style="text-align:right;">Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in payments %}
+            <tr>
+                <td style="text-align:left;">{{ p.date }}</td>
+                <td style="text-align:right;">${{ p.amount }}</td>
+            </tr>
+        {% endfor %}
+        <tr>
+            <td style="text-align:right; font-weight:bold;">Total Payments</td>
+            <td style="text-align:right; font-weight:bold;">${{ total_payments }}</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p>No payments have been recorded.</p>
+{% endif %}
+
+<p><strong>Outstanding Balance: ${{ outstanding }}</strong></p>
 {% endblock %}
 
