@@ -127,6 +127,9 @@ a:hover {
         padding-left: 50%;
         position: relative;
     }
+    .table-responsive td:empty {
+        display: none;
+    }
     .table-responsive td::before {
         content: attr(data-label);
         position: absolute;
