@@ -247,13 +247,20 @@ def customer_report(request, pk):
     if contractor is None:
         return redirect("login")
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries = project.job_entries.select_related("asset", "employee", "material").iterator()
+    entries_qs = project.job_entries.select_related("asset", "employee", "material")
+    entries = list(entries_qs)
     total = project.job_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
     logo_url = (
         contractor.logo_thumbnail.url
         if contractor and contractor.logo_thumbnail
         else None
     )
+    show_description = any(e.description for e in entries)
+    show_asset = any(e.asset for e in entries)
+    show_employee = any(e.employee for e in entries)
+    show_material = any(e.material for e in entries)
+    cols_before_billable = 2 + int(show_description) + int(show_asset) + int(show_employee) + int(show_material)
+    total_columns = cols_before_billable + 1
     export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
@@ -262,6 +269,12 @@ def customer_report(request, pk):
         "total": total,
         "contractor_logo_url": logo_url,
         "report": export_pdf,
+        "show_description": show_description,
+        "show_asset": show_asset,
+        "show_employee": show_employee,
+        "show_material": show_material,
+        "colspan_before_total": cols_before_billable,
+        "total_columns": total_columns,
     }
     if export_pdf:
         pdf = _render_pdf(
