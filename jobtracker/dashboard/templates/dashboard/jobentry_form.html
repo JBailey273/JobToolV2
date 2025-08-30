@@ -32,8 +32,7 @@
                             <label for="date" class="form-label">
                                 <i class="fas fa-calendar me-2"></i>Date
                             </label>
-                            <input type="date" class="form-control" id="date" name="date" required 
-                                   value="{{ today|date:'Y-m-d' }}">
+                            <input type="date" class="form-control" id="date" name="date" required>
                             <div class="form-text">All entries will be recorded for this date</div>
                         </div>
                         <div class="col-md-8 d-flex align-items-end">
@@ -94,6 +93,16 @@
                                                     {% for asset in assets %}
                                                     <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
                                                         {{ asset.name }} (${{ asset.billable_rate }}/hr)
+                                                    </option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <select class="form-select form-select-sm" name="employee[]">
+                                                    <option value="">Select Employee...</option>
+                                                    {% for emp in employees %}
+                                                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                                                        {{ emp.name }} (${{ emp.billable_rate }}/hr)
                                                     </option>
                                                     {% endfor %}
                                                 </select>
@@ -401,6 +410,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .form-control-sm, .form-select-sm {
     font-size: 0.875rem;
+    background-color: #ffffff !important;
+    color: #212529 !important;
 }
 
 .alert {
