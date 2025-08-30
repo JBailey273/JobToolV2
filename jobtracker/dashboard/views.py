@@ -1,14 +1,14 @@
 from decimal import Decimal
-from io import BytesIO
 import os
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db.models import Sum
-from django.http import HttpResponse
+from django.http import FileResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
+from tempfile import NamedTemporaryFile
 
 try:
     from xhtml2pdf import pisa
@@ -32,18 +32,18 @@ def link_callback(uri, rel):
     return path
 
 
-def _render_pdf(template_src, context):
+def _render_pdf(template_src, context, filename):
     if pisa is None:
         return None
     template = get_template(template_src)
     html = template.render(context)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(
-        BytesIO(html.encode("UTF-8")), result, link_callback=link_callback
-    )
+    tmp = NamedTemporaryFile()
+    pdf = pisa.CreatePDF(html, dest=tmp, link_callback=link_callback)
+    tmp.seek(0)
     if pdf.err:
+        tmp.close()
         return None
-    return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return FileResponse(tmp, as_attachment=True, filename=filename)
 
 
 @login_required
@@ -207,17 +207,19 @@ def contractor_report(request):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
-    projects = contractor.projects.all().annotate(
+    projects_qs = contractor.projects.all().annotate(
         total_cost=Sum("job_entries__cost_amount"),
         total_billable=Sum("job_entries__billable_amount"),
     )
-    for p in projects:
+    projects = []
+    for p in projects_qs.iterator():
         total_billable = p.total_billable or Decimal("0")
         total_cost = p.total_cost or Decimal("0")
         p.profit = total_billable - total_cost
         p.margin = (
             (p.profit / total_billable) * Decimal("100") if total_billable else Decimal("0")
         )
+        projects.append(p)
     logo_url = contractor.logo.url if contractor and contractor.logo else None
     export_pdf = request.GET.get("export") == "pdf"
     context = {
@@ -227,9 +229,10 @@ def contractor_report(request):
         "report": export_pdf,
     }
     if export_pdf:
-        pdf = _render_pdf("dashboard/contractor_report.html", context)
+        pdf = _render_pdf(
+            "dashboard/contractor_report.html", context, "contractor_report.pdf"
+        )
         if pdf:
-            pdf["Content-Disposition"] = "attachment; filename=contractor_report.pdf"
             return pdf
     return render(request, "dashboard/contractor_report.html", context)
 
@@ -240,8 +243,8 @@ def customer_report(request, pk):
     if contractor is None:
         return redirect("login")
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries = project.job_entries.select_related("asset", "employee", "material").all()
-    total = entries.aggregate(total=Sum("billable_amount"))["total"] or 0
+    entries = project.job_entries.select_related("asset", "employee", "material").iterator()
+    total = project.job_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
     logo_url = contractor.logo.url if contractor and contractor.logo else None
     export_pdf = request.GET.get("export") == "pdf"
     context = {
@@ -253,8 +256,9 @@ def customer_report(request, pk):
         "report": export_pdf,
     }
     if export_pdf:
-        pdf = _render_pdf("dashboard/customer_report.html", context)
+        pdf = _render_pdf(
+            "dashboard/customer_report.html", context, "customer_report.pdf"
+        )
         if pdf:
-            pdf["Content-Disposition"] = "attachment; filename=customer_report.pdf"
             return pdf
     return render(request, "dashboard/customer_report.html", context)
