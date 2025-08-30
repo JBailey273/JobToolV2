@@ -99,7 +99,11 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_DIRS = [BASE_DIR / 'static']
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
+# Allow MEDIA_ROOT to be overridden via environment variable so that
+# user-uploaded files (such as contractor logos) can be stored on a
+# persistent disk when deployed to Render. Falling back to the project
+# directory keeps local development behaviour unchanged.
+MEDIA_ROOT = Path(os.environ.get('MEDIA_ROOT', BASE_DIR / 'media'))
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 LOGIN_REDIRECT_URL = '/'
