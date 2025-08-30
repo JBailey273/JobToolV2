@@ -2,40 +2,331 @@
 {% load static %}
 {% block title %}Contractor Summary Report{% endblock %}
 {% block content %}
-{% if contractor_logo_url %}
-<div class="text-center mb-3">
-  <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" class="img-fluid" style="max-height:100px;">
+
+<!-- Report Header -->
+<div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
+    {% if contractor_logo_url %}
+    <img src="{{ contractor_logo_url }}" alt="Contractor logo" />
+    {% endif %}
+    <h1>Contractor Summary Report</h1>
+    {% if not report %}
+    <p class="text-muted">Complete portfolio overview and profitability analysis</p>
+    {% endif %}
+</div>
+
+<!-- Export Button -->
+{% if not report %}
+<div class="d-print-none mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <a href="?export=pdf" class="btn btn-secondary">
+                <i class="fas fa-file-pdf me-2"></i>Download PDF
+            </a>
+        </div>
+        <div class="text-muted">
+            <small><i class="fas fa-info-circle me-1"></i>Report generated on {{ "now"|date:"F d, Y" }}</small>
+        </div>
+    </div>
 </div>
 {% endif %}
-<h1 class="text-center">Contractor Summary Report</h1>
+
+<!-- Summary Cards (Screen Only) -->
 {% if not report %}
-<a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="summary-card">
+            <i class="fas fa-project-diagram fa-2x mb-3"></i>
+            <h5 class="card-title">Total Projects</h5>
+            <p class="card-text">{{ projects|length }}</p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card" style="background: var(--success-gradient);">
+            <i class="fas fa-dollar-sign fa-2x mb-3"></i>
+            <h5 class="card-title">Total Revenue</h5>
+            <p class="card-text">
+                {% with total_billable=0 %}
+                {% for p in projects %}
+                    {% with total_billable=total_billable|add:p.total_billable|default:0 %}
+                    {% if forloop.last %}
+                        ${{ total_billable|floatformat:2 }}
+                    {% endif %}
+                    {% endwith %}
+                {% empty %}
+                    $0.00
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card" style="background: var(--warning-gradient);">
+            <i class="fas fa-coins fa-2x mb-3"></i>
+            <h5 class="card-title">Total Cost</h5>
+            <p class="card-text">
+                {% with total_cost=0 %}
+                {% for p in projects %}
+                    {% with total_cost=total_cost|add:p.total_cost|default:0 %}
+                    {% if forloop.last %}
+                        ${{ total_cost|floatformat:2 }}
+                    {% endif %}
+                    {% endwith %}
+                {% empty %}
+                    $0.00
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="summary-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+            <i class="fas fa-chart-line fa-2x mb-3"></i>
+            <h5 class="card-title">Total Profit</h5>
+            <p class="card-text">
+                {% with total_profit=0 %}
+                {% for p in projects %}
+                    {% with total_profit=total_profit|add:p.profit|default:0 %}
+                    {% if forloop.last %}
+                        ${{ total_profit|floatformat:2 }}
+                    {% endif %}
+                    {% endwith %}
+                {% empty %}
+                    $0.00
+                {% endfor %}
+            </p>
+        </div>
+    </div>
+</div>
 {% endif %}
-<div {% if not report %}class="table-responsive"{% endif %}>
-    <table class="table table-bordered" style="width:100%;">
-        <thead class="table-light">
+
+<!-- Main Report Table -->
+<div class="{% if not report %}table-responsive card{% endif %}" style="{% if not report %}box-shadow: var(--shadow-lg);{% endif %}">
+    <table class="{% if report %}pdf-table{% else %}table mb-0{% endif %}">
+        <thead>
             <tr>
-                <th style="text-align:left; width:40%;">Project</th>
-                <th style="text-align:right; width:15%;">Actual Cost</th>
-                <th style="text-align:right; width:15%;">Billable Total</th>
-                <th style="text-align:right; width:15%;">Profit</th>
-                <th style="text-align:right; width:15%;">Margin</th>
+                <th class="text-left" style="{% if report %}width: 35%;{% endif %}">
+                    <i class="fas fa-project-diagram me-2"></i>Project
+                </th>
+                <th class="text-right" style="{% if report %}width: 16%;{% endif %}">
+                    <i class="fas fa-dollar-sign me-2"></i>Actual Cost
+                </th>
+                <th class="text-right" style="{% if report %}width: 16%;{% endif %}">
+                    <i class="fas fa-receipt me-2"></i>Billable Total
+                </th>
+                <th class="text-right" style="{% if report %}width: 16%;{% endif %}">
+                    <i class="fas fa-chart-line me-2"></i>Profit
+                </th>
+                <th class="text-right" style="{% if report %}width: 17%;{% endif %}">
+                    <i class="fas fa-percentage me-2"></i>Margin
+                </th>
             </tr>
         </thead>
         <tbody>
         {% for p in projects %}
             <tr>
-                <td style="text-align:left; width:40%; word-wrap:break-word;">{{ p.name }}</td>
-                <td style="text-align:right; width:15%;">${{ p.total_cost|default:0 }}</td>
-                <td style="text-align:right; width:15%;">${{ p.total_billable|default:0 }}</td>
-                <td style="text-align:right; width:15%;">${{ p.profit|default:0 }}</td>
-                <td style="text-align:right; width:15%;">{{ p.margin|floatformat:2 }}%</td>
+                <td class="text-left" data-label="Project">
+                    <div class="d-flex align-items-center">
+                        {% if not report %}
+                        <div class="me-3">
+                            <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                 style="width: 40px; height: 40px; font-weight: bold;">
+                                {{ p.name|first|upper }}
+                            </div>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <div class="fw-bold">{{ p.name }}</div>
+                            {% if not report %}
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>Project Overview
+                            </small>
+                            {% endif %}
+                        </div>
+                    </div>
+                </td>
+                <td class="text-right" data-label="Actual Cost">
+                    <span class="{% if not report %}text-danger fw-semibold{% endif %}">
+                        ${{ p.total_cost|default:0|floatformat:2 }}
+                    </span>
+                </td>
+                <td class="text-right" data-label="Billable Total">
+                    <span class="{% if not report %}text-primary fw-semibold{% endif %}">
+                        ${{ p.total_billable|default:0|floatformat:2 }}
+                    </span>
+                </td>
+                <td class="text-right" data-label="Profit">
+                    <span class="{% if not report %}{% if p.profit >= 0 %}text-success{% else %}text-danger{% endif %} fw-semibold{% endif %}">
+                        {% if p.profit >= 0 %}+{% endif %}${{ p.profit|default:0|floatformat:2 }}
+                    </span>
+                </td>
+                <td class="text-right" data-label="Margin">
+                    {% if not report %}
+                    <div class="d-flex align-items-center justify-content-end">
+                        <span class="{% if p.margin >= 20 %}text-success{% elif p.margin >= 10 %}text-warning{% else %}text-danger{% endif %} fw-bold me-2">
+                            {{ p.margin|floatformat:1 }}%
+                        </span>
+                        <div class="progress" style="width: 50px; height: 6px;">
+                            <div class="progress-bar {% if p.margin >= 20 %}bg-success{% elif p.margin >= 10 %}bg-warning{% else %}bg-danger{% endif %}" 
+                                 role="progressbar" style="width: {% if p.margin > 50 %}100{% else %}{{ p.margin|floatformat:0 }}{% endif %}%"></div>
+                        </div>
+                    </div>
+                    {% else %}
+                    {{ p.margin|floatformat:1 }}%
+                    {% endif %}
+                </td>
             </tr>
         {% empty %}
-            <tr><td colspan="5">No projects.</td></tr>
+            <tr>
+                <td colspan="5" class="text-center py-5">
+                    {% if not report %}
+                    <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Projects Found</h5>
+                    <p class="text-muted">No projects have been created yet.</p>
+                    {% else %}
+                    No projects found.
+                    {% endif %}
+                </td>
+            </tr>
         {% endfor %}
         </tbody>
     </table>
 </div>
-{% endblock %}
 
+<!-- Portfolio Analysis (Screen Only) -->
+{% if not report and projects %}
+<div class="row mt-4">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-chart-bar me-2"></i>Portfolio Performance Analysis
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Profitability Distribution</h6>
+                        {% with profitable=0 breakeven=0 unprofitable=0 %}
+                        {% for p in projects %}
+                            {% if p.profit > 100 %}
+                                {% with profitable=profitable|add:1 %}
+                            {% elif p.profit >= 0 %}
+                                {% with breakeven=breakeven|add:1 %}
+                            {% else %}
+                                {% with unprofitable=unprofitable|add:1 %}
+                            {% endif %}
+                            {% if forloop.last %}
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-success">Highly Profitable</span>
+                                        <span>{{ profitable }} project{{ profitable|pluralize }}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-warning">Break-even</span>
+                                        <span>{{ breakeven }} project{{ breakeven|pluralize }}</span>
+                                    </div>
+                                </div>
+                                <div class="mb-2">
+                                    <div class="d-flex justify-content-between">
+                                        <span class="text-danger">Loss-making</span>
+                                        <span>{{ unprofitable }} project{{ unprofitable|pluralize }}</span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="text-muted mb-3">Key Metrics</h6>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Average Margin:</span>
+                                <span class="fw-bold">
+                                    {% with total_margin=0 count=0 %}
+                                    {% for p in projects %}
+                                        {% with total_margin=total_margin|add:p.margin count=count|add:1 %}
+                                        {% if forloop.last %}
+                                            {% widthratio total_margin count 1 as avg_margin %}
+                                            <span class="{% if avg_margin >= 20 %}text-success{% elif avg_margin >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                                                {{ avg_margin|floatformat:1 }}%
+                                            </span>
+                                        {% endif %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Active Projects:</span>
+                                <span class="fw-bold">{{ projects|length }}</span>
+                            </div>
+                        </div>
+                        <div class="mb-2">
+                            <div class="d-flex justify-content-between">
+                                <span>Overall ROI:</span>
+                                <span class="fw-bold">
+                                    {% with total_cost=0 total_profit=0 %}
+                                    {% for p in projects %}
+                                        {% with total_cost=total_cost|add:p.total_cost|default:0 total_profit=total_profit|add:p.profit|default:0 %}
+                                        {% if forloop.last %}
+                                            {% if total_cost > 0 %}
+                                                {% widthratio total_profit total_cost 100 as roi %}
+                                                <span class="{% if roi >= 25 %}text-success{% elif roi >= 15 %}text-warning{% else %}text-danger{% endif %}">
+                                                    {{ roi|floatformat:1 }}%
+                                                </span>
+                                            {% else %}
+                                                <span class="text-muted">N/A</span>
+                                            {% endif %}
+                                        {% endif %}
+                                        {% endwith %}
+                                    {% endfor %}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-lightbulb me-2"></i>Recommendations
+                </h5>
+            </div>
+            <div class="card-body">
+                {% with total_margin=0 count=0 %}
+                {% for p in projects %}
+                    {% with total_margin=total_margin|add:p.margin count=count|add:1 %}
+                    {% if forloop.last %}
+                        {% widthratio total_margin count 1 as avg_margin %}
+                        {% if avg_margin < 15 %}
+                        <div class="alert alert-warning p-2 mb-2">
+                            <small><i class="fas fa-exclamation-triangle me-1"></i>
+                            <strong>Low Margins:</strong> Consider reviewing pricing strategy.</small>
+                        </div>
+                        {% endif %}
+                    {% endif %}
+                    {% endwith %}
+                {% endfor %}
+                
+                {% if projects|length < 3 %}
+                <div class="alert alert-info p-2 mb-2">
+                    <small><i class="fas fa-info-circle me-1"></i>
+                    <strong>Portfolio Growth:</strong> Consider diversifying with more projects.</small>
+                </div>
+                {% endif %}
+                
+                <div class="alert alert-success p-2 mb-0">
+                    <small><i class="fas fa-check-circle me-1"></i>
+                    <strong>Tip:</strong> Track material costs closely for better margin control.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% endblock %}
