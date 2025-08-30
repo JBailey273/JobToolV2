@@ -34,9 +34,11 @@
     </div>
 
  </div>
-<a href="{% url 'dashboard:project_list' %}" class="btn btn-primary">View Projects</a>
-{% if first_project %}
-<a href="{% url 'dashboard:add_job_entry' first_project.pk %}" class="btn btn-secondary ms-2">Add Job Entry</a>
-<a href="{% url 'dashboard:add_payment' first_project.pk %}" class="btn btn-secondary ms-2">Add Payment</a>
-{% endif %}
+<div class="d-flex flex-wrap gap-2">
+    <a href="{% url 'dashboard:project_list' %}" class="btn btn-primary">View Projects</a>
+    {% if first_project %}
+    <a href="{% url 'dashboard:add_job_entry' first_project.pk %}" class="btn btn-secondary">Add Job Entry</a>
+    <a href="{% url 'dashboard:add_payment' first_project.pk %}" class="btn btn-secondary">Add Payment</a>
+    {% endif %}
+</div>
 {% endblock %}
