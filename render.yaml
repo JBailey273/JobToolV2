@@ -10,6 +10,10 @@ services:
     # change into that folder before loading the WSGI module so Django can find
     # its settings.
     startCommand: "gunicorn --chdir jobtracker jobtracker.wsgi:application"
+    disk:
+      name: media
+      mountPath: /var/media
+      sizeGB: 1
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -23,6 +27,8 @@ services:
         value: ".onrender.com,localhost"
       - key: CSRF_TRUSTED_ORIGINS
         value: "https://*.onrender.com"
+      - key: MEDIA_ROOT
+        value: /var/media
 databases:
   - name: jobtracker-db
     plan: free
