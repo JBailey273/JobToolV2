@@ -1,35 +1,236 @@
 {% extends 'dashboard/base.html' %}
 {% block title %}Projects{% endblock %}
 {% block content %}
-<h1>Projects</h1>
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Name</th>
-                <th>Total Billable</th>
-                <th>Total Payments</th>
-                <th>Outstanding</th>
-                <th>Customer Report</th>
-                <th>Contractor Job Report</th>
-                <th>Contractor Summary Report</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for project in projects %}
-            <tr>
-                <td><a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-link p-0">{{ project.name }}</a></td>
-                <td>${{ project.total_billable|default:0 }}</td>
-                <td>${{ project.total_payments|default:0 }}</td>
-                <td>${{ project.outstanding }}</td>
-                <td><a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-sm btn-secondary">View</a></td>
-                <td><a href="{% url 'dashboard:contractor_job_report' project.pk %}" class="btn btn-sm btn-secondary">View</a></td>
-                <td><a href="{% url 'dashboard:contractor_report' %}" class="btn btn-sm btn-secondary">View</a></td>
-            </tr>
-        {% empty %}
-            <tr><td colspan="7">No projects found.</td></tr>
-        {% endfor %}
-        </tbody>
-    </table>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-project-diagram me-3"></i>Projects
+        </h1>
+        <p class="text-muted mb-0">Manage and track all your active projects</p>
+    </div>
+    <div>
+        <a href="{% url 'dashboard:contractor_report' %}" class="btn btn-primary">
+            <i class="fas fa-chart-bar me-2"></i>Summary Report
+        </a>
+    </div>
 </div>
+
+{% if projects %}
+<div class="row">
+    {% for project in projects %}
+    <div class="col-lg-4 col-md-6 mb-4">
+        <div class="card h-100 project-card">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                    <h5 class="card-title mb-0">
+                        <a href="{% url 'dashboard:project_detail' project.pk %}" class="text-decoration-none">
+                            {{ project.name }}
+                        </a>
+                    </h5>
+                    <span class="badge bg-success">
+                        <i class="fas fa-play me-1"></i>Active
+                    </span>
+                </div>
+                
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <div class="border-end">
+                            <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0 }}</div>
+                            <small class="text-muted">Billable</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border-end">
+                            <div class="text-success fw-bold">${{ project.total_payments|floatformat:0 }}</div>
+                            <small class="text-muted">Paid</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="{% if project.outstanding > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">
+                            ${{ project.outstanding|floatformat:0 }}
+                        </div>
+                        <small class="text-muted">Outstanding</small>
+                    </div>
+                </div>
+                
+                <div class="progress mb-3" style="height: 6px;">
+                    {% widthratio project.total_payments project.total_billable 100 as percentage %}
+                    <div class="progress-bar bg-success" role="progressbar" 
+                         style="width: {{ percentage|default:0 }}%"
+                         aria-valuenow="{{ percentage|default:0 }}" 
+                         aria-valuemin="0" 
+                         aria-valuemax="100">
+                    </div>
+                </div>
+                
+                <div class="row g-2">
+                    <div class="col-6">
+                        <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-eye me-1"></i>Details
+                        </a>
+                    </div>
+                    <div class="col-6">
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                                <i class="fas fa-file-alt me-1"></i>Reports
+                            </button>
+                            <ul class="dropdown-menu">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'dashboard:customer_report' project.pk %}">
+                                        <i class="fas fa-user me-2"></i>Customer Report
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'dashboard:contractor_job_report' project.pk %}">
+                                        <i class="fas fa-hard-hat me-2"></i>Job Report
+                                    </a>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-calendar me-1"></i>Started {{ project.start_date|date:"M d, Y" }}
+                    </small>
+                    <div class="btn-group btn-group-sm">
+                        <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-outline-success btn-sm" title="Add Job Entry">
+                            <i class="fas fa-plus"></i>
+                        </a>
+                        <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-outline-info btn-sm" title="Add Payment">
+                            <i class="fas fa-money-bill-wave"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Projects Summary Card -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h5 class="card-title">
+            <i class="fas fa-chart-pie me-2"></i>Portfolio Summary
+        </h5>
+        <div class="row text-center">
+            <div class="col-md-3">
+                <div class="border-end">
+                    <h4 class="text-primary">{{ projects.count }}</h4>
+                    <small class="text-muted">Active Projects</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border-end">
+                    {% with total_billable=projects|length %}
+                    {% for project in projects %}
+                        {% if forloop.first %}
+                            {% with total_billable=0 %}
+                        {% endif %}
+                        {% with total_billable=total_billable|add:project.total_billable %}
+                        {% if forloop.last %}
+                            <h4 class="text-success">${{ total_billable|floatformat:0 }}</h4>
+                        {% endif %}
+                    {% endfor %}
+                    {% empty %}
+                        <h4 class="text-success">$0</h4>
+                    {% endwith %}
+                    <small class="text-muted">Total Billable</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="border-end">
+                    {% with total_payments=0 %}
+                    {% for project in projects %}
+                        {% with total_payments=total_payments|add:project.total_payments %}
+                        {% if forloop.last %}
+                            <h4 class="text-info">${{ total_payments|floatformat:0 }}</h4>
+                        {% endif %}
+                    {% endfor %}
+                    {% empty %}
+                        <h4 class="text-info">$0</h4>
+                    {% endwith %}
+                    <small class="text-muted">Total Payments</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                {% with total_outstanding=0 %}
+                {% for project in projects %}
+                    {% with total_outstanding=total_outstanding|add:project.outstanding %}
+                    {% if forloop.last %}
+                        <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %}">
+                            ${{ total_outstanding|floatformat:0 }}
+                        </h4>
+                    {% endif %}
+                {% endfor %}
+                {% empty %}
+                    <h4 class="text-success">$0</h4>
+                {% endwith %}
+                <small class="text-muted">Outstanding</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <div class="card">
+        <div class="card-body py-5">
+            <i class="fas fa-folder-open fa-4x text-muted mb-4"></i>
+            <h3 class="text-muted mb-3">No Projects Found</h3>
+            <p class="text-muted mb-4">
+                You don't have any active projects yet. Get started by creating your first project.
+            </p>
+            {% if user.is_staff %}
+            <a href="{% url 'admin:tracker_project_add' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Create Your First Project
+            </a>
+            {% else %}
+            <p class="text-muted">
+                Contact your administrator to create projects.
+            </p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.project-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+.project-card:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+}
+
+.progress-bar {
+    transition: width 1s ease-in-out;
+}
+
+@media (max-width: 768px) {
+    .border-end {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 1rem;
+        margin-bottom: 1rem;
+    }
+    
+    .border-end:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+}
+</style>
+
 {% endblock %}
