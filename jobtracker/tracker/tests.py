@@ -9,7 +9,6 @@ from tracker.models import (
     Project,
     Asset,
     Employee,
-    Material,
     JobEntry,
     ContractorUser,
 )
@@ -37,16 +36,14 @@ class JobEntryCalculationTests(TestCase):
             cost_rate=Decimal("20"),
             billable_rate=Decimal("30"),
         )
-        material = Material.objects.create(
-            contractor=contractor, description="Concrete", actual_cost=Decimal("50")
-        )
         entry = JobEntry.objects.create(
             project=project,
             date="2024-01-02",
             hours=Decimal("5"),
             asset=asset,
             employee=employee,
-            material=material,
+            material_description="Concrete",
+            material_cost=Decimal("50"),
             description="Test entry",
         )
         self.assertEqual(entry.cost_amount, Decimal("200"))
