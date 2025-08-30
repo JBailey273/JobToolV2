@@ -2,92 +2,201 @@
 {% load static %}
 {% block title %}Contractor Job Report{% endblock %}
 {% block content %}
-{% if report %}
-<style>
-@page { size: landscape; }
-</style>
-{% endif %}
-<div class="text-center mb-3">
-  {% if contractor_logo_url %}
-  <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" style="height:60px;" />
-  {% endif %}
-  <h2>{{ contractor.name|default:contractor.email }}</h2>
+
+<!-- Report Header -->
+<div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
+    {% if contractor_logo_url %}
+    <img src="{{ contractor_logo_url }}" alt="Contractor logo" />
+    {% endif %}
+    <h2>{{ contractor.name|default:contractor.email }}</h2>
+    <h1>Contractor Job Report - {{ project.name }}</h1>
 </div>
-<h1 class="text-center">Contractor Job Report - {{ project.name }}</h1>
+
+<!-- Export Button -->
 {% if not report %}
-<a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
+<div class="d-print-none mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+        <div>
+            <a href="?export=pdf" class="btn btn-secondary">
+                <i class="fas fa-file-pdf me-2"></i>Download PDF
+            </a>
+        </div>
+        <div class="text-muted">
+            <small><i class="fas fa-info-circle me-1"></i>Report generated on {{ "now"|date:"F d, Y" }}</small>
+        </div>
+    </div>
+</div>
 {% endif %}
-<div {% if not report %}class="table-responsive"{% endif %}>
-    <table class="table table-bordered" style="width:100%;">
-        <thead class="table-light">
+
+<!-- Main Report Table -->
+<div class="{% if not report %}table-responsive card{% endif %}" style="{% if not report %}box-shadow: var(--shadow-lg);{% endif %}">
+    <table class="{% if report %}pdf-table contractor-report-table{% else %}table mb-0{% endif %}">
+        <thead>
             <tr>
-                <th style="text-align:left; width:10%;">Date</th>
-                <th style="text-align:left; width:25%;">Description</th>
-                <th style="text-align:left; width:10%;">Asset</th>
-                <th style="text-align:left; width:10%;">Employee</th>
-                <th style="text-align:left; width:15%;">Material</th>
-                <th style="text-align:right; width:7%;">Hours / Qty</th>
-                <th style="text-align:right; width:7%;">Actual Cost</th>
-                <th style="text-align:right; width:7%;">Billable Amount</th>
-                <th style="text-align:right; width:5%;">Profit</th>
-                <th style="text-align:right; width:4%;">Margin</th>
+                <th class="{% if report %}col-date{% endif %} text-left">Date</th>
+                <th class="{% if report %}col-description{% endif %} text-left">Description</th>
+                <th class="{% if report %}col-asset{% endif %} text-left">Asset</th>
+                <th class="{% if report %}col-employee{% endif %} text-left">Employee</th>
+                <th class="{% if report %}col-material{% endif %} text-left">Material</th>
+                <th class="{% if report %}col-hours{% endif %} text-right">Hrs/Qty</th>
+                <th class="{% if report %}col-cost{% endif %} text-right">Actual Cost</th>
+                <th class="{% if report %}col-billable{% endif %} text-right">Billable Amount</th>
+                <th class="{% if report %}col-profit{% endif %} text-right">Profit</th>
+                <th class="{% if report %}col-margin{% endif %} text-right">Margin</th>
             </tr>
         </thead>
         <tbody>
         {% for e in entries %}
             <tr>
-                <td style="text-align:left;">{{ e.date }}</td>
-                <td style="text-align:left; word-wrap:break-word;">{{ e.description }}</td>
-                <td style="text-align:left; word-wrap:break-word;">{% if e.asset %}{{ e.asset.name }}{% endif %}</td>
-                <td style="text-align:left; word-wrap:break-word;">{% if e.employee %}{{ e.employee.name }}{% endif %}</td>
-                <td style="text-align:left; word-wrap:break-word;">{{ e.material_description }}</td>
-                <td style="text-align:right;">{{ e.hours }}</td>
-                <td style="text-align:right;">${{ e.cost_amount }}</td>
-                <td style="text-align:right;">${{ e.billable_amount }}</td>
-                <td style="text-align:right;">${{ e.profit }}</td>
-                <td style="text-align:right;">{{ e.margin|floatformat:2 }}%</td>
+                <td class="text-left" data-label="Date">{{ e.date|date:"m/d/Y" }}</td>
+                <td class="text-left" data-label="Description">
+                    {% if e.description|length > 35 and report %}
+                        {{ e.description|truncatechars:35 }}
+                    {% else %}
+                        {{ e.description }}
+                    {% endif %}
+                </td>
+                <td class="text-left" data-label="Asset">
+                    {% if e.asset %}
+                        {% if e.asset.name|length > 12 and report %}
+                            {{ e.asset.name|truncatechars:12 }}
+                        {% else %}
+                            {{ e.asset.name }}
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td class="text-left" data-label="Employee">
+                    {% if e.employee %}
+                        {% if e.employee.name|length > 12 and report %}
+                            {{ e.employee.name|truncatechars:12 }}
+                        {% else %}
+                            {{ e.employee.name }}
+                        {% endif %}
+                    {% endif %}
+                </td>
+                <td class="text-left" data-label="Material">
+                    {% if e.material_description|length > 18 and report %}
+                        {{ e.material_description|truncatechars:18 }}
+                    {% else %}
+                        {{ e.material_description }}
+                    {% endif %}
+                </td>
+                <td class="text-right" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
+                <td class="text-right" data-label="Actual Cost">${{ e.cost_amount|floatformat:2 }}</td>
+                <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2 }}</td>
+                <td class="text-right" data-label="Profit">${{ e.profit|floatformat:2 }}</td>
+                <td class="text-right" data-label="Margin">{{ e.margin|floatformat:1 }}%</td>
             </tr>
         {% empty %}
-            <tr><td colspan="{{ total_columns }}">No job entries.</td></tr>
+            <tr>
+                <td colspan="10" class="text-center">
+                    <i class="fas fa-inbox me-2"></i>No job entries found.
+                </td>
+            </tr>
         {% endfor %}
-        <tr>
-            <td colspan="{{ colspan_before_total }}" style="text-align:right; font-weight:bold;">Totals</td>
-            <td style="text-align:right; font-weight:bold;">${{ total_cost }}</td>
-            <td style="text-align:right; font-weight:bold;">${{ total_billable }}</td>
-            <td style="text-align:right; font-weight:bold;">${{ total_profit }}</td>
-            <td style="text-align:right; font-weight:bold;">{{ overall_margin|floatformat:2 }}%</td>
+        
+        <!-- Totals Row -->
+        <tr class="totals-row">
+            <td colspan="6" class="text-right">
+                <strong><i class="fas fa-calculator me-2"></i>TOTALS</strong>
+            </td>
+            <td class="text-right"><strong>${{ total_cost|floatformat:2 }}</strong></td>
+            <td class="text-right"><strong>${{ total_billable|floatformat:2 }}</strong></td>
+            <td class="text-right"><strong>${{ total_profit|floatformat:2 }}</strong></td>
+            <td class="text-right"><strong>{{ overall_margin|floatformat:1 }}%</strong></td>
         </tr>
         </tbody>
     </table>
 </div>
 
+<!-- Payments Section -->
 {% if payments %}
-<h2>Payments</h2>
-<div {% if not report %}class="table-responsive"{% endif %}>
-    <table class="table table-bordered" style="width:100%;">
-        <thead class="table-light">
-            <tr>
-                <th style="text-align:left; width:50%;">Date</th>
-                <th style="text-align:right; width:50%;">Amount</th>
-            </tr>
-        </thead>
-        <tbody>
-        {% for p in payments %}
-            <tr>
-                <td style="text-align:left;">{{ p.date }}</td>
-                <td style="text-align:right;">${{ p.amount }}</td>
-            </tr>
-        {% endfor %}
-        <tr>
-            <td style="text-align:right; font-weight:bold;">Total Payments</td>
-            <td style="text-align:right; font-weight:bold;">${{ total_payments }}</td>
-        </tr>
-        </tbody>
-    </table>
+<div class="{% if report %}summary-section{% else %}mt-4{% endif %}">
+    <h3 class="{% if not report %}mb-3{% endif %}">
+        <i class="fas fa-credit-card me-2"></i>Payments Received
+    </h3>
+    
+    <div class="{% if not report %}card{% endif %}">
+        <div class="{% if not report %}table-responsive{% endif %}">
+            <table class="{% if report %}pdf-table payment-table{% else %}table mb-0{% endif %}">
+                <thead>
+                    <tr>
+                        <th class="{% if report %}col-date{% endif %} text-left">Date</th>
+                        <th class="{% if report %}col-amount{% endif %} text-right">Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for p in payments %}
+                    <tr>
+                        <td class="text-left" data-label="Date">{{ p.date|date:"m/d/Y" }}</td>
+                        <td class="text-right" data-label="Amount">${{ p.amount|floatformat:2 }}</td>
+                    </tr>
+                {% endfor %}
+                <tr class="totals-row">
+                    <td class="text-right"><strong>Total Payments</strong></td>
+                    <td class="text-right"><strong>${{ total_payments|floatformat:2 }}</strong></td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 {% else %}
-<p>No payments have been recorded.</p>
+{% if not report %}
+<div class="card mt-4">
+    <div class="card-body text-center py-4">
+        <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+        <h5>No Payments Recorded</h5>
+        <p class="text-muted">No payments have been recorded for this project yet.</p>
+    </div>
+</div>
+{% else %}
+<div class="summary-section">
+    <p><strong>No payments have been recorded.</strong></p>
+</div>
+{% endif %}
 {% endif %}
 
-<p><strong>Outstanding Balance: ${{ outstanding }}</strong></p>
+<!-- Summary Footer -->
+<div class="{% if report %}summary-section{% else %}alert alert-info mt-4{% endif %}">
+    {% if not report %}
+    <div class="d-flex align-items-center">
+        <i class="fas fa-info-circle fa-2x me-3"></i>
+        <div>
+            <h6 class="mb-1">Outstanding Balance</h6>
+            <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2 }}</p>
+        </div>
+    </div>
+    {% else %}
+    <p><strong>Outstanding Balance: ${{ outstanding|floatformat:2 }}</strong></p>
+    {% endif %}
+</div>
+
+{% if not report %}
+<!-- Additional Actions -->
+<div class="d-print-none mt-4">
+    <div class="card">
+        <div class="card-body">
+            <h6 class="card-title">
+                <i class="fas fa-tools me-2"></i>Additional Actions
+            </h6>
+            <div class="btn-group" role="group">
+                <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Project
+                </a>
+                <a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-outline-success">
+                    <i class="fas fa-file-alt me-2"></i>Customer Report
+                </a>
+                <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-outline-warning">
+                    <i class="fas fa-plus me-2"></i>Add Entry
+                </a>
+                <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-outline-info">
+                    <i class="fas fa-money-bill-wave me-2"></i>Add Payment
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
 {% endblock %}
