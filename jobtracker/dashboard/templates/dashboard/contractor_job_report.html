@@ -12,7 +12,7 @@
 {% if not report %}
 <a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
 {% endif %}
-<div class="table-responsive">
+<div {% if not report %}class="table-responsive"{% endif %}>
     <table class="table table-bordered" style="width:100%;">
         <thead class="table-light">
             <tr>
@@ -58,7 +58,7 @@
 
 {% if payments %}
 <h2>Payments</h2>
-<div class="table-responsive">
+<div {% if not report %}class="table-responsive"{% endif %}>
     <table class="table table-bordered">
         <thead class="table-light">
             <tr>
