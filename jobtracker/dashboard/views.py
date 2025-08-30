@@ -51,12 +51,19 @@ def contractor_summary(request):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
-    projects = contractor.projects.filter(end_date__isnull=True).annotate(
-        total_billable=Sum('job_entries__billable_amount'),
-        total_payments=Sum('payments__amount'),
+    projects = contractor.projects.filter(end_date__isnull=True)
+    overall_billable = (
+        JobEntry.objects.filter(project__contractor=contractor, project__end_date__isnull=True)
+        .aggregate(total=Sum("billable_amount"))
+        .get("total")
+        or 0
     )
-    overall_billable = sum([(p.total_billable or 0) for p in projects])
-    overall_payments = sum([(p.total_payments or 0) for p in projects])
+    overall_payments = (
+        Payment.objects.filter(project__contractor=contractor, project__end_date__isnull=True)
+        .aggregate(total=Sum("amount"))
+        .get("total")
+        or 0
+    )
     outstanding = overall_billable - overall_payments
     return render(
         request,
@@ -77,12 +84,15 @@ def project_list(request):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
-    projects = contractor.projects.filter(end_date__isnull=True).annotate(
-        total_billable=Sum('job_entries__billable_amount'),
-        total_payments=Sum('payments__amount'),
+    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
+        "job_entries", "payments"
     )
     for p in projects:
-        p.outstanding = (p.total_billable or 0) - (p.total_payments or 0)
+        p.total_billable = sum(
+            (je.billable_amount or 0) for je in p.job_entries.all()
+        )
+        p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
+        p.outstanding = p.total_billable - p.total_payments
     return render(
         request,
         'dashboard/project_list.html',
