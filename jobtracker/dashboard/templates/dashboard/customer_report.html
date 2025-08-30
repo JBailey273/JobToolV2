@@ -4,7 +4,7 @@
 {% block content %}
 <div class="text-center mb-3">
   {% if contractor_logo_url %}
-  <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" class="img-fluid mb-2" style="max-height:100px;">
+  <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" style="height:60px;" />
   {% endif %}
   <h2>{{ contractor.name|default:contractor.email }}</h2>
 </div>
@@ -13,26 +13,26 @@
 <a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
 {% endif %}
 <div class="table-responsive">
-    <table class="table table-bordered">
+    <table class="table table-bordered" style="width:100%; table-layout:fixed;">
         <thead class="table-light">
             <tr>
-                <th style="text-align:left;">Date</th>
-                {% if show_description %}<th style="text-align:left;">Description</th>{% endif %}
-                {% if show_asset %}<th style="text-align:left;">Asset</th>{% endif %}
-                {% if show_employee %}<th style="text-align:left;">Employee</th>{% endif %}
-                {% if show_material %}<th style="text-align:left;">Material</th>{% endif %}
-                <th style="text-align:right;">Hours</th>
-                <th style="text-align:right;">Billable Amount</th>
+                <th style="text-align:left; width:12%;">Date</th>
+                <th style="text-align:left; width:25%;">Description</th>
+                <th style="text-align:left; width:15%;">Asset</th>
+                <th style="text-align:left; width:15%;">Employee</th>
+                <th style="text-align:left; width:15%;">Material</th>
+                <th style="text-align:right; width:8%;">Hours / Qty</th>
+                <th style="text-align:right; width:10%;">Billable Amount</th>
             </tr>
         </thead>
         <tbody>
         {% for e in entries %}
             <tr>
                 <td style="text-align:left;">{{ e.date }}</td>
-                {% if show_description %}<td style="text-align:left;">{{ e.description }}</td>{% endif %}
-                {% if show_asset %}<td style="text-align:left;">{% if e.asset %}{{ e.asset.name }}{% endif %}</td>{% endif %}
-                {% if show_employee %}<td style="text-align:left;">{% if e.employee %}{{ e.employee.name }}{% endif %}</td>{% endif %}
-                {% if show_material %}<td style="text-align:left;">{{ e.material_description }}</td>{% endif %}
+                <td style="text-align:left; word-wrap:break-word;">{{ e.description }}</td>
+                <td style="text-align:left; word-wrap:break-word;">{% if e.asset %}{{ e.asset.name }}{% endif %}</td>
+                <td style="text-align:left; word-wrap:break-word;">{% if e.employee %}{{ e.employee.name }}{% endif %}</td>
+                <td style="text-align:left; word-wrap:break-word;">{{ e.material_description }}</td>
                 <td style="text-align:right;">{{ e.hours }}</td>
                 <td style="text-align:right;">${{ e.billable_amount }}</td>
             </tr>
