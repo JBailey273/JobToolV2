@@ -192,3 +192,27 @@ class ContractorJobReportTests(TestCase):
         self.assertContains(response, "$50")
         self.assertContains(response, "$20")
         self.assertContains(response, "40.00%")
+
+
+class ReportButtonPlacementTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def test_contractor_summary_shows_only_view_projects_button(self):
+        response = self.client.get(reverse("dashboard:contractor_summary"))
+        self.assertContains(response, "View Projects")
+        self.assertNotContains(response, "Contractor Summary Report")
+        self.assertNotContains(response, "Customer Reports")
+
+    def test_project_list_shows_contractor_summary_report_button(self):
+        self.contractor.projects.create(name="Proj", start_date="2024-01-01")
+        response = self.client.get(reverse("dashboard:project_list"))
+        self.assertContains(response, "Contractor Summary Report")

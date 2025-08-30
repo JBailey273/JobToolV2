@@ -51,7 +51,7 @@ def contractor_summary(request):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
-    projects = contractor.projects.all().annotate(
+    projects = contractor.projects.filter(end_date__isnull=True).annotate(
         total_billable=Sum('job_entries__billable_amount'),
         total_payments=Sum('payments__amount'),
     )
@@ -77,7 +77,7 @@ def project_list(request):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
-    projects = contractor.projects.all().annotate(
+    projects = contractor.projects.filter(end_date__isnull=True).annotate(
         total_billable=Sum('job_entries__billable_amount'),
         total_payments=Sum('payments__amount'),
     )
