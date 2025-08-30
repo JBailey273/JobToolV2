@@ -2,6 +2,11 @@
 {% load static %}
 {% block title %}Contractor Job Report{% endblock %}
 {% block content %}
+{% if report %}
+<style>
+@page { size: landscape; }
+</style>
+{% endif %}
 <div class="text-center mb-3">
   {% if contractor_logo_url %}
   <img src="{{ contractor_logo_url }}" alt="Contractor logo thumbnail" style="height:60px;" />
