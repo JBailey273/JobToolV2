@@ -8,7 +8,9 @@
 </div>
 {% endif %}
 <h1 class="text-center">Contractor Report</h1>
+{% if not report %}
 <a href="?export=pdf" class="btn btn-secondary mb-3 d-print-none">Download PDF</a>
+{% endif %}
 <div class="table-responsive">
     <table class="table table-bordered">
         <thead class="table-light">
