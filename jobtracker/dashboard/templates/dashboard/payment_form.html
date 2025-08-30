@@ -1,27 +1,199 @@
 {% extends 'dashboard/base.html' %}
 {% block title %}Add Payment{% endblock %}
 {% block content %}
-<h1>Add Payment for {{ project.name }}</h1>
-<form method="post">
-    {% csrf_token %}
-    <div class="row g-3">
-        <div class="col-12 col-md-6">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" class="form-control" id="date" name="date" required>
-        </div>
-        <div class="col-12 col-md-6">
-            <label for="amount" class="form-label">Amount</label>
-            <input type="number" step="0.01" class="form-control" id="amount" name="amount" required>
-        </div>
-        <div class="col-12">
-            <label for="notes" class="form-label">Notes</label>
-            <textarea class="form-control" id="notes" name="notes"></textarea>
-        </div>
-        <div class="col-12">
-            <button type="submit" class="btn btn-primary">Save</button>
-            <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-secondary">Cancel</a>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-money-bill-wave me-3"></i>Add Payment
+        </h1>
+        <p class="text-muted mb-0">Record a payment for <strong>{{ project.name }}</strong></p>
+    </div>
+    <div>
+        <span class="badge bg-primary fs-6">{{ project.name }}</span>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-credit-card me-2"></i>Payment Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="payment-form">
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-12 col-md-6">
+                            <label for="date" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Payment Date
+                            </label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                            <div class="form-text">When was this payment received?</div>
+                        </div>
+                        <div class="col-12 col-md-6">
+                            <label for="amount" class="form-label">
+                                <i class="fas fa-dollar-sign me-2"></i>Amount
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="amount" name="amount" required placeholder="0.00">
+                            </div>
+                            <div class="form-text">Enter the payment amount received</div>
+                        </div>
+                        <div class="col-12">
+                            <label for="notes" class="form-label">
+                                <i class="fas fa-sticky-note me-2"></i>Notes (Optional)
+                            </label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3" placeholder="Add any notes about this payment (check number, payment method, etc.)"></textarea>
+                            <div class="form-text">Optional notes about the payment method, reference number, etc.</div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between align-items-center mt-4">
+                        <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                            <i class="fas fa-save me-2"></i>Save Payment
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-</form>
-{% endblock %}
+    
+    <!-- Help Sidebar -->
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-body">
+                <h6 class="card-title">
+                    <i class="fas fa-info-circle me-2"></i>Payment Information
+                </h6>
+                <div class="small">
+                    <div class="mb-3">
+                        <strong>Payment Date:</strong>
+                        <p class="text-muted mb-0">Select the actual date the payment was received, not today's date if different.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Amount:</strong>
+                        <p class="text-muted mb-0">Enter the exact amount received. You can use decimals for cents.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>Notes:</strong>
+                        <p class="text-muted mb-0">Use notes to record check numbers, payment methods, or any other relevant details.</p>
+                    </div>
+                    
+                    <div class="alert alert-success p-2">
+                        <i class="fas fa-check-circle me-1"></i>
+                        <strong>Tip:</strong> Recording payments helps track outstanding balances and project profitability.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('payment-form');
+    const submitBtn = document.getElementById('submit-btn');
+    const amountInput = document.getElementById('amount');
+    
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+    
+    // Format amount input
+    amountInput.addEventListener('input', function() {
+        let value = this.value;
+        if (value && !isNaN(value)) {
+            // Ensure we have at most 2 decimal places
+            if (value.indexOf('.') !== -1) {
+                let parts = value.split('.');
+                if (parts[1] && parts[1].length > 2) {
+                    this.value = parseFloat(value).toFixed(2);
+                }
+            }
+        }
+    });
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        const amount = parseFloat(amountInput.value);
+        
+        // Validate amount
+        if (isNaN(amount) || amount <= 0) {
+            e.preventDefault();
+            const alert = document.createElement('div');
+            alert.className = 'alert alert-danger alert-dismissible fade show';
+            alert.innerHTML = `
+                <i class="fas fa-exclamation-triangle me-2"></i>
+                Please enter a valid payment amount greater than $0.00.
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            form.insertBefore(alert, form.firstChild);
+            amountInput.focus();
+            return;
+        }
+        
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving Payment...';
+    });
+    
+    // Auto-focus amount field after date is selected
+    document.getElementById('date').addEventListener('change', function() {
+        if (this.value) {
+            amountInput.focus();
+        }
+    });
+});
+</script>
+
+<style>
+.form-control, .form-select {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border: 2px solid var(--border-color);
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-group-text {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.alert {
+    animation: slideInDown 0.3s ease-out;
+}
+
+@keyframes slideInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+</style>
+
+{% endblock %}
