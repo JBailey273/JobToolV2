@@ -1,54 +1,217 @@
 {% extends 'dashboard/base.html' %}
 {% block title %}Edit Job Entry{% endblock %}
 {% block content %}
-<h1>Edit Job Entry</h1>
-<form method="post">
-    {% csrf_token %}
-    <div class="row g-3 mb-3">
-        <div class="col-12 col-md-6">
-            <label for="date" class="form-label">Date</label>
-            <input type="date" class="form-control" id="date" name="date" value="{{ entry.date }}" required>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-edit me-3"></i>Edit Job Entry
+        </h1>
+        <p class="text-muted mb-0">Modify job entry for <strong>{{ entry.project.name }}</strong></p>
+    </div>
+    <div>
+        <span class="badge bg-primary fs-6">{{ entry.project.name }}</span>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card">
+            <div class="card-header bg-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt me-2"></i>Entry Details
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="edit-form">
+                    {% csrf_token %}
+                    
+                    <!-- Date Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-md-4">
+                            <label for="date" class="form-label">
+                                <i class="fas fa-calendar me-2"></i>Date
+                            </label>
+                            <input type="date" class="form-control" id="date" name="date" value="{{ entry.date|date:'Y-m-d' }}" required>
+                            <div class="form-text">Date when this work was performed</div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <label for="hours" class="form-label">
+                                <i class="fas fa-clock me-2"></i>Hours / Quantity
+                            </label>
+                            <input type="number" step="0.01" class="form-control" id="hours" name="hours" value="{{ entry.hours }}" placeholder="0.00">
+                            <div class="form-text">Hours worked or quantity used</div>
+                        </div>
+                        <div class="col-12 col-md-4">
+                            <div class="alert alert-info mb-0">
+                                <small>
+                                    <i class="fas fa-calculator me-1"></i>
+                                    <strong>Current Values:</strong><br>
+                                    Cost: ${{ entry.cost_amount|floatformat:2 }}<br>
+                                    Billable: ${{ entry.billable_amount|floatformat:2 }}
+                                </small>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Resources Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="asset" class="form-label">
+                                <i class="fas fa-tools me-2"></i>Asset
+                            </label>
+                            <select class="form-select" id="asset" name="asset">
+                                <option value="">Select Asset...</option>
+                                {% for asset in assets %}
+                                <option value="{{ asset.id }}" {% if entry.asset_id == asset.id %}selected{% endif %} data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                                    {{ asset.name }} (${{ asset.cost_rate }}/hr cost, ${{ asset.billable_rate }}/hr billable)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Equipment or asset used for this work</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="employee" class="form-label">
+                                <i class="fas fa-user-hard-hat me-2"></i>Employee
+                            </label>
+                            <select class="form-select" id="employee" name="employee">
+                                <option value="">Select Employee...</option>
+                                {% for emp in employees %}
+                                <option value="{{ emp.id }}" {% if entry.employee_id == emp.id %}selected{% endif %} data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                                    {{ emp.name }} (${{ emp.cost_rate }}/hr cost, ${{ emp.billable_rate }}/hr billable)
+                                </option>
+                                {% endfor %}
+                            </select>
+                            <div class="form-text">Employee who performed this work</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Materials Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-8">
+                            <label for="material_description" class="form-label">
+                                <i class="fas fa-box me-2"></i>Material Description
+                            </label>
+                            <input type="text" class="form-control" id="material_description" name="material_description" value="{{ entry.material_description }}" placeholder="Description of materials used">
+                            <div class="form-text">Describe any materials used for this work</div>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="material_cost" class="form-label">
+                                <i class="fas fa-dollar-sign me-2"></i>Material Cost
+                            </label>
+                            <div class="input-group">
+                                <span class="input-group-text">$</span>
+                                <input type="number" step="0.01" class="form-control" id="material_cost" name="material_cost" value="{{ entry.material_cost|default_if_none:'' }}" placeholder="0.00">
+                            </div>
+                            <div class="form-text">Cost per hour/unit of material</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Description Row -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label for="description" class="form-label">
+                                <i class="fas fa-file-alt me-2"></i>Work Description
+                            </label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Detailed description of work performed">{{ entry.description }}</textarea>
+                            <div class="form-text">Detailed description of the work performed</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'dashboard:project_detail' entry.project.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                            <i class="fas fa-save me-2"></i>Update Entry
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
-    <div class="row g-3 mb-3">
-        <div class="col-md-2">
-            <label for="hours" class="form-label">Hours / Qty</label>
-            <input type="number" step="0.01" class="form-control" id="hours" name="hours" value="{{ entry.hours }}">
-        </div>
-        <div class="col-md-3">
-            <label for="asset" class="form-label">Asset</label>
-            <select class="form-select" id="asset" name="asset">
-                <option value="">---------</option>
-                {% for asset in assets %}
-                <option value="{{ asset.id }}" {% if entry.asset_id == asset.id %}selected{% endif %}>{{ asset.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-3">
-            <label for="employee" class="form-label">Employee</label>
-            <select class="form-select" id="employee" name="employee">
-                <option value="">---------</option>
-                {% for emp in employees %}
-                <option value="{{ emp.id }}" {% if entry.employee_id == emp.id %}selected{% endif %}>{{ emp.name }}</option>
-                {% endfor %}
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label for="material_description" class="form-label">Material Description</label>
-            <input type="text" class="form-control" id="material_description" name="material_description" value="{{ entry.material_description }}">
-        </div>
-    </div>
-    <div class="row g-3 mb-3">
-        <div class="col-md-4">
-            <label for="material_cost" class="form-label">Material Cost</label>
-            <input type="number" step="0.01" class="form-control" id="material_cost" name="material_cost" value="{{ entry.material_cost|default_if_none:'' }}">
-        </div>
-        <div class="col-md-8">
-            <label for="description" class="form-label">Description</label>
-            <input type="text" class="form-control" id="description" name="description" value="{{ entry.description }}">
-        </div>
-    </div>
-    <button type="submit" class="btn btn-primary">Save</button>
-    <a href="{% url 'dashboard:project_detail' entry.project.pk %}" class="btn btn-secondary">Cancel</a>
-</form>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('edit-form');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    // Form submission
+    form.addEventListener('submit', function(e) {
+        // Show loading state
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+    });
+    
+    // Add change detection
+    const originalFormData = new FormData(form);
+    let hasChanges = false;
+    
+    form.addEventListener('input', function() {
+        hasChanges = true;
+        updateSubmitButton();
+    });
+    
+    form.addEventListener('change', function() {
+        hasChanges = true;
+        updateSubmitButton();
+    });
+    
+    function updateSubmitButton() {
+        if (hasChanges) {
+            submitBtn.classList.remove('btn-primary');
+            submitBtn.classList.add('btn-warning');
+            submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes';
+        }
+    }
+    
+    // Warn user about unsaved changes
+    window.addEventListener('beforeunload', function(e) {
+        if (hasChanges) {
+            e.preventDefault();
+            e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            return e.returnValue;
+        }
+    });
+    
+    // Remove warning when form is submitted
+    form.addEventListener('submit', function() {
+        hasChanges = false;
+    });
+});
+</script>
+
+<style>
+.form-control, .form-select {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+}
+
+.form-control:focus, .form-select:focus {
+    background-color: #ffffff !important;
+    color: #212529 !important;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.input-group-text {
+    background-color: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: none;
+    color: #0c5460;
+}
+</style>
+
 {% endblock %}
