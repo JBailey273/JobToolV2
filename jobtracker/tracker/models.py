@@ -1,6 +1,10 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from decimal import Decimal
+from django.core.files.base import ContentFile
+from io import BytesIO
+from PIL import Image
+import os
 
 
 class GlobalSettings(models.Model):
@@ -15,10 +19,38 @@ class Contractor(models.Model):
     email = models.EmailField(unique=True)
     phone = models.CharField(max_length=20, blank=True)
     logo = models.ImageField(upload_to='contractor_logos/', blank=True, null=True)
+    logo_thumbnail = models.ImageField(
+        upload_to='contractor_logos/thumbnails/', blank=True, null=True
+    )
     material_markup = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+        if self.logo:
+            self._generate_thumbnail()
+
+    def _generate_thumbnail(self):
+        try:
+            img = Image.open(self.logo)
+        except Exception:
+            return
+        img = img.convert("RGB")
+        max_width = 300
+        if img.width > max_width:
+            ratio = max_width / float(img.width)
+            height = int(float(img.height) * ratio)
+            img = img.resize((max_width, height), Image.LANCZOS)
+        thumb_io = BytesIO()
+        img.save(thumb_io, format="JPEG")
+        thumb_name = os.path.basename(self.logo.name)
+        self.logo_thumbnail.save(
+            f"thumb_{thumb_name}", ContentFile(thumb_io.getvalue()), save=False
+        )
+        thumb_io.close()
+        super(Contractor, self).save(update_fields=["logo_thumbnail"])
 
 
 class ContractorUserManager(BaseUserManager):
