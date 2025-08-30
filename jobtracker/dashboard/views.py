@@ -162,7 +162,7 @@ def add_job_entry(request, pk):
             "project": project,
             "assets": assets,
             "employees": employees,
-            "markup": contractor.material_markup,
+            "margin": contractor.material_margin,
         },
     )
 

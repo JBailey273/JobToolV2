@@ -52,10 +52,10 @@ class ContractorUserAdmin(UserAdmin):
 @admin.register(Contractor)
 class ContractorAdmin(admin.ModelAdmin):
     form = ContractorForm
-    list_display = ('name', 'email', 'phone', 'material_markup')
+    list_display = ('name', 'email', 'phone', 'material_margin')
     search_fields = ('name', 'email')
     fieldsets = (
-        (None, {'fields': ('name', 'email', 'phone', 'logo', 'material_markup', 'password')}),
+        (None, {'fields': ('name', 'email', 'phone', 'logo', 'material_margin', 'password')}),
     )
     inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline]
 

@@ -22,7 +22,7 @@ class Contractor(models.Model):
     logo_thumbnail = models.ImageField(
         upload_to='contractor_logos/thumbnails/', blank=True, null=True
     )
-    material_markup = models.DecimalField(max_digits=5, decimal_places=2, default=0)
+    material_margin = models.DecimalField(max_digits=5, decimal_places=2, default=0)
 
     def __str__(self) -> str:
         return self.name
@@ -170,9 +170,10 @@ class JobEntry(models.Model):
         if self.material_cost:
             material_total = self.material_cost * self.hours
             self.cost_amount += material_total
-            self.billable_amount += material_total * (
-                1 + contractor.material_markup / Decimal("100")
-            )
+            margin = contractor.material_margin / Decimal("100")
+            self.billable_amount += material_total / (Decimal("1") - margin)
+        self.cost_amount = self.cost_amount.quantize(Decimal("0.01"))
+        self.billable_amount = self.billable_amount.quantize(Decimal("0.01"))
         super().save(*args, **kwargs)
 
 
