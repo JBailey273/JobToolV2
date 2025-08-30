@@ -1,5 +1,4 @@
 from decimal import Decimal
-from io import BytesIO
 import os
 
 from django.conf import settings
@@ -37,13 +36,11 @@ def _render_pdf(template_src, context):
         return None
     template = get_template(template_src)
     html = template.render(context)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(
-        BytesIO(html.encode("UTF-8")), result, link_callback=link_callback
-    )
+    response = HttpResponse(content_type="application/pdf")
+    pdf = pisa.CreatePDF(html, dest=response, link_callback=link_callback)
     if pdf.err:
         return None
-    return HttpResponse(result.getvalue(), content_type="application/pdf")
+    return response
 
 
 @login_required
