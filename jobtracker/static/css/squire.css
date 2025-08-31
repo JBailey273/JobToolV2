@@ -1,25 +1,53 @@
-/* Enhanced Squire Enterprises CSS with Modern Design */
+/* Enhanced Squire Enterprises CSS with Evergreen Design */
 
 :root {
-    --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --secondary-gradient: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
-    --success-gradient: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
-    --warning-gradient: linear-gradient(135deg, #fad961 0%, #f76b1c 100%);
-    --primary-color: #667eea;
-    --secondary-color: #764ba2;
-    --background-color: #f8fafc;
+    /* Evergreen Primary Gradient - Deep forest to lighter evergreen */
+    --primary-gradient: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+    
+    /* Complementary gradients */
+    --secondary-gradient: linear-gradient(135deg, #8b4513 0%, #a0522d 100%); /* Warm brown */
+    --success-gradient: linear-gradient(135deg, #228b22 0%, #32cd32 100%); /* Bright green */
+    --warning-gradient: linear-gradient(135deg, #daa520 0%, #ffd700 100%); /* Golden yellow */
+    --info-gradient: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); /* Sea green */
+    --danger-gradient: linear-gradient(135deg, #8b4513 0%, #cd853f 100%); /* Rustic brown */
+    
+    /* Core colors */
+    --primary-color: #4a7c2a; /* Forest green */
+    --secondary-color: #2d5016; /* Deep evergreen */
+    --accent-color: #228b22; /* Forest green accent */
+    --warm-accent: #daa520; /* Golden accent */
+    
+    /* Background and surfaces */
+    --background-color: #f8faf6; /* Very light sage */
     --card-background: #ffffff;
+    --surface-light: #f1f5ec; /* Light sage */
+    --surface-medium: #e8f0de; /* Medium sage */
+    
+    /* Text colors */
     --text-primary: #2d3748;
-    --text-secondary: #718096;
-    --border-color: #e2e8f0;
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
-    --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
-    --shadow-xl: 0 20px 25px rgba(0, 0, 0, 0.1);
+    --text-secondary: #4a5568;
+    --text-muted: #718096;
+    --text-on-primary: #ffffff;
+    
+    /* Border and shadows */
+    --border-color: #d4d4aa; /* Sage border */
+    --border-light: #e6e6c7; /* Lighter sage border */
+    --shadow-sm: 0 1px 3px rgba(45, 80, 22, 0.1);
+    --shadow-md: 0 4px 6px rgba(45, 80, 22, 0.1);
+    --shadow-lg: 0 10px 25px rgba(45, 80, 22, 0.1);
+    --shadow-xl: 0 20px 25px rgba(45, 80, 22, 0.15);
+    
+    /* Radius values */
     --radius-sm: 6px;
     --radius-md: 8px;
     --radius-lg: 12px;
     --radius-xl: 16px;
+    
+    /* Status colors */
+    --success-color: #228b22;
+    --warning-color: #daa520;
+    --danger-color: #8b4513;
+    --info-color: #2e8b57;
 }
 
 /* Base Styles */
@@ -93,7 +121,7 @@ body {
 }
 
 .module table th {
-    background: #f7fafc;
+    background: var(--surface-light);
     color: var(--text-primary);
     font-weight: 600;
     padding: 12px 16px;
@@ -106,7 +134,7 @@ body {
 }
 
 .module table tbody tr:hover {
-    background: #f7fafc;
+    background: var(--surface-light);
 }
 
 /* Modern Form Styles - FIXED VERSION */
@@ -135,7 +163,7 @@ select:focus,
 textarea:focus {
     outline: none;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(74, 124, 42, 0.1);
     transform: translateY(-1px);
     background: #ffffff !important;  /* Maintain white background on focus */
     color: #212529 !important;       /* Maintain dark text on focus */
@@ -191,7 +219,7 @@ textarea:focus {
 }
 
 .btn-secondary {
-    background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+    background: var(--secondary-gradient);
     color: white;
     box-shadow: var(--shadow-md);
 }
@@ -221,6 +249,30 @@ textarea:focus {
 }
 
 .btn-warning:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    color: white;
+}
+
+.btn-info {
+    background: var(--info-gradient);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-info:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+    color: white;
+}
+
+.btn-danger {
+    background: var(--danger-gradient);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-danger:hover {
     transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
     color: white;
@@ -298,7 +350,7 @@ textarea:focus {
 
 .summary-card:hover {
     transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 20px 40px rgba(74, 124, 42, 0.3);
 }
 
 .summary-card .card-title {
@@ -384,13 +436,13 @@ textarea:focus {
 }
 
 .table tbody tr:hover {
-    background: #f7fafc;
+    background: var(--surface-light);
     transform: scale(1.01);
     box-shadow: var(--shadow-sm);
 }
 
 .table tbody tr:nth-child(even) {
-    background: #fafbfc;
+    background: var(--surface-light);
 }
 
 .table-responsive {
@@ -409,7 +461,7 @@ textarea:focus {
 }
 
 .alert-danger {
-    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+    background: var(--danger-gradient);
     color: white;
 }
 
@@ -424,9 +476,8 @@ textarea:focus {
 }
 
 .alert-info {
-    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-    border: none;
-    color: #0c5460;
+    background: var(--info-gradient);
+    color: white;
 }
 
 /* Dashboard Specific Styles */
@@ -486,6 +537,92 @@ textarea:focus {
     font-weight: 500;
 }
 
+/* Status colors for text elements */
+.text-success {
+    color: var(--success-color) !important;
+}
+
+.text-warning {
+    color: var(--warning-color) !important;
+}
+
+.text-danger {
+    color: var(--danger-color) !important;
+}
+
+.text-info {
+    color: var(--info-color) !important;
+}
+
+.text-primary {
+    color: var(--primary-color) !important;
+}
+
+.text-secondary {
+    color: var(--secondary-color) !important;
+}
+
+/* Background colors for badges and other elements */
+.bg-success {
+    background: var(--success-gradient) !important;
+    color: white !important;
+}
+
+.bg-warning {
+    background: var(--warning-gradient) !important;
+    color: white !important;
+}
+
+.bg-danger {
+    background: var(--danger-gradient) !important;
+    color: white !important;
+}
+
+.bg-info {
+    background: var(--info-gradient) !important;
+    color: white !important;
+}
+
+.bg-primary {
+    background: var(--primary-gradient) !important;
+    color: white !important;
+}
+
+.bg-secondary {
+    background: var(--secondary-gradient) !important;
+    color: white !important;
+}
+
+/* Progress bars */
+.progress-bar {
+    background: var(--success-gradient) !important;
+}
+
+.progress-bar.bg-warning {
+    background: var(--warning-gradient) !important;
+}
+
+.progress-bar.bg-danger {
+    background: var(--danger-gradient) !important;
+}
+
+.progress-bar.bg-info {
+    background: var(--info-gradient) !important;
+}
+
+/* Badge styling */
+.badge {
+    border-radius: var(--radius-sm);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.badge.bg-light {
+    background: var(--surface-medium) !important;
+    color: var(--text-primary) !important;
+}
+
 /* Placeholder styling */
 .form-control::placeholder,
 .form-select::placeholder,
@@ -509,7 +646,7 @@ textarea::placeholder {
 
 /* Form text/help text */
 .form-text {
-    color: #6c757d;
+    color: var(--text-muted);
     font-size: 0.875rem;
     margin-top: 0.25rem;
 }
@@ -579,7 +716,7 @@ textarea.form-control {
     }
     
     .pdf-table th {
-        background-color: #f0f0f0 !important;
+        background-color: #e8f0de !important; /* Light sage for print */
         font-weight: bold;
         font-size: 8px;
         text-align: center;
@@ -827,7 +964,7 @@ textarea.form-control {
 .table .form-control:focus,
 .table .form-select:focus {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 2px rgba(74, 124, 42, 0.1);
 }
 
 /* Ensure consistent styling across all form containers */
@@ -893,5 +1030,5 @@ textarea.form-control {
 }
 
 .table-light th {
-    background-color: #f8f9fa;
+    background-color: var(--surface-light);
 }
