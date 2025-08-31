@@ -686,41 +686,41 @@ textarea.form-control {
         padding: 16px;
     }
     
-    .table thead {
+    .table:not(.no-stack) thead {
         display: none;
     }
-    
-    .table tbody,
-    .table tr,
-    .table td {
+
+    .table:not(.no-stack) tbody,
+    .table:not(.no-stack) tr,
+    .table:not(.no-stack) td {
         display: block;
         width: 100%;
     }
-    
-    .table tr {
+
+    .table:not(.no-stack) tr {
         margin-bottom: 16px;
         border: 1px solid var(--border-color);
         border-radius: var(--radius-md);
         box-shadow: var(--shadow-sm);
     }
-    
-    .table td {
+
+    .table:not(.no-stack) td {
         text-align: right;
         padding-left: 50%;
         position: relative;
         border: none;
         border-bottom: 1px solid var(--border-color);
     }
-    
-    .table td:last-child {
+
+    .table:not(.no-stack) td:last-child {
         border-bottom: none;
     }
-    
-    .table td:empty {
+
+    .table:not(.no-stack) td:empty {
         display: none;
     }
-    
-    .table td::before {
+
+    .table:not(.no-stack) td::before {
         content: attr(data-label);
         position: absolute;
         left: 16px;

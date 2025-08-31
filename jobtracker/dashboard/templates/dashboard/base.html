@@ -162,7 +162,7 @@
         <div class="row">
             <div class="col-md-6">
                 <p class="text-muted mb-0">
-                    <small>&copy; 2024 Squire Enterprises. All rights reserved.</small>
+                    <small>&copy; 2025 Squire Enterprises. All rights reserved.</small>
                 </p>
             </div>
             <div class="col-md-6 text-end">
@@ -179,6 +179,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Enhanced responsive table handling
     document.querySelectorAll('.table-responsive table').forEach(function (table) {
+        if (table.classList.contains('no-stack')) return;
         const ths = Array.from(table.querySelectorAll('thead th'));
         const headers = ths.map(th => th.innerText.trim());
 
