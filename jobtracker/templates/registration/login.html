@@ -14,9 +14,9 @@
     <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
     
     <style>
-        body {
+       body {
             font-family: 'Inter', system-ui, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
             min-height: 100vh;
             display: flex;
             align-items: center;
@@ -51,8 +51,8 @@
             border-radius: 20px;
             padding: 40px;
             box-shadow: 
-                0 20px 25px rgba(0, 0, 0, 0.1),
-                0 40px 80px rgba(0, 0, 0, 0.1),
+                0 20px 25px rgba(45, 80, 22, 0.1),
+                0 40px 80px rgba(45, 80, 22, 0.1),
                 inset 0 1px 0 rgba(255, 255, 255, 0.9);
             border: 1px solid rgba(255, 255, 255, 0.2);
             animation: slideUp 0.8s ease-out;
@@ -86,7 +86,7 @@
         .login-title {
             font-size: 2rem;
             font-weight: 800;
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -105,7 +105,7 @@
         
         .form-control {
             background: rgba(255, 255, 255, 0.9);
-            border: 2px solid rgba(0, 0, 0, 0.05);
+            border: 2px solid rgba(45, 80, 22, 0.1);
             border-radius: 12px;
             padding: 16px 20px;
             font-size: 16px;
@@ -116,8 +116,8 @@
         
         .form-control:focus {
             background: rgba(255, 255, 255, 1);
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            border-color: #4a7c2a;
+            box-shadow: 0 0 0 4px rgba(74, 124, 42, 0.1);
             transform: translateY(-2px);
         }
         
@@ -128,7 +128,7 @@
         }
         
         .btn-login {
-            background: var(--primary-gradient);
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
             border: none;
             border-radius: 12px;
             padding: 16px 24px;
@@ -139,12 +139,12 @@
             width: 100%;
             color: white;
             transition: all 0.3s ease;
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 8px 25px rgba(74, 124, 42, 0.3);
         }
         
         .btn-login:hover {
             transform: translateY(-2px);
-            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 12px 35px rgba(74, 124, 42, 0.4);
             color: white;
         }
         
@@ -159,32 +159,32 @@
         }
         
         .alert {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
+            background: linear-gradient(135deg, #8b4513 0%, #cd853f 100%);
             color: white;
             border: none;
             border-radius: 12px;
             padding: 16px 20px;
             margin-bottom: 24px;
             font-weight: 500;
-            box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+            box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3);
         }
         
         .footer-links {
             text-align: center;
             margin-top: 32px;
             padding-top: 24px;
-            border-top: 1px solid rgba(0, 0, 0, 0.1);
+            border-top: 1px solid rgba(45, 80, 22, 0.1);
         }
         
         .footer-links a {
-            color: var(--primary-color);
+            color: #4a7c2a;
             text-decoration: none;
             font-weight: 500;
             transition: all 0.3s ease;
         }
         
         .footer-links a:hover {
-            color: var(--secondary-color);
+            color: #2d5016;
             text-decoration: underline;
         }
         
