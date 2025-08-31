@@ -151,8 +151,8 @@
 <div class="{% if not report %}container{% endif %}">
     {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
     <div class="d-print-none mb-4">
-        <a href="{% url 'dashboard:contractor_summary' %}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        <a href="#" id="back-button" class="btn btn-outline-primary" style="display:none;">
+            <i class="fas fa-arrow-left me-2"></i>Back
         </a>
     </div>
     {% endif %}
@@ -179,6 +179,49 @@
 </footer>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const backButton = document.getElementById('back-button');
+    const currentHref = window.location.href;
+    const currentTitle = document.title.split('|')[0].trim();
+
+    let breadcrumbs = [];
+    try {
+        breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
+    } catch (e) {
+        breadcrumbs = [];
+    }
+
+    const existingIndex = breadcrumbs.findIndex(b => b.href === currentHref);
+    if (existingIndex >= 0) {
+        breadcrumbs = breadcrumbs.slice(0, existingIndex + 1);
+    } else {
+        breadcrumbs.push({ href: currentHref, title: currentTitle });
+    }
+
+    const prev = breadcrumbs[breadcrumbs.length - 2];
+
+    if (backButton) {
+        if (prev) {
+            backButton.href = prev.href;
+            backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + prev.title;
+            backButton.addEventListener('click', function () {
+                breadcrumbs.pop();
+                sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+            });
+        } else {
+            backButton.href = '{% url "dashboard:contractor_summary" %}';
+            backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to Dashboard';
+            backButton.addEventListener('click', function () {
+                sessionStorage.removeItem('breadcrumbs');
+            });
+        }
+        backButton.style.display = 'inline-block';
+    }
+
+    sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+});
+</script>
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Enhanced responsive table handling
