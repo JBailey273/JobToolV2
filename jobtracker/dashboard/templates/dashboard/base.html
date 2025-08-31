@@ -205,14 +205,18 @@ document.addEventListener('DOMContentLoaded', function () {
         if (prev) {
             backButton.href = prev.href;
             backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + prev.title;
-            backButton.style.display = 'inline-block';
             backButton.addEventListener('click', function () {
                 breadcrumbs.pop();
                 sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
             });
         } else {
-            backButton.style.display = 'none';
+            backButton.href = '{% url "dashboard:contractor_summary" %}';
+            backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to Dashboard';
+            backButton.addEventListener('click', function () {
+                sessionStorage.removeItem('breadcrumbs');
+            });
         }
+        backButton.style.display = 'inline-block';
     }
 
     sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
