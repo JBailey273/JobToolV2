@@ -6,7 +6,7 @@
 <!-- Report Header -->
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
     {% if contractor_logo_url %}
-    <img src="{{ contractor_logo_url }}" alt="Contractor logo" />
+    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo img-fluid" />
     {% endif %}
     <h1>Contractor Summary Report</h1>
     {% if not report %}
