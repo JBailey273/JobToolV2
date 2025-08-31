@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %}
+{% load humanize %}
 {% block title %}Projects{% endblock %}
 {% block content %}
 
@@ -36,19 +37,19 @@
                 <div class="row text-center mb-3">
                     <div class="col-4">
                         <div class="border-end">
-                            <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0 }}</div>
+                            <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0|intcomma }}</div>
                             <small class="text-muted">Billable</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="border-end">
-                            <div class="text-success fw-bold">${{ project.total_payments|floatformat:0 }}</div>
+                            <div class="text-success fw-bold">${{ project.total_payments|floatformat:0|intcomma }}</div>
                             <small class="text-muted">Paid</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="{% if project.outstanding > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">
-                            ${{ project.outstanding|floatformat:0 }}
+                            ${{ project.outstanding|floatformat:0|intcomma }}
                         </div>
                         <small class="text-muted">Outstanding</small>
                     </div>
@@ -127,19 +128,19 @@
               </div>
               <div class="col-md-3 mb-3 mb-md-0">
                   <div class="border-md-end">
-                      <h4 class="text-success mb-0">${{ total_billable|floatformat:0 }}</h4>
+                      <h4 class="text-success mb-0">${{ total_billable|floatformat:0|intcomma }}</h4>
                       <small class="text-muted d-block mt-0">Total Billable</small>
                   </div>
               </div>
               <div class="col-md-3 mb-3 mb-md-0">
                   <div class="border-md-end">
-                      <h4 class="text-info mb-0">${{ total_payments|floatformat:0 }}</h4>
+                      <h4 class="text-info mb-0">${{ total_payments|floatformat:0|intcomma }}</h4>
                       <small class="text-muted d-block mt-0">Total Payments</small>
                   </div>
               </div>
               <div class="col-md-3 mb-3 mb-md-0">
                   <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %} mb-0">
-                      ${{ total_outstanding|floatformat:0 }}
+                      ${{ total_outstanding|floatformat:0|intcomma }}
                   </h4>
                   <small class="text-muted d-block mt-0">Outstanding</small>
               </div>

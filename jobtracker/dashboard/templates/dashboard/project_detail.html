@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %}
+{% load humanize %}
 {% block title %}{{ project.name }}{% endblock %}
 {% block content %}
 
@@ -28,21 +29,21 @@
         <div class="summary-card">
             <i class="fas fa-dollar-sign fa-2x mb-3"></i>
             <h5 class="card-title">Total Billable</h5>
-            <p class="card-text">${{ total_billable|floatformat:2 }}</p>
+            <p class="card-text">${{ total_billable|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-4 mb-3">
         <div class="summary-card" style="background: var(--success-gradient);">
             <i class="fas fa-credit-card fa-2x mb-3"></i>
             <h5 class="card-title">Total Payments</h5>
-            <p class="card-text">${{ total_payments|floatformat:2 }}</p>
+            <p class="card-text">${{ total_payments|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-4 mb-3">
         <div class="summary-card" style="{% if outstanding > 0 %}background: var(--warning-gradient);{% else %}background: var(--success-gradient);{% endif %}">
             <i class="fas fa-balance-scale fa-2x mb-3"></i>
             <h5 class="card-title">Outstanding</h5>
-            <p class="card-text">${{ outstanding|floatformat:2 }}</p>
+            <p class="card-text">${{ outstanding|floatformat:2|intcomma }}</p>
         </div>
     </div>
 </div>
@@ -149,17 +150,17 @@
                                     {{ entry.material_description }}
                                 </span>
                                 {% if entry.material_cost %}
-                                    <small class="text-muted d-block">${{ entry.material_cost|floatformat:2 }}</small>
+                                    <small class="text-muted d-block">${{ entry.material_cost|floatformat:2|intcomma }}</small>
                                 {% endif %}
                             {% else %}
                                 <span class="text-muted">—</span>
                             {% endif %}
                         </td>
                         <td class="text-end" data-label="Cost">
-                            <span class="text-danger fw-semibold">${{ entry.cost_amount|floatformat:2 }}</span>
+                            <span class="text-danger fw-semibold">${{ entry.cost_amount|floatformat:2|intcomma }}</span>
                         </td>
                         <td class="text-end" data-label="Billable">
-                            <span class="text-success fw-semibold">${{ entry.billable_amount|floatformat:2 }}</span>
+                            <span class="text-success fw-semibold">${{ entry.billable_amount|floatformat:2|intcomma }}</span>
                         </td>
                         <td data-label="Description">
                             {% if entry.description %}
@@ -223,7 +224,7 @@
                             <span class="badge bg-light text-dark">{{ payment.date|date:"M d, Y" }}</span>
                         </td>
                         <td class="text-end" data-label="Amount">
-                            <span class="text-success fw-bold fs-5">${{ payment.amount|floatformat:2 }}</span>
+                            <span class="text-success fw-bold fs-5">${{ payment.amount|floatformat:2|intcomma }}</span>
                         </td>
                         <td data-label="Notes">
                             {% if payment.notes %}

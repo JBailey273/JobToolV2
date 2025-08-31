@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% load static %}
+{% load static humanize %}
 {% block title %}Contractor Summary Report{% endblock %}
 {% block content %}
 
@@ -44,21 +44,21 @@
         <div class="summary-card" style="background: var(--success-gradient);">
             <i class="fas fa-dollar-sign fa-2x mb-3"></i>
             <h5 class="card-title">Total Revenue</h5>
-            <p class="card-text">${{ total_revenue|floatformat:2 }}</p>
+            <p class="card-text">${{ total_revenue|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-3">
         <div class="summary-card" style="background: var(--warning-gradient);">
             <i class="fas fa-coins fa-2x mb-3"></i>
             <h5 class="card-title">Total Cost</h5>
-            <p class="card-text">${{ total_cost|floatformat:2 }}</p>
+            <p class="card-text">${{ total_cost|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-3">
         <div class="summary-card" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
             <i class="fas fa-chart-line fa-2x mb-3"></i>
             <h5 class="card-title">Total Profit</h5>
-            <p class="card-text">${{ total_profit|floatformat:2 }}</p>
+            <p class="card-text">${{ total_profit|floatformat:2|intcomma }}</p>
         </div>
     </div>
 </div>
@@ -111,17 +111,17 @@
                 </td>
                 <td class="text-right" data-label="Actual Cost">
                     <span class="{% if not report %}text-danger fw-semibold{% endif %}">
-                        ${{ p.total_cost|default:0|floatformat:2 }}
+                        ${{ p.total_cost|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>
                 <td class="text-right" data-label="Billable Total">
                     <span class="{% if not report %}text-primary fw-semibold{% endif %}">
-                        ${{ p.total_billable|default:0|floatformat:2 }}
+                        ${{ p.total_billable|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>
                 <td class="text-right" data-label="Profit">
                     <span class="{% if not report %}{% if p.profit >= 0 %}text-success{% else %}text-danger{% endif %} fw-semibold{% endif %}">
-                        {% if p.profit >= 0 %}+{% endif %}${{ p.profit|default:0|floatformat:2 }}
+                        {% if p.profit >= 0 %}+{% endif %}${{ p.profit|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>
                 <td class="text-right" data-label="Margin">

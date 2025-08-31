@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% load static %}
+{% load static humanize %}
 {% block title %}Customer Report{% endblock %}
 {% block content %}
 
@@ -79,7 +79,7 @@
                     {% endif %}
                 </td>
                 <td class="text-right" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
-                <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2 }}</td>
+                <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2|intcomma }}</td>
             </tr>
         {% empty %}
             <tr>
@@ -94,7 +94,7 @@
             <td colspan="6" class="text-right">
                 <strong><i class="fas fa-calculator me-2"></i>TOTAL</strong>
             </td>
-            <td class="text-right"><strong>${{ total|floatformat:2 }}</strong></td>
+            <td class="text-right"><strong>${{ total|floatformat:2|intcomma }}</strong></td>
         </tr>
         </tbody>
     </table>
@@ -120,12 +120,12 @@
                 {% for p in payments %}
                     <tr>
                         <td class="text-left" data-label="Date">{{ p.date|date:"m/d/Y" }}</td>
-                        <td class="text-right" data-label="Amount">${{ p.amount|floatformat:2 }}</td>
+                        <td class="text-right" data-label="Amount">${{ p.amount|floatformat:2|intcomma }}</td>
                     </tr>
                 {% endfor %}
                 <tr class="totals-row">
                     <td class="text-right"><strong>Total Payments</strong></td>
-                    <td class="text-right"><strong>${{ total_payments|floatformat:2 }}</strong></td>
+                    <td class="text-right"><strong>${{ total_payments|floatformat:2|intcomma }}</strong></td>
                 </tr>
                 </tbody>
             </table>
@@ -156,16 +156,16 @@
             <i class="fas {% if outstanding > 0 %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-2x me-3"></i>
             <div>
                 <h6 class="mb-1">Outstanding Balance</h6>
-                <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2 }}</p>
+                <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2|intcomma }}</p>
                 {% if outstanding <= 0 %}
                 <small class="text-muted">This project is fully paid!</small>
                 {% endif %}
-                <span class="visually-hidden">Outstanding Balance: ${{ outstanding|floatformat:2 }}</span>
+                <span class="visually-hidden">Outstanding Balance: ${{ outstanding|floatformat:2|intcomma }}</span>
             </div>
         </div>
     </div>
     {% else %}
-    <p><strong>Outstanding Balance: ${{ outstanding|floatformat:2 }}</strong></p>
+    <p><strong>Outstanding Balance: ${{ outstanding|floatformat:2|intcomma }}</strong></p>
     {% endif %}
 </div>
 
@@ -177,7 +177,7 @@
             <div class="card-body">
                 <i class="fas fa-dollar-sign fa-2x text-primary mb-2"></i>
                 <h6 class="card-title">Total Work</h6>
-                <h4 class="text-primary">${{ total|floatformat:2 }}</h4>
+                <h4 class="text-primary">${{ total|floatformat:2|intcomma }}</h4>
             </div>
         </div>
     </div>
@@ -186,7 +186,7 @@
             <div class="card-body">
                 <i class="fas fa-credit-card fa-2x text-success mb-2"></i>
                 <h6 class="card-title">Payments</h6>
-                <h4 class="text-success">${{ total_payments|floatformat:2 }}</h4>
+                <h4 class="text-success">${{ total_payments|floatformat:2|intcomma }}</h4>
             </div>
         </div>
     </div>
@@ -195,7 +195,7 @@
             <div class="card-body">
                 <i class="fas fa-balance-scale fa-2x {% if outstanding > 0 %}text-warning{% else %}text-success{% endif %} mb-2"></i>
                 <h6 class="card-title">Balance</h6>
-                <h4 class="{% if outstanding > 0 %}text-warning{% else %}text-success{% endif %}">${{ outstanding|floatformat:2 }}</h4>
+                <h4 class="{% if outstanding > 0 %}text-warning{% else %}text-success{% endif %}">${{ outstanding|floatformat:2|intcomma }}</h4>
             </div>
         </div>
     </div>

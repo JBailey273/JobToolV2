@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %}
+{% load humanize %}
 {% block title %}Add Job Entry{% endblock %}
 {% block content %}
 
@@ -73,7 +74,7 @@
                                             <option value="">Select Asset...</option>
                                             {% for asset in assets %}
                                             <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
-                                                {{ asset.name }} (${{ asset.billable_rate }}/hr)
+                                                {{ asset.name }} (${{ asset.billable_rate|floatformat:2|intcomma }}/hr)
                                             </option>
                                             {% endfor %}
                                         </select>
@@ -87,7 +88,7 @@
                                             <option value="">Select Employee...</option>
                                             {% for emp in employees %}
                                             <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
-                                                {{ emp.name }} (${{ emp.billable_rate }}/hr)
+                                                {{ emp.name }} (${{ emp.billable_rate|floatformat:2|intcomma }}/hr)
                                             </option>
                                             {% endfor %}
                                         </select>
@@ -313,10 +314,11 @@ document.addEventListener('DOMContentLoaded', function() {
         });
         
         // Update display
+        const formatCurrency = (val) => val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         document.getElementById('total-hours').textContent = totalHours.toFixed(2);
-        document.getElementById('total-cost').textContent = totalCost.toFixed(2);
-        document.getElementById('total-billable').textContent = totalBillable.toFixed(2);
-        document.getElementById('total-profit').textContent = (totalBillable - totalCost).toFixed(2);
+        document.getElementById('total-cost').textContent = formatCurrency(totalCost);
+        document.getElementById('total-billable').textContent = formatCurrency(totalBillable);
+        document.getElementById('total-profit').textContent = formatCurrency(totalBillable - totalCost);
         
         // Update profit color
         const profitEl = document.getElementById('total-profit');
