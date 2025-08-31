@@ -138,6 +138,7 @@
             {% endif %}
             <form class="d-inline" method="post" action="{% url 'logout' %}">
                 {% csrf_token %}
+                <input type="hidden" name="next" value="{% url 'login' %}">
                 <button type="submit" class="nav-link btn btn-link fw-semibold">
                     <i class="fas fa-sign-out-alt me-2"></i>Logout
                 </button>
