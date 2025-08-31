@@ -262,7 +262,8 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Update totals when inputs change
-    container.addEventListener('input change', updateTotals);
+    container.addEventListener('input', updateTotals);
+    container.addEventListener('change', updateTotals);
     
     function updateTotals() {
         let totalHours = 0;
