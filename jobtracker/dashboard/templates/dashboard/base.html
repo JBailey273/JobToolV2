@@ -179,6 +179,7 @@
 document.addEventListener('DOMContentLoaded', function () {
     // Enhanced responsive table handling
     document.querySelectorAll('.table-responsive table').forEach(function (table) {
+        if (table.classList.contains('no-stack')) return;
         const ths = Array.from(table.querySelectorAll('thead th'));
         const headers = ths.map(th => th.innerText.trim());
 
