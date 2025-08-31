@@ -2,27 +2,389 @@
 {% load i18n static %}
 
 {% block content %}
-<div class="container d-flex justify-content-center align-items-center" style="min-height:100vh;">
-    <div class="card p-4 shadow-sm" style="width:100%; max-width:360px;">
-        <div class="text-center mb-3">
+<style>
+    /* Override admin styles for login page */
+    body {
+        font-family: 'Inter', system-ui, sans-serif !important;
+        background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%) !important;
+        min-height: 100vh !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        padding: 20px !important;
+        position: relative !important;
+        overflow: hidden !important;
+        margin: 0 !important;
+    }
+    
+    body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grain" width="100" height="100" patternUnits="userSpaceOnUse"><circle cx="20" cy="20" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="80" cy="80" r="1" fill="rgba(255,255,255,0.1)"/><circle cx="40" cy="60" r="0.5" fill="rgba(255,255,255,0.05)"/><circle cx="60" cy="40" r="0.5" fill="rgba(255,255,255,0.05)"/></pattern></defs><rect width="100" height="100" fill="url(%23grain)"/></svg>');
+        pointer-events: none;
+        opacity: 0.3;
+    }
+    
+    /* Hide admin header and navigation */
+    #header,
+    #nav-sidebar,
+    .breadcrumbs,
+    #footer {
+        display: none !important;
+    }
+    
+    /* Main container styling */
+    #container {
+        background: transparent !important;
+        width: 100% !important;
+        max-width: 450px !important;
+        z-index: 1 !important;
+        position: relative !important;
+    }
+    
+    #content {
+        padding: 0 !important;
+        margin: 0 !important;
+        background: transparent !important;
+    }
+    
+    /* Login card styling */
+    .login-card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        border-radius: 20px !important;
+        padding: 40px !important;
+        box-shadow: 
+            0 20px 25px rgba(45, 80, 22, 0.1),
+            0 40px 80px rgba(45, 80, 22, 0.1),
+            inset 0 1px 0 rgba(255, 255, 255, 0.9) !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        animation: slideUp 0.8s ease-out !important;
+    }
+    
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(40px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    /* Header styling */
+    .login-header {
+        text-align: center !important;
+        margin-bottom: 32px !important;
+    }
+    
+    .login-logo {
+        margin-bottom: 20px !important;
+    }
+    
+    .login-logo img {
+        max-height: 80px !important;
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.1)) !important;
+    }
+    
+    .login-title {
+        font-size: 2rem !important;
+        font-weight: 800 !important;
+        background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%) !important;
+        -webkit-background-clip: text !important;
+        -webkit-text-fill-color: transparent !important;
+        background-clip: text !important;
+        margin-bottom: 8px !important;
+    }
+    
+    .login-subtitle {
+        color: #6b7280 !important;
+        font-weight: 500 !important;
+        margin: 0 !important;
+    }
+    
+    /* Form styling */
+    #login-form {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        max-width: 100% !important;
+    }
+    
+    .form-row {
+        margin-bottom: 20px !important;
+        background: transparent !important;
+        border: none !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+    }
+    
+    label {
+        color: #4a5568 !important;
+        font-weight: 600 !important;
+        font-size: 14px !important;
+        margin-bottom: 8px !important;
+        display: block !important;
+    }
+    
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+        background: rgba(255, 255, 255, 0.9) !important;
+        border: 2px solid rgba(45, 80, 22, 0.1) !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        font-size: 16px !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        color: #2d3748 !important;
+        box-sizing: border-box !important;
+    }
+    
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="password"]:focus {
+        background: rgba(255, 255, 255, 1) !important;
+        border-color: #4a7c2a !important;
+        box-shadow: 0 0 0 4px rgba(74, 124, 42, 0.1) !important;
+        transform: translateY(-2px) !important;
+        outline: none !important;
+    }
+    
+    /* Submit button */
+    input[type="submit"],
+    .submit-row input {
+        background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%) !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 16px 24px !important;
+        font-weight: 700 !important;
+        font-size: 16px !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+        width: 100% !important;
+        color: white !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 8px 25px rgba(74, 124, 42, 0.3) !important;
+        cursor: pointer !important;
+        margin-top: 10px !important;
+    }
+    
+    input[type="submit"]:hover,
+    .submit-row input:hover {
+        transform: translateY(-2px) !important;
+        box-shadow: 0 12px 35px rgba(74, 124, 42, 0.4) !important;
+        color: white !important;
+    }
+    
+    input[type="submit"]:active,
+    .submit-row input:active {
+        transform: translateY(0) !important;
+    }
+    
+    /* Error messages */
+    .errorlist,
+    .errornote {
+        background: linear-gradient(135deg, #8b4513 0%, #cd853f 100%) !important;
+        color: white !important;
+        border: none !important;
+        border-radius: 12px !important;
+        padding: 16px 20px !important;
+        margin-bottom: 24px !important;
+        font-weight: 500 !important;
+        box-shadow: 0 4px 15px rgba(139, 69, 19, 0.3) !important;
+        list-style: none !important;
+    }
+    
+    .errorlist li {
+        margin: 0 !important;
+        padding: 0 !important;
+        list-style: none !important;
+    }
+    
+    /* Footer links */
+    .footer-links {
+        text-align: center !important;
+        margin-top: 32px !important;
+        padding-top: 24px !important;
+        border-top: 1px solid rgba(45, 80, 22, 0.1) !important;
+    }
+    
+    .footer-links a {
+        color: #4a7c2a !important;
+        text-decoration: none !important;
+        font-weight: 500 !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .footer-links a:hover {
+        color: #2d5016 !important;
+        text-decoration: underline !important;
+    }
+    
+    /* Loading state */
+    .loading {
+        display: none;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        color: white;
+    }
+    
+    .loading.show {
+        display: block;
+    }
+    
+    /* Responsive design */
+    @media (max-width: 480px) {
+        body {
+            padding: 16px !important;
+        }
+        
+        .login-card {
+            padding: 24px !important;
+            border-radius: 16px !important;
+        }
+        
+        .login-title {
+            font-size: 1.75rem !important;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            padding: 14px 16px !important;
+            font-size: 14px !important;
+        }
+        
+        input[type="submit"],
+        .submit-row input {
+            padding: 14px 20px !important;
+            font-size: 14px !important;
+        }
+    }
+    
+    /* Hide any remaining admin elements */
+    #nav-global,
+    #nav-sidebar,
+    .module,
+    .breadcrumbs {
+        display: none !important;
+    }
+</style>
+
+<div class="login-card">
+    <div class="login-header">
+        <div class="login-logo">
             {% if global_settings and global_settings.logo %}
-                <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:80px;">
+                <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo">
             {% else %}
-                <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="img-fluid" style="max-height:80px;">
+                <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo">
             {% endif %}
         </div>
-        {% if form.errors %}
-            <div class="alert alert-danger" role="alert">
-                {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
-            </div>
-        {% endif %}
-        <form action="{{ form_url }}" method="post" id="login-form">{% csrf_token %}
-            {{ form.as_p }}
-            <input type="hidden" name="next" value="{{ next }}">
-            <div class="d-grid">
-                <input type="submit" value="{% translate 'Log in' %}" class="btn btn-primary">
-            </div>
-        </form>
+        <h1 class="login-title">Admin Portal</h1>
+        <p class="login-subtitle">Secure administrative access</p>
+    </div>
+    
+    {% if form.errors %}
+        <div class="errorlist" role="alert">
+            <i class="fas fa-exclamation-triangle" style="margin-right: 8px;"></i>
+            {% blocktranslate count counter=form.errors.items|length %}Please correct the error below.{% plural %}Please correct the errors below.{% endblocktranslate %}
+        </div>
+    {% endif %}
+    
+    <form action="{{ form_url }}" method="post" id="login-form">
+        {% csrf_token %}
+        
+        <div class="form-row">
+            <label for="{{ form.username.id_for_label }}">
+                <i class="fas fa-envelope" style="margin-right: 8px; color: #4a7c2a;"></i>Email Address
+            </label>
+            {{ form.username }}
+        </div>
+        
+        <div class="form-row">
+            <label for="{{ form.password.id_for_label }}">
+                <i class="fas fa-lock" style="margin-right: 8px; color: #4a7c2a;"></i>Password
+            </label>
+            {{ form.password }}
+        </div>
+        
+        <input type="hidden" name="next" value="{{ next }}">
+        
+        <div class="submit-row">
+            <input type="submit" value="{% translate 'Log In' %}" id="submit-btn">
+            <span class="loading">
+                <i class="fas fa-spinner fa-spin" style="margin-right: 8px;"></i>Signing In...
+            </span>
+        </div>
+    </form>
+    
+    <div class="footer-links">
+        <small style="color: #6b7280;">
+            <i class="fas fa-shield-alt" style="margin-right: 4px; color: #4a7c2a;"></i>
+            Secure access to Squire Enterprises administration
+        </small>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('login-form');
+        const submitBtn = document.getElementById('submit-btn');
+        const loading = document.querySelector('.loading');
+        
+        // Form submission handling
+        form.addEventListener('submit', function() {
+            submitBtn.style.display = 'none';
+            loading.classList.add('show');
+            submitBtn.disabled = true;
+            
+            // Re-enable after 5 seconds as fallback
+            setTimeout(() => {
+                submitBtn.disabled = false;
+                submitBtn.style.display = 'block';
+                loading.classList.remove('show');
+            }, 5000);
+        });
+        
+        // Input focus effects
+        document.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.classList.add('focused');
+            });
+            
+            input.addEventListener('blur', function() {
+                if (!this.value) {
+                    this.parentElement.classList.remove('focused');
+                }
+            });
+            
+            // Check if input has value on load
+            if (input.value) {
+                input.parentElement.classList.add('focused');
+            }
+        });
+        
+        // Auto-hide error messages after 10 seconds
+        setTimeout(function() {
+            const errorMessages = document.querySelectorAll('.errorlist');
+            errorMessages.forEach(message => {
+                message.style.opacity = '0';
+                message.style.transform = 'translateY(-10px)';
+                setTimeout(() => message.remove(), 300);
+            });
+        }, 10000);
+    });
+</script>
 {% endblock %}
