@@ -151,7 +151,7 @@
 <div class="{% if not report %}container{% endif %}">
     {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
     <div class="d-print-none mb-4">
-        <a href="#" id="back-button" class="btn btn-outline-primary">
+        <a href="#" id="back-button" class="btn btn-outline-primary" style="display:none;">
             <i class="fas fa-arrow-left me-2"></i>Back
         </a>
     </div>
@@ -182,27 +182,23 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const backButton = document.getElementById('back-button');
+    const prevHref = sessionStorage.getItem('prevHref');
+    const prevTitle = sessionStorage.getItem('prevTitle');
+
     if (backButton) {
-        const referrer = document.referrer;
-        if (referrer) {
-            backButton.href = referrer;
-            try {
-                const url = new URL(referrer);
-                let segments = url.pathname.split('/').filter(Boolean);
-                let name = segments.pop() || '';
-                if (/^\d+$/.test(name) && segments.length) {
-                    name = segments.pop();
-                }
-                name = name.replace(/[-_]/g, ' ');
-                name = name.charAt(0).toUpperCase() + name.slice(1);
-                backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + name;
-            } catch (e) {
-                backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back';
-            }
+        if (prevHref && prevTitle && prevHref !== window.location.href) {
+            backButton.href = prevHref;
+            backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + prevTitle;
+            backButton.style.display = 'inline-block';
         } else {
             backButton.style.display = 'none';
         }
     }
+
+    // store current page info for next navigation
+    sessionStorage.setItem('prevHref', window.location.href);
+    const currentTitle = document.title.split('|')[0].trim();
+    sessionStorage.setItem('prevTitle', currentTitle);
 });
 </script>
 <script>
