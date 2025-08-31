@@ -160,6 +160,7 @@
                 {% if outstanding <= 0 %}
                 <small class="text-muted">This project is fully paid!</small>
                 {% endif %}
+                <span class="visually-hidden">Outstanding Balance: ${{ outstanding|floatformat:2 }}</span>
             </div>
         </div>
     </div>

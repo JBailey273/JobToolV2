@@ -11,7 +11,7 @@
     </div>
     <div>
         <a href="{% url 'dashboard:contractor_report' %}" class="btn btn-primary">
-            <i class="fas fa-chart-bar me-2"></i>Summary Report
+            <i class="fas fa-chart-bar me-2"></i>Contractor Summary Report
         </a>
     </div>
 </div>
@@ -112,70 +112,40 @@
     {% endfor %}
 </div>
 
-<!-- Projects Summary Card -->
-<div class="card mt-4">
-    <div class="card-body">
-        <h5 class="card-title">
-            <i class="fas fa-chart-pie me-2"></i>Portfolio Summary
-        </h5>
-        <div class="row text-center">
-            <div class="col-md-3">
-                <div class="border-end">
-                    <h4 class="text-primary">{{ projects.count }}</h4>
-                    <small class="text-muted">Active Projects</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="border-end">
-                    {% with total_billable=projects|length %}
-                    {% for project in projects %}
-                        {% if forloop.first %}
-                            {% with total_billable=0 %}
-                        {% endif %}
-                        {% with total_billable=total_billable|add:project.total_billable %}
-                        {% if forloop.last %}
-                            <h4 class="text-success">${{ total_billable|floatformat:0 }}</h4>
-                        {% endif %}
-                    {% endfor %}
-                    {% empty %}
-                        <h4 class="text-success">$0</h4>
-                    {% endwith %}
-                    <small class="text-muted">Total Billable</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="border-end">
-                    {% with total_payments=0 %}
-                    {% for project in projects %}
-                        {% with total_payments=total_payments|add:project.total_payments %}
-                        {% if forloop.last %}
-                            <h4 class="text-info">${{ total_payments|floatformat:0 }}</h4>
-                        {% endif %}
-                    {% endfor %}
-                    {% empty %}
-                        <h4 class="text-info">$0</h4>
-                    {% endwith %}
-                    <small class="text-muted">Total Payments</small>
-                </div>
-            </div>
-            <div class="col-md-3">
-                {% with total_outstanding=0 %}
-                {% for project in projects %}
-                    {% with total_outstanding=total_outstanding|add:project.outstanding %}
-                    {% if forloop.last %}
-                        <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %}">
-                            ${{ total_outstanding|floatformat:0 }}
-                        </h4>
-                    {% endif %}
-                {% endfor %}
-                {% empty %}
-                    <h4 class="text-success">$0</h4>
-                {% endwith %}
-                <small class="text-muted">Outstanding</small>
-            </div>
-        </div>
-    </div>
-</div>
+  <!-- Projects Summary Card -->
+  <div class="card mt-4">
+      <div class="card-body">
+          <h5 class="card-title">
+              <i class="fas fa-chart-pie me-2"></i>Portfolio Summary
+          </h5>
+          <div class="row text-center">
+              <div class="col-md-3">
+                  <div class="border-end">
+                      <h4 class="text-primary">{{ projects.count }}</h4>
+                      <small class="text-muted">Active Projects</small>
+                  </div>
+              </div>
+              <div class="col-md-3">
+                  <div class="border-end">
+                      <h4 class="text-success">${{ total_billable|floatformat:0 }}</h4>
+                      <small class="text-muted">Total Billable</small>
+                  </div>
+              </div>
+              <div class="col-md-3">
+                  <div class="border-end">
+                      <h4 class="text-info">${{ total_payments|floatformat:0 }}</h4>
+                      <small class="text-muted">Total Payments</small>
+                  </div>
+              </div>
+              <div class="col-md-3">
+                  <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %}">
+                      ${{ total_outstanding|floatformat:0 }}
+                  </h4>
+                  <small class="text-muted">Outstanding</small>
+              </div>
+          </div>
+      </div>
+  </div>
 
 {% else %}
 <!-- Empty State -->
