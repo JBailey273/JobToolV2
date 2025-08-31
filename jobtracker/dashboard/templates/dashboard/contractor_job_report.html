@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% load static %}
+{% load static humanize %}
 {% block title %}Contractor Job Report{% endblock %}
 {% block content %}
 
@@ -82,9 +82,9 @@
                     {% endif %}
                 </td>
                 <td class="text-right" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
-                <td class="text-right" data-label="Actual Cost">${{ e.cost_amount|floatformat:2 }}</td>
-                <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2 }}</td>
-                <td class="text-right" data-label="Profit">${{ e.profit|floatformat:2 }}</td>
+                <td class="text-right" data-label="Actual Cost">${{ e.cost_amount|floatformat:2|intcomma }}</td>
+                <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2|intcomma }}</td>
+                <td class="text-right" data-label="Profit">${{ e.profit|floatformat:2|intcomma }}</td>
                 <td class="text-right" data-label="Margin">{{ e.margin|floatformat:2 }}%</td>
             </tr>
         {% empty %}
@@ -100,9 +100,9 @@
             <td colspan="6" class="text-right">
                 <strong><i class="fas fa-calculator me-2"></i>TOTALS</strong>
             </td>
-            <td class="text-right"><strong>${{ total_cost|floatformat:2 }}</strong></td>
-            <td class="text-right"><strong>${{ total_billable|floatformat:2 }}</strong></td>
-            <td class="text-right"><strong>${{ total_profit|floatformat:2 }}</strong></td>
+            <td class="text-right"><strong>${{ total_cost|floatformat:2|intcomma }}</strong></td>
+            <td class="text-right"><strong>${{ total_billable|floatformat:2|intcomma }}</strong></td>
+            <td class="text-right"><strong>${{ total_profit|floatformat:2|intcomma }}</strong></td>
             <td class="text-right"><strong>{{ overall_margin|floatformat:2 }}%</strong></td>
         </tr>
         </tbody>
@@ -129,12 +129,12 @@
                 {% for p in payments %}
                     <tr>
                         <td class="text-left" data-label="Date">{{ p.date|date:"m/d/Y" }}</td>
-                        <td class="text-right" data-label="Amount">${{ p.amount|floatformat:2 }}</td>
+                        <td class="text-right" data-label="Amount">${{ p.amount|floatformat:2|intcomma }}</td>
                     </tr>
                 {% endfor %}
                 <tr class="totals-row">
                     <td class="text-right"><strong>Total Payments</strong></td>
-                    <td class="text-right"><strong>${{ total_payments|floatformat:2 }}</strong></td>
+                    <td class="text-right"><strong>${{ total_payments|floatformat:2|intcomma }}</strong></td>
                 </tr>
                 </tbody>
             </table>
@@ -164,11 +164,11 @@
         <i class="fas fa-info-circle fa-2x me-3"></i>
         <div>
             <h6 class="mb-1">Outstanding Balance</h6>
-            <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2 }}</p>
+            <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2|intcomma }}</p>
         </div>
     </div>
     {% else %}
-    <p><strong>Outstanding Balance: ${{ outstanding|floatformat:2 }}</strong></p>
+    <p><strong>Outstanding Balance: ${{ outstanding|floatformat:2|intcomma }}</strong></p>
     {% endif %}
 </div>
 

@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% load static %}
+{% load static humanize %}
 {% block title %}Dashboard{% endblock %}
 {% block content %}
 
@@ -20,21 +20,21 @@
         <div class="summary-card slide-up">
             <i class="fas fa-dollar-sign fa-2x mb-3"></i>
             <h5 class="card-title">Total Billable</h5>
-            <p class="card-text">${{ overall_billable|floatformat:2 }}</p>
+            <p class="card-text">${{ overall_billable|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-4 mb-3">
         <div class="summary-card slide-up" style="background: var(--success-gradient); animation-delay: 0.1s;">
             <i class="fas fa-credit-card fa-2x mb-3"></i>
             <h5 class="card-title">Total Payments</h5>
-            <p class="card-text">${{ overall_payments|floatformat:2 }}</p>
+            <p class="card-text">${{ overall_payments|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-4 mb-3">
         <div class="summary-card slide-up" style="{% if outstanding > 0 %}background: var(--warning-gradient);{% else %}background: var(--success-gradient);{% endif %} animation-delay: 0.2s;">
             <i class="fas fa-balance-scale fa-2x mb-3"></i>
             <h5 class="card-title">Outstanding</h5>
-            <p class="card-text">${{ outstanding|floatformat:2 }}</p>
+            <p class="card-text">${{ outstanding|floatformat:2|intcomma }}</p>
         </div>
     </div>
 </div>

@@ -1,4 +1,5 @@
 {% extends 'dashboard/base.html' %}
+{% load humanize %}
 {% block title %}Edit Job Entry{% endblock %}
 {% block content %}
 
@@ -47,8 +48,8 @@
                                 <small>
                                     <i class="fas fa-calculator me-1"></i>
                                     <strong>Current Values:</strong><br>
-                                    Cost: ${{ entry.cost_amount|floatformat:2 }}<br>
-                                    Billable: ${{ entry.billable_amount|floatformat:2 }}
+                                    Cost: ${{ entry.cost_amount|floatformat:2|intcomma }}<br>
+                                    Billable: ${{ entry.billable_amount|floatformat:2|intcomma }}
                                 </small>
                             </div>
                         </div>
@@ -64,7 +65,7 @@
                                 <option value="">Select Asset...</option>
                                 {% for asset in assets %}
                                 <option value="{{ asset.id }}" {% if entry.asset_id == asset.id %}selected{% endif %} data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
-                                    {{ asset.name }} (${{ asset.cost_rate }}/hr cost, ${{ asset.billable_rate }}/hr billable)
+                                    {{ asset.name }} (${{ asset.cost_rate|floatformat:2|intcomma }}/hr cost, ${{ asset.billable_rate|floatformat:2|intcomma }}/hr billable)
                                 </option>
                                 {% endfor %}
                             </select>
@@ -78,7 +79,7 @@
                                 <option value="">Select Employee...</option>
                                 {% for emp in employees %}
                                 <option value="{{ emp.id }}" {% if entry.employee_id == emp.id %}selected{% endif %} data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
-                                    {{ emp.name }} (${{ emp.cost_rate }}/hr cost, ${{ emp.billable_rate }}/hr billable)
+                                    {{ emp.name }} (${{ emp.cost_rate|floatformat:2|intcomma }}/hr cost, ${{ emp.billable_rate|floatformat:2|intcomma }}/hr billable)
                                 </option>
                                 {% endfor %}
                             </select>
