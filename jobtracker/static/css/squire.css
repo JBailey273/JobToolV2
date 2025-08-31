@@ -59,6 +59,13 @@ body {
     line-height: 1.6;
 }
 
+.contractor-logo {
+    max-height: 80px;
+    max-width: 200px;
+    width: auto;
+    height: auto;
+}
+
 /* Enhanced Admin Styles */
 #header {
     background: var(--card-background) !important;

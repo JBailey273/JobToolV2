@@ -281,12 +281,12 @@ def contractor_report(request):
             unprofitable += 1
     avg_margin = (total_margin / len(projects)) if projects else Decimal("0")
     roi = (total_profit / total_cost * Decimal("100")) if total_cost else None
+    export_pdf = request.GET.get("export") == "pdf"
     logo_url = (
         contractor.logo_thumbnail.url
-        if contractor and contractor.logo_thumbnail
-        else None
+        if export_pdf and contractor and contractor.logo_thumbnail
+        else contractor.logo.url if contractor and contractor.logo else None
     )
-    export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
         "projects": projects,
@@ -322,12 +322,12 @@ def customer_report(request, pk):
     payments = list(project.payments.all())
     total_payments = project.payments.aggregate(total=Sum("amount"))["total"] or 0
     outstanding = total - (total_payments or 0)
+    export_pdf = request.GET.get("export") == "pdf"
     logo_url = (
         contractor.logo_thumbnail.url
-        if contractor and contractor.logo_thumbnail
-        else None
+        if export_pdf and contractor and contractor.logo_thumbnail
+        else contractor.logo.url if contractor and contractor.logo else None
     )
-    export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
         "project": project,
@@ -377,12 +377,12 @@ def contractor_job_report(request, pk):
     payments = list(project.payments.all())
     total_payments = project.payments.aggregate(total=Sum("amount"))["total"] or 0
     outstanding = total_billable - (total_payments or 0)
+    export_pdf = request.GET.get("export") == "pdf"
     logo_url = (
         contractor.logo_thumbnail.url
-        if contractor and contractor.logo_thumbnail
-        else None
+        if export_pdf and contractor and contractor.logo_thumbnail
+        else contractor.logo.url if contractor and contractor.logo else None
     )
-    export_pdf = request.GET.get("export") == "pdf"
     context = {
         "contractor": contractor,
         "project": project,
