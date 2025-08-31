@@ -167,6 +167,27 @@
             text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
         }
         
+        /* Force override for section headers that aren't responding */
+        .module h2,
+        .module > h2,
+        div.module h2,
+        .dashboard .module h2,
+        h2.module-title {
+            background: #4a7c2a !important;
+            color: white !important;
+            font-weight: 700 !important;
+        }
+        
+        /* Target specific Django admin section headers */
+        .app-auth h2,
+        .app-tracker h2,
+        [data-app="auth"] h2,
+        [data-app="tracker"] h2 {
+            background: #4a7c2a !important;
+            color: white !important;
+            font-weight: 700 !important;
+        }
+        
         .module h2::before {
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
@@ -275,6 +296,21 @@
         
         .changelink:hover {
             background: #26704c !important;
+        }
+        
+        /* Force white text on buttons */
+        .addlink,
+        .changelink,
+        .addlink:visited,
+        .changelink:visited,
+        .addlink:hover,
+        .changelink:hover,
+        .addlink:focus,
+        .changelink:focus,
+        .addlink:active,
+        .changelink:active {
+            color: white !important;
+            text-decoration: none !important;
         }
         
         .addlink::before {
@@ -454,6 +490,34 @@
         /* Fix for dashboard layout */
         .dashboard #content {
             display: block !important;
+        }
+        
+        /* Additional overrides for stubborn elements */
+        .module caption,
+        .module > caption,
+        .app-list .module h2,
+        .app-list .module > h2,
+        .dashboard-module h2,
+        .dashboard-module > h2 {
+            background: #4a7c2a !important;
+            color: white !important;
+            font-weight: 700 !important;
+            padding: 20px 25px !important;
+        }
+        
+        /* Force override any remaining blue headers */
+        h2[style*="background"] {
+            background: #4a7c2a !important;
+            color: white !important;
+        }
+        
+        /* Ensure all module-related headers are consistent */
+        .module h2,
+        .module-header,
+        .app-header,
+        thead th {
+            background: #4a7c2a !important;
+            color: white !important;
         }
         
         /* Welcome Message */
