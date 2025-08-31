@@ -89,17 +89,25 @@ def project_list(request):
     projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
         "job_entries", "payments"
     )
+    total_billable = Decimal("0")
+    total_payments = Decimal("0")
     for p in projects:
         p.total_billable = sum(
             (je.billable_amount or 0) for je in p.job_entries.all()
         )
         p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
         p.outstanding = p.total_billable - p.total_payments
+        total_billable += Decimal(p.total_billable)
+        total_payments += Decimal(p.total_payments)
+    total_outstanding = total_billable - total_payments
     return render(
         request,
         'dashboard/project_list.html',
         {
             'projects': projects,
+            'total_billable': total_billable,
+            'total_payments': total_payments,
+            'total_outstanding': total_outstanding,
         },
     )
 
@@ -246,14 +254,33 @@ def contractor_report(request):
         total_billable=Sum("job_entries__billable_amount"),
     )
     projects = []
+    total_revenue = Decimal("0")
+    total_cost = Decimal("0")
+    total_profit = Decimal("0")
+    total_margin = Decimal("0")
+    profitable = 0
+    breakeven = 0
+    unprofitable = 0
     for p in projects_qs.iterator():
-        total_billable = p.total_billable or Decimal("0")
-        total_cost = p.total_cost or Decimal("0")
-        p.profit = total_billable - total_cost
-        p.margin = (
-            (p.profit / total_billable) * Decimal("100") if total_billable else Decimal("0")
-        )
+        billable = p.total_billable or Decimal("0")
+        cost = p.total_cost or Decimal("0")
+        profit = billable - cost
+        margin = (profit / billable * Decimal("100")) if billable else Decimal("0")
+        p.profit = profit
+        p.margin = margin
         projects.append(p)
+        total_revenue += billable
+        total_cost += cost
+        total_profit += profit
+        total_margin += margin
+        if profit > 100:
+            profitable += 1
+        elif profit >= 0:
+            breakeven += 1
+        else:
+            unprofitable += 1
+    avg_margin = (total_margin / len(projects)) if projects else Decimal("0")
+    roi = (total_profit / total_cost * Decimal("100")) if total_cost else None
     logo_url = (
         contractor.logo_thumbnail.url
         if contractor and contractor.logo_thumbnail
@@ -265,6 +292,14 @@ def contractor_report(request):
         "projects": projects,
         "contractor_logo_url": logo_url,
         "report": export_pdf,
+        "total_revenue": total_revenue,
+        "total_cost": total_cost,
+        "total_profit": total_profit,
+        "average_margin": avg_margin,
+        "roi": roi,
+        "profitable_count": profitable,
+        "breakeven_count": breakeven,
+        "unprofitable_count": unprofitable,
     }
     if export_pdf:
         pdf = _render_pdf(

@@ -85,7 +85,7 @@
                 <td class="text-right" data-label="Actual Cost">${{ e.cost_amount|floatformat:2 }}</td>
                 <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2 }}</td>
                 <td class="text-right" data-label="Profit">${{ e.profit|floatformat:2 }}</td>
-                <td class="text-right" data-label="Margin">{{ e.margin|floatformat:1 }}%</td>
+                <td class="text-right" data-label="Margin">{{ e.margin|floatformat:2 }}%</td>
             </tr>
         {% empty %}
             <tr>
@@ -103,7 +103,7 @@
             <td class="text-right"><strong>${{ total_cost|floatformat:2 }}</strong></td>
             <td class="text-right"><strong>${{ total_billable|floatformat:2 }}</strong></td>
             <td class="text-right"><strong>${{ total_profit|floatformat:2 }}</strong></td>
-            <td class="text-right"><strong>{{ overall_margin|floatformat:1 }}%</strong></td>
+            <td class="text-right"><strong>{{ overall_margin|floatformat:2 }}%</strong></td>
         </tr>
         </tbody>
     </table>
