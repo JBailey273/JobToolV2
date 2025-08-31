@@ -34,20 +34,16 @@
                     </span>
                 </div>
                 
-                <div class="row text-center mb-3">
-                    <div class="col-4">
-                        <div class="border-end">
-                            <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0|intcomma }}</div>
-                            <small class="text-muted text-nowrap">Billable</small>
-                        </div>
+                <div class="d-flex text-center mb-3">
+                    <div class="flex-fill border-end px-2">
+                        <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0|intcomma }}</div>
+                        <small class="text-muted text-nowrap">Billable</small>
                     </div>
-                    <div class="col-4">
-                        <div class="border-end">
-                            <div class="text-success fw-bold">${{ project.total_payments|floatformat:0|intcomma }}</div>
-                            <small class="text-muted text-nowrap">Paid</small>
-                        </div>
+                    <div class="flex-fill border-end px-2">
+                        <div class="text-success fw-bold">${{ project.total_payments|floatformat:0|intcomma }}</div>
+                        <small class="text-muted text-nowrap">Paid</small>
                     </div>
-                    <div class="col-4">
+                    <div class="flex-fill px-2">
                         <div class="{% if project.outstanding > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">
                             ${{ project.outstanding|floatformat:0|intcomma }}
                         </div>
@@ -189,14 +185,14 @@
 }
 
 @media (max-width: 768px) {
-    .border-end {
+    .project-card .d-flex > .flex-fill {
         border-right: none !important;
         border-bottom: 1px solid var(--border-color);
         padding-bottom: 1rem;
         margin-bottom: 1rem;
     }
-    
-    .border-end:last-child {
+
+    .project-card .d-flex > .flex-fill:last-child {
         border-bottom: none;
         padding-bottom: 0;
         margin-bottom: 0;
