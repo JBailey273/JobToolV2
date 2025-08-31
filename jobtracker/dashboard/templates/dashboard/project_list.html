@@ -38,20 +38,20 @@
                     <div class="col-4">
                         <div class="border-end">
                             <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0|intcomma }}</div>
-                            <small class="text-muted">Billable</small>
+                            <small class="text-muted text-nowrap">Billable</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="border-end">
                             <div class="text-success fw-bold">${{ project.total_payments|floatformat:0|intcomma }}</div>
-                            <small class="text-muted">Paid</small>
+                            <small class="text-muted text-nowrap">Paid</small>
                         </div>
                     </div>
                     <div class="col-4">
                         <div class="{% if project.outstanding > 0 %}text-warning{% else %}text-success{% endif %} fw-bold">
                             ${{ project.outstanding|floatformat:0|intcomma }}
                         </div>
-                        <small class="text-muted">Outstanding</small>
+                        <small class="text-muted text-nowrap">Outstanding</small>
                     </div>
                 </div>
                 
