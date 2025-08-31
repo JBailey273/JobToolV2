@@ -119,29 +119,29 @@
               <i class="fas fa-chart-pie me-2"></i>Portfolio Summary
           </h5>
           <div class="row text-center">
-              <div class="col-md-3">
+              <div class="col-md-3 mb-3 mb-md-0">
                   <div class="border-md-end">
                       <h4 class="text-primary mb-0">{{ projects.count }}</h4>
-                      <small class="text-muted d-block mt-1">Active Projects</small>
+                      <small class="text-muted d-block mt-0">Active Projects</small>
                   </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-3 mb-3 mb-md-0">
                   <div class="border-md-end">
                       <h4 class="text-success mb-0">${{ total_billable|floatformat:0 }}</h4>
-                      <small class="text-muted d-block mt-1">Total Billable</small>
+                      <small class="text-muted d-block mt-0">Total Billable</small>
                   </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-3 mb-3 mb-md-0">
                   <div class="border-md-end">
                       <h4 class="text-info mb-0">${{ total_payments|floatformat:0 }}</h4>
-                      <small class="text-muted d-block mt-1">Total Payments</small>
+                      <small class="text-muted d-block mt-0">Total Payments</small>
                   </div>
               </div>
-              <div class="col-md-3">
+              <div class="col-md-3 mb-3 mb-md-0">
                   <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %} mb-0">
                       ${{ total_outstanding|floatformat:0 }}
                   </h4>
-                  <small class="text-muted d-block mt-1">Outstanding</small>
+                  <small class="text-muted d-block mt-0">Outstanding</small>
               </div>
           </div>
       </div>
