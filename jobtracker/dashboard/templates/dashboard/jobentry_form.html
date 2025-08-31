@@ -57,63 +57,71 @@
                         </div>
                         <div class="card-body" id="entries-container">
                             <div class="entry-row border rounded p-3 mb-3">
-                                <div class="text-end">
+                                <div class="d-flex justify-content-end">
                                     <button type="button" class="btn btn-outline-danger btn-sm remove-row" title="Remove entry">
                                         <i class="fas fa-times"></i>
                                     </button>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-clock me-1"></i>Hours/Qty
-                                    </label>
-                                    <input type="number" step="0.01" class="form-control form-control-sm" name="hours[]" placeholder="0.00" min="0">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-tools me-1"></i>Asset
-                                    </label>
-                                    <select class="form-select form-select-sm" name="asset[]">
-                                        <option value="">Select Asset...</option>
-                                        {% for asset in assets %}
-                                        <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
-                                            {{ asset.name }} (${{ asset.billable_rate }}/hr)
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-user-hard-hat me-1"></i>Employee
-                                    </label>
-                                    <select class="form-select form-select-sm" name="employee[]">
-                                        <option value="">Select Employee...</option>
-                                        {% for emp in employees %}
-                                        <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
-                                            {{ emp.name }} (${{ emp.billable_rate }}/hr)
-                                        </option>
-                                        {% endfor %}
-                                    </select>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-box me-1"></i>Material
-                                    </label>
-                                    <input type="text" class="form-control form-control-sm" name="material_description[]" placeholder="Material description">
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-dollar-sign me-1"></i>Material Cost
-                                    </label>
-                                    <div class="input-group input-group-sm">
-                                        <span class="input-group-text">$</span>
-                                        <input type="number" step="0.01" class="form-control form-control-sm" name="material_cost[]" placeholder="0.00" min="0">
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-clock me-2"></i>Hours / Quantity
+                                        </label>
+                                        <input type="number" step="0.01" class="form-control" name="hours[]" placeholder="0.00" min="0">
+                                        <div class="form-text">Hours worked or quantity used</div>
                                     </div>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">
-                                        <i class="fas fa-file-alt me-1"></i>Description
-                                    </label>
-                                    <input type="text" class="form-control form-control-sm" name="description[]" placeholder="Work description">
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-tools me-2"></i>Asset
+                                        </label>
+                                        <select class="form-select" name="asset[]">
+                                            <option value="">Select Asset...</option>
+                                            {% for asset in assets %}
+                                            <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                                                {{ asset.name }} (${{ asset.billable_rate }}/hr)
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">Equipment or asset used</div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-user-hard-hat me-2"></i>Employee
+                                        </label>
+                                        <select class="form-select" name="employee[]">
+                                            <option value="">Select Employee...</option>
+                                            {% for emp in employees %}
+                                            <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                                                {{ emp.name }} (${{ emp.billable_rate }}/hr)
+                                            </option>
+                                            {% endfor %}
+                                        </select>
+                                        <div class="form-text">Employee who performed this work</div>
+                                    </div>
+                                    <div class="col-12 col-md-8">
+                                        <label class="form-label">
+                                            <i class="fas fa-box me-2"></i>Material Description
+                                        </label>
+                                        <input type="text" class="form-control" name="material_description[]" placeholder="Material description">
+                                        <div class="form-text">Describe any materials used</div>
+                                    </div>
+                                    <div class="col-12 col-md-4">
+                                        <label class="form-label">
+                                            <i class="fas fa-dollar-sign me-2"></i>Material Cost
+                                        </label>
+                                        <div class="input-group">
+                                            <span class="input-group-text">$</span>
+                                            <input type="number" step="0.01" class="form-control" name="material_cost[]" placeholder="0.00" min="0">
+                                        </div>
+                                        <div class="form-text">Cost per unit of material</div>
+                                    </div>
+                                    <div class="col-12">
+                                        <label class="form-label">
+                                            <i class="fas fa-file-alt me-2"></i>Work Description
+                                        </label>
+        <textarea class="form-control" name="description[]" rows="2" placeholder="Detailed description of work performed"></textarea>
+                                        <div class="form-text">Detailed description of the work performed</div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -209,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const clone = firstRow.cloneNode(true);
 
         // Clear all inputs in the cloned row
-        clone.querySelectorAll('input, select').forEach(input => {
+        clone.querySelectorAll('input, select, textarea').forEach(input => {
             input.value = '';
         });
 
@@ -320,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Check if at least one row has some data
         rows.forEach(row => {
-            const inputs = row.querySelectorAll('input[type="number"], input[type="text"], select');
+            const inputs = row.querySelectorAll('input[type="number"], input[type="text"], select, textarea');
             const hasData = Array.from(inputs).some(input => input.value.trim() !== '');
             if (hasData) hasValidEntry = true;
         });
@@ -392,51 +400,37 @@ document.addEventListener('DOMContentLoaded', function() {
     border-top: 1px solid #dee2e6;
 }
 
-/* Fixed form control styling to prevent label overlap */
-.form-control-sm, .form-select-sm {
-    font-size: 0.875rem;
+.form-control, .form-select {
     background-color: #ffffff !important;
     color: #212529 !important;
-    padding: 8px 12px;
-    height: auto;
-    min-height: 32px;
 }
 
-.form-control-sm:focus, .form-select-sm:focus {
+.form-control:focus, .form-select:focus {
     background-color: #ffffff !important;
     color: #212529 !important;
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
-/* Ensure proper select styling */
-.form-select-sm {
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23343a40' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-    background-repeat: no-repeat;
-    background-position: right 8px center;
-    background-size: 16px 12px;
-    padding-right: 32px;
-}
-
-/* Input group styling for material cost */
-.input-group-sm .input-group-text {
-    padding: 8px 12px;
-    font-size: 0.875rem;
+.input-group-text {
     background-color: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
 }
 
-.input-group-sm .form-control {
-    border-left: none;
-}
-
-.input-group-sm .form-control:focus {
-    border-left: 1px solid var(--primary-color);
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
 }
 
 .alert {
     animation: slideInDown 0.3s ease-out;
+}
+
+.alert-info {
+    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
+    border: none;
+    color: #0c5460;
 }
 
 @keyframes slideInDown {
