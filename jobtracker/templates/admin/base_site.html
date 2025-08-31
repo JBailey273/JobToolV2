@@ -188,7 +188,7 @@
         .module a {
             display: block !important;
             padding: 10px 15px !important;
-            color: #4a5568 !important;
+            color: #2d3748 !important;
             text-decoration: none !important;
             font-size: 13px !important;
             font-weight: 500 !important;
@@ -199,6 +199,78 @@
             background: #f1f5ec !important;
             color: #2d5016 !important;
             padding-left: 20px !important;
+        }
+        
+        /* Fix specific navigation elements */
+        #nav-sidebar {
+            background: #ffffff !important;
+            border-right: 1px solid #d4d4aa !important;
+        }
+        
+        #nav-sidebar .current-app h2 {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%) !important;
+            color: white !important;
+        }
+        
+        #nav-sidebar .current-app a {
+            color: #2d3748 !important;
+        }
+        
+        #nav-sidebar .current-app a:hover,
+        #nav-sidebar .current-app a.current {
+            background: #f1f5ec !important;
+            color: #2d5016 !important;
+        }
+        
+        /* Filter sidebar styling */
+        #changelist-filter {
+            background: #ffffff !important;
+            border-left: 1px solid #d4d4aa !important;
+        }
+        
+        #changelist-filter h2 {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%) !important;
+            color: white !important;
+        }
+        
+        #changelist-filter h3 {
+            background: #f1f5ec !important;
+            color: #2d3748 !important;
+        }
+        
+        #changelist-filter a {
+            color: #2d3748 !important;
+        }
+        
+        #changelist-filter a:hover,
+        #changelist-filter a.selected {
+            background: #f1f5ec !important;
+            color: #2d5016 !important;
+        }
+        
+        /* Sidebar navigation links - force readable colors */
+        .module a,
+        #nav-sidebar a,
+        #changelist-filter a,
+        .sidebar a {
+            color: #2d3748 !important;
+        }
+        
+        .module a:hover,
+        #nav-sidebar a:hover,
+        #changelist-filter a:hover,
+        .sidebar a:hover {
+            color: #2d5016 !important;
+            background: #f1f5ec !important;
+        }
+        
+        /* Make sure current/active links are visible */
+        .module a.current,
+        #nav-sidebar a.current,
+        #changelist-filter a.selected {
+            background: #e8f0de !important;
+            color: #2d5016 !important;
+            font-weight: 600 !important;
         }
         
         /* Form Styling */
