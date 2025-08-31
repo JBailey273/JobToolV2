@@ -43,7 +43,7 @@
                         </div>
                     </div>
                     
-                    <!-- Dynamic Entry Table -->
+                    <!-- Job Entries -->
                     <div class="card">
                         <div class="card-header bg-light">
                             <div class="d-flex justify-content-between align-items-center">
@@ -51,85 +51,70 @@
                                     <i class="fas fa-list me-2"></i>Job Entries
                                 </h6>
                                 <button type="button" id="add-row" class="btn btn-success btn-sm">
-                                    <i class="fas fa-plus me-1"></i>Add Row
+                                    <i class="fas fa-plus me-1"></i>Add Entry
                                 </button>
                             </div>
                         </div>
-                        <div class="card-body p-0">
-                            <div class="table-responsive">
-                                <table class="table table-hover mb-0 no-stack" id="entries-table">
-                                    <thead class="table-light">
-                                        <tr>
-                                            <th style="width: 10%;">
-                                                <i class="fas fa-clock me-1"></i>Hours/Qty
-                                            </th>
-                                            <th style="width: 15%;">
-                                                <i class="fas fa-tools me-1"></i>Asset
-                                            </th>
-                                            <th style="width: 15%;">
-                                                <i class="fas fa-user-hard-hat me-1"></i>Employee
-                                            </th>
-                                            <th style="width: 15%;">
-                                                <i class="fas fa-box me-1"></i>Material
-                                            </th>
-                                            <th style="width: 12%;">
-                                                <i class="fas fa-dollar-sign me-1"></i>Material Cost
-                                            </th>
-                                            <th style="width: 25%;">
-                                                <i class="fas fa-file-alt me-1"></i>Description
-                                            </th>
-                                            <th style="width: 8%;" class="text-center">Actions</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="entries-body">
-                                        <tr class="entry-row">
-                                            <td>
-                                                <input type="number" step="0.01" class="form-control form-control-sm" 
-                                                       name="hours[]" placeholder="0.00" min="0">
-                                            </td>
-                                            <td>
-                                                <select class="form-select form-select-sm" name="asset[]">
-                                                    <option value="">Select Asset...</option>
-                                                    {% for asset in assets %}
-                                                    <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
-                                                        {{ asset.name }} (${{ asset.billable_rate }}/hr)
-                                                    </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <select class="form-select form-select-sm" name="employee[]">
-                                                    <option value="">Select Employee...</option>
-                                                    {% for emp in employees %}
-                                                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
-                                                        {{ emp.name }} (${{ emp.billable_rate }}/hr)
-                                                    </option>
-                                                    {% endfor %}
-                                                </select>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control form-control-sm" 
-                                                       name="material_description[]" placeholder="Material description">
-                                            </td>
-                                            <td>
-                                                <div class="input-group input-group-sm">
-                                                    <span class="input-group-text">$</span>
-                                                    <input type="number" step="0.01" class="form-control form-control-sm" 
-                                                           name="material_cost[]" placeholder="0.00" min="0">
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <input type="text" class="form-control form-control-sm" 
-                                                       name="description[]" placeholder="Work description">
-                                            </td>
-                                            <td class="text-center">
-                                                <button type="button" class="btn btn-outline-danger btn-sm remove-row" title="Remove row">
-                                                    <i class="fas fa-times"></i>
-                                                </button>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="card-body" id="entries-container">
+                            <div class="entry-row border rounded p-3 mb-3">
+                                <div class="text-end">
+                                    <button type="button" class="btn btn-outline-danger btn-sm remove-row" title="Remove entry">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-clock me-1"></i>Hours/Qty
+                                    </label>
+                                    <input type="number" step="0.01" class="form-control form-control-sm" name="hours[]" placeholder="0.00" min="0">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-tools me-1"></i>Asset
+                                    </label>
+                                    <select class="form-select form-select-sm" name="asset[]">
+                                        <option value="">Select Asset...</option>
+                                        {% for asset in assets %}
+                                        <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                                            {{ asset.name }} (${{ asset.billable_rate }}/hr)
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-user-hard-hat me-1"></i>Employee
+                                    </label>
+                                    <select class="form-select form-select-sm" name="employee[]">
+                                        <option value="">Select Employee...</option>
+                                        {% for emp in employees %}
+                                        <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                                            {{ emp.name }} (${{ emp.billable_rate }}/hr)
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-box me-1"></i>Material
+                                    </label>
+                                    <input type="text" class="form-control form-control-sm" name="material_description[]" placeholder="Material description">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-dollar-sign me-1"></i>Material Cost
+                                    </label>
+                                    <div class="input-group input-group-sm">
+                                        <span class="input-group-text">$</span>
+                                        <input type="number" step="0.01" class="form-control form-control-sm" name="material_cost[]" placeholder="0.00" min="0">
+                                    </div>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">
+                                        <i class="fas fa-file-alt me-1"></i>Description
+                                    </label>
+                                    <input type="text" class="form-control form-control-sm" name="description[]" placeholder="Work description">
+                                </div>
                             </div>
                         </div>
                         <div class="card-footer bg-light">
@@ -210,7 +195,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const tbody = document.getElementById('entries-body');
+    const container = document.getElementById('entries-container');
     const addRowBtn = document.getElementById('add-row');
     const form = document.getElementById('entry-form');
     const submitBtn = document.getElementById('submit-btn');
@@ -218,20 +203,20 @@ document.addEventListener('DOMContentLoaded', function() {
     // Material margin from contractor settings
     const materialMargin = {{ margin|default:0 }};
     
-    // Add new row
+    // Add new entry
     addRowBtn.addEventListener('click', function() {
-        const firstRow = tbody.querySelector('.entry-row');
+        const firstRow = container.querySelector('.entry-row');
         const clone = firstRow.cloneNode(true);
-        
+
         // Clear all inputs in the cloned row
         clone.querySelectorAll('input, select').forEach(input => {
             input.value = '';
         });
-        
-        tbody.appendChild(clone);
+
+        container.appendChild(clone);
         updateTotals();
-        
-        // Animate the new row
+
+        // Animate the new entry
         clone.style.opacity = '0';
         clone.style.transform = 'translateY(-10px)';
         setTimeout(() => {
@@ -240,11 +225,11 @@ document.addEventListener('DOMContentLoaded', function() {
             clone.style.transform = 'translateY(0)';
         }, 10);
     });
-    
-    // Remove row
-    tbody.addEventListener('click', function(e) {
+
+    // Remove entry
+    container.addEventListener('click', function(e) {
         if (e.target.closest('.remove-row')) {
-            const rows = tbody.querySelectorAll('.entry-row');
+            const rows = container.querySelectorAll('.entry-row');
             if (rows.length > 1) {
                 const row = e.target.closest('.entry-row');
                 row.style.transition = 'all 0.3s ease';
@@ -255,28 +240,28 @@ document.addEventListener('DOMContentLoaded', function() {
                     updateTotals();
                 }, 300);
             } else {
-                // Show alert if trying to remove the last row
+                // Show alert if trying to remove the last entry
                 const alert = document.createElement('div');
                 alert.className = 'alert alert-warning alert-dismissible fade show';
                 alert.innerHTML = `
                     <i class="fas fa-exclamation-triangle me-2"></i>
-                    You must have at least one entry row.
+                    You must have at least one entry.
                     <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                 `;
                 form.insertBefore(alert, form.firstChild);
             }
         }
     });
-    
+
     // Update totals when inputs change
-    tbody.addEventListener('input change', updateTotals);
+    container.addEventListener('input change', updateTotals);
     
     function updateTotals() {
         let totalHours = 0;
         let totalCost = 0;
         let totalBillable = 0;
         
-        tbody.querySelectorAll('.entry-row').forEach(row => {
+        container.querySelectorAll('.entry-row').forEach(row => {
             const hours = parseFloat(row.querySelector('[name="hours[]"]').value) || 0;
             const assetSelect = row.querySelector('[name="asset[]"]');
             const employeeSelect = row.querySelector('[name="employee[]"]');
@@ -330,7 +315,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form submission
     form.addEventListener('submit', function(e) {
-        const rows = tbody.querySelectorAll('.entry-row');
+        const rows = container.querySelectorAll('.entry-row');
         let hasValidEntry = false;
         
         // Check if at least one row has some data
@@ -366,13 +351,13 @@ document.addEventListener('DOMContentLoaded', function() {
     updateTotals();
     
     // Add hover effects to rows
-    tbody.addEventListener('mouseenter', function(e) {
+    container.addEventListener('mouseenter', function(e) {
         if (e.target.closest('.entry-row')) {
             e.target.closest('.entry-row').style.backgroundColor = '#f8f9fa';
         }
     }, true);
-    
-    tbody.addEventListener('mouseleave', function(e) {
+
+    container.addEventListener('mouseleave', function(e) {
         if (e.target.closest('.entry-row')) {
             e.target.closest('.entry-row').style.backgroundColor = '';
         }
@@ -400,10 +385,6 @@ document.addEventListener('DOMContentLoaded', function() {
         position: relative;
         top: auto;
     }
-}
-
-.table-responsive {
-    border-radius: 0;
 }
 
 .card-footer {
@@ -476,29 +457,6 @@ document.addEventListener('DOMContentLoaded', function() {
     opacity: 0.7;
 }
 
-/* Remove any floating label conflicts */
-.table .form-control,
-.table .form-select {
-    border: 1px solid #dee2e6;
-    border-radius: 4px;
-}
-
-/* Ensure table inputs don't have floating labels */
-.table td {
-    position: relative;
-}
-
-.table .form-control,
-.table .form-select {
-    position: static;
-}
-
-/* Better spacing for table inputs */
-.table th,
-.table td {
-    padding: 12px 8px;
-    vertical-align: middle;
-}
 </style>
 
 {% endblock %}
