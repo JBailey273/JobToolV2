@@ -494,6 +494,19 @@ textarea::placeholder {
     opacity: 0.7;
 }
 
+/* Prevent placeholder text from overlapping floating labels */
+.form-floating > .form-control::placeholder {
+    color: transparent !important;
+    opacity: 0 !important;
+}
+
+/* Adjust padding when using floating labels */
+.form-floating > .form-control:focus,
+.form-floating > .form-control:not(:placeholder-shown) {
+    padding-top: 1.625rem;
+    padding-bottom: 0.625rem;
+}
+
 /* Form text/help text */
 .form-text {
     color: #6c757d;
