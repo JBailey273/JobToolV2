@@ -188,6 +188,22 @@
             font-weight: 700 !important;
         }
         
+        /* Aggressive text color overrides */
+        .module h2 *,
+        .module h2 span,
+        .module h2 a,
+        .module h2 i {
+            color: white !important;
+        }
+        
+        /* Force white text on all possible header elements */
+        h2[style*="background"] *,
+        .module caption *,
+        .app-list .module h2 *,
+        .dashboard-module h2 * {
+            color: white !important;
+        }
+        
         .module h2::before {
             font-family: 'Font Awesome 6 Free';
             font-weight: 900;
@@ -517,6 +533,34 @@
         .app-header,
         thead th {
             background: #4a7c2a !important;
+            color: white !important;
+        }
+        
+        /* Nuclear option - override any remaining gray text in headers */
+        body .module h2,
+        body .module > h2,
+        body .app-list .module h2,
+        body div[class*="module"] h2 {
+            color: white !important;
+            background: #4a7c2a !important;
+        }
+        
+        /* Target the specific text content within headers */
+        .module h2 .text,
+        .module h2::before,
+        .module h2::after {
+            color: white !important;
+        }
+        
+        /* Override any inline styles on header text */
+        .module h2[style],
+        .module h2 span[style],
+        .module h2 *[style] {
+            color: white !important;
+        }
+        
+        /* Final override for stubborn elements */
+        h2:not([class=""]):not([id=""]) {
             color: white !important;
         }
         
