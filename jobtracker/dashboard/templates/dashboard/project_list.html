@@ -120,28 +120,28 @@
           </h5>
           <div class="row text-center">
               <div class="col-md-3">
-                  <div class="border-end">
-                      <h4 class="text-primary">{{ projects.count }}</h4>
-                      <small class="text-muted">Active Projects</small>
+                  <div class="border-md-end">
+                      <h4 class="text-primary mb-0">{{ projects.count }}</h4>
+                      <small class="text-muted d-block mt-1">Active Projects</small>
                   </div>
               </div>
               <div class="col-md-3">
-                  <div class="border-end">
-                      <h4 class="text-success">${{ total_billable|floatformat:0 }}</h4>
-                      <small class="text-muted">Total Billable</small>
+                  <div class="border-md-end">
+                      <h4 class="text-success mb-0">${{ total_billable|floatformat:0 }}</h4>
+                      <small class="text-muted d-block mt-1">Total Billable</small>
                   </div>
               </div>
               <div class="col-md-3">
-                  <div class="border-end">
-                      <h4 class="text-info">${{ total_payments|floatformat:0 }}</h4>
-                      <small class="text-muted">Total Payments</small>
+                  <div class="border-md-end">
+                      <h4 class="text-info mb-0">${{ total_payments|floatformat:0 }}</h4>
+                      <small class="text-muted d-block mt-1">Total Payments</small>
                   </div>
               </div>
               <div class="col-md-3">
-                  <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %}">
+                  <h4 class="{% if total_outstanding > 0 %}text-warning{% else %}text-success{% endif %} mb-0">
                       ${{ total_outstanding|floatformat:0 }}
                   </h4>
-                  <small class="text-muted">Outstanding</small>
+                  <small class="text-muted d-block mt-1">Outstanding</small>
               </div>
           </div>
       </div>
