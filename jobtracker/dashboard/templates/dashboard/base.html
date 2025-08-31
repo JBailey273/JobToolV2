@@ -182,23 +182,40 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const backButton = document.getElementById('back-button');
-    const prevHref = sessionStorage.getItem('prevHref');
-    const prevTitle = sessionStorage.getItem('prevTitle');
+    const currentHref = window.location.href;
+    const currentTitle = document.title.split('|')[0].trim();
+
+    let breadcrumbs = [];
+    try {
+        breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
+    } catch (e) {
+        breadcrumbs = [];
+    }
+
+    const existingIndex = breadcrumbs.findIndex(b => b.href === currentHref);
+    if (existingIndex >= 0) {
+        breadcrumbs = breadcrumbs.slice(0, existingIndex + 1);
+    } else {
+        breadcrumbs.push({ href: currentHref, title: currentTitle });
+    }
+
+    const prev = breadcrumbs[breadcrumbs.length - 2];
 
     if (backButton) {
-        if (prevHref && prevTitle && prevHref !== window.location.href) {
-            backButton.href = prevHref;
-            backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + prevTitle;
+        if (prev) {
+            backButton.href = prev.href;
+            backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + prev.title;
             backButton.style.display = 'inline-block';
+            backButton.addEventListener('click', function () {
+                breadcrumbs.pop();
+                sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+            });
         } else {
             backButton.style.display = 'none';
         }
     }
 
-    // store current page info for next navigation
-    sessionStorage.setItem('prevHref', window.location.href);
-    const currentTitle = document.title.split('|')[0].trim();
-    sessionStorage.setItem('prevTitle', currentTitle);
+    sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
 });
 </script>
 <script>
