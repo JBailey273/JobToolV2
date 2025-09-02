@@ -586,6 +586,7 @@ body {
                         —
                     {% endif %}
                 </td>
+                <td class="text-right font-mono" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
                 <td class="text-right font-mono amount" data-label="Amount">${{ e.billable_amount|floatformat:2|intcomma }}</td>
             </tr>
         {% empty %}
@@ -757,5 +758,4 @@ body {
 </div>
 {% endif %}
 
-{% endblock %} font-mono" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
-                <td class="text-right
+{% endblock %}
