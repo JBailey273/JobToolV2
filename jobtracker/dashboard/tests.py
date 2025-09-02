@@ -1,4 +1,6 @@
 from decimal import Decimal
+from types import SimpleNamespace
+from unittest.mock import patch
 
 from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -345,3 +347,54 @@ class ContractorSummaryProjectTotalsTests(TestCase):
         self.assertContains(response, "$30")
         self.assertContains(response, "$13")
         self.assertContains(response, "$17")
+
+
+class PdfExportTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.project = self.contractor.projects.create(
+            name="Proj", start_date="2024-01-01"
+        )
+        asset = self.contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        JobEntry.objects.create(
+            project=self.project, date="2024-01-02", hours=Decimal("1"), asset=asset
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def _fake_pdf(self, html, dest, link_callback=None):
+        dest.write(b"PDF")
+        return SimpleNamespace(err=0)
+
+    @patch("dashboard.views.pisa")
+    def test_contractor_report_pdf(self, mock_pisa):
+        mock_pisa.CreatePDF.side_effect = self._fake_pdf
+        response = self.client.get(
+            reverse("dashboard:contractor_report") + "?export=pdf"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+
+    @patch("dashboard.views.pisa")
+    def test_contractor_job_report_pdf(self, mock_pisa):
+        mock_pisa.CreatePDF.side_effect = self._fake_pdf
+        url = reverse("dashboard:contractor_job_report", args=[self.project.pk])
+        response = self.client.get(url + "?export=pdf")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+
+    @patch("dashboard.views.pisa")
+    def test_customer_report_pdf(self, mock_pisa):
+        mock_pisa.CreatePDF.side_effect = self._fake_pdf
+        url = reverse("dashboard:customer_report", args=[self.project.pk])
+        response = self.client.get(url + "?export=pdf")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
