@@ -225,22 +225,27 @@ def project_detail(request, pk):
     billable_labor = billable_equipment = billable_material = Decimal("0")
 
     contractor_margin = getattr(project.contractor, "material_margin", Decimal("0")) or Decimal("0")
+    contractor_margin = Decimal(contractor_margin)
     material_margin = contractor_margin / Decimal("100")
     margin_multiplier = Decimal("1") - material_margin
 
-    for je in job_entries:
-        hours = je.hours or Decimal("0")
-        if je.employee:
-            labor_cost += (je.employee.cost_rate or Decimal("0")) * hours
-            billable_labor += (je.employee.billable_rate or Decimal("0")) * hours
-        if je.asset:
-            equipment_cost += (je.asset.cost_rate or Decimal("0")) * hours
-            billable_equipment += (je.asset.billable_rate or Decimal("0")) * hours
-        if je.material_cost:
-            cost = je.material_cost * hours
-            material_cost += cost
-            if margin_multiplier > 0:
-                billable_material += cost / margin_multiplier
+    try:
+        for je in job_entries:
+            hours = Decimal(je.hours or 0)
+            if je.employee:
+                labor_cost += Decimal(je.employee.cost_rate or 0) * hours
+                billable_labor += Decimal(je.employee.billable_rate or 0) * hours
+            if je.asset:
+                equipment_cost += Decimal(je.asset.cost_rate or 0) * hours
+                billable_equipment += Decimal(je.asset.billable_rate or 0) * hours
+            if je.material_cost:
+                cost = Decimal(je.material_cost) * hours
+                material_cost += cost
+                if margin_multiplier > 0:
+                    billable_material += cost / margin_multiplier
+    except Exception:
+        labor_cost = equipment_cost = material_cost = Decimal("0")
+        billable_labor = billable_equipment = billable_material = Decimal("0")
 
     total_cost = labor_cost + equipment_cost + material_cost
     profit = total_billable - total_cost
