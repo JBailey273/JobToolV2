@@ -225,7 +225,7 @@
 
                 <!-- Entry Rows -->
                 {% for entry in job_entries %}
-                <div class="entry-row" data-entry-type="{% if entry.employee %}labor{% elif entry.asset %}equipment{% elif entry.material_description %}materials{% else %}other{% endif %}">
+                <div class="entry-row{% if forloop.counter > 10 %} d-none{% endif %}" data-entry-type="{% if entry.employee %}labor{% elif entry.asset %}equipment{% elif entry.material_description %}materials{% else %}other{% endif %}">
                     <div class="d-flex align-items-center">
                         <div class="entry-type-icon {% if entry.employee %}entry-type-labor{% elif entry.asset %}entry-type-equipment{% elif entry.material_description %}entry-type-material{% else %}entry-type-equipment{% endif %}">
                             <i class="fas {% if entry.employee %}fa-hard-hat{% elif entry.asset %}fa-tools{% elif entry.material_description %}fa-boxes{% else %}fa-clipboard{% endif %}"></i>
@@ -297,7 +297,7 @@
 
                 {% if job_entries|length > 10 %}
                 <div class="text-center mt-4">
-                    <button class="btn btn-outline-primary" onclick="loadMoreEntries()">
+                    <button id="load-more-button" class="btn btn-outline-primary" onclick="loadMoreEntries()">
                         <i class="fas fa-chevron-down me-2"></i>Load More Entries
                     </button>
                 </div>
@@ -385,51 +385,40 @@
             <div class="timeline-card">
                 <h5 class="mb-4">Project Timeline</h5>
                 
-                <!-- Combine entries and payments into timeline -->
-                {% regroup job_entries|slice:":10" by date as entries_by_date %}
-                {% regroup payments by date as payments_by_date %}
-                
-                {% for entry_group in entries_by_date %}
+                <!-- Combined timeline items -->
+                {% for item in timeline_items %}
                 <div class="timeline-item">
                     <div class="timeline-date">
-                        <div class="fw-bold">{{ entry_group.grouper|date:"M d" }}</div>
-                        <div class="small">{{ entry_group.grouper|date:"Y" }}</div>
+                        <div class="fw-bold">{{ item.date|date:"M d" }}</div>
+                        <div class="small">{{ item.date|date:"Y" }}</div>
                     </div>
                     <div class="timeline-content">
-                        <h6>Job Entries Added ({{ entry_group.list|length }})</h6>
-                        <p class="mb-2">
-                            {% for entry in entry_group.list|slice:":3" %}
-                                {{ entry.description|default:"Work entry" }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                            {% if entry_group.list|length > 3 %}
-                                and {{ entry_group.list|length|add:"-3" }} more...
-                            {% endif %}
-                        </p>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-success">Work Completed</span>
-                            {% if entry_group.list.0.asset %}<span class="badge bg-primary">Equipment</span>{% endif %}
-                            {% if entry_group.list.0.employee %}<span class="badge bg-info">Labor</span>{% endif %}
-                            {% if entry_group.list.0.material_description %}<span class="badge bg-secondary">Materials</span>{% endif %}
-                        </div>
-                    </div>
-                </div>
-                {% endfor %}
-
-                {% for payment_group in payments_by_date %}
-                <div class="timeline-item">
-                    <div class="timeline-date">
-                        <div class="fw-bold">{{ payment_group.grouper|date:"M d" }}</div>
-                        <div class="small">{{ payment_group.grouper|date:"Y" }}</div>
-                    </div>
-                    <div class="timeline-content">
-                        <h6>Payment Received</h6>
-                        <p class="mb-2">
-                            Received ${{ payment_group.list.0.amount|floatformat:2|intcomma }}
-                            {% if payment_group.list.0.notes %} - {{ payment_group.list.0.notes }}{% endif %}
-                        </p>
-                        <div class="d-flex gap-2">
-                            <span class="badge bg-success">Payment</span>
-                        </div>
+                        {% if item.entries %}
+                            <h6>Job Entries Added ({{ item.entries|length }})</h6>
+                            <p class="mb-2">
+                                {% for entry in item.entries|slice:":3" %}
+                                    {{ entry.description|default:"Work entry" }}{% if not forloop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if item.entries|length > 3 %}
+                                    and {{ item.entries|length|add:"-3" }} more...
+                                {% endif %}
+                            </p>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-success">Work Completed</span>
+                                {% if item.entries.0.asset %}<span class="badge bg-primary">Equipment</span>{% endif %}
+                                {% if item.entries.0.employee %}<span class="badge bg-info">Labor</span>{% endif %}
+                                {% if item.entries.0.material_description %}<span class="badge bg-secondary">Materials</span>{% endif %}
+                            </div>
+                        {% elif item.payments %}
+                            <h6>Payment Received</h6>
+                            <p class="mb-2">
+                                Received ${{ item.payments.0.amount|floatformat:2|intcomma }}
+                                {% if item.payments.0.notes %} - {{ item.payments.0.notes }}{% endif %}
+                            </p>
+                            <div class="d-flex gap-2">
+                                <span class="badge bg-success">Payment</span>
+                            </div>
+                        {% endif %}
                     </div>
                 </div>
                 {% endfor %}
@@ -677,8 +666,16 @@ function generateReceipt(paymentId) {
 }
 
 function loadMoreEntries() {
-    // Would implement AJAX loading of more entries
-    console.log('Loading more entries...');
+    const hiddenEntries = document.querySelectorAll('.entry-row.d-none');
+    for (let i = 0; i < 10 && i < hiddenEntries.length; i++) {
+        hiddenEntries[i].classList.remove('d-none');
+    }
+    if (document.querySelectorAll('.entry-row.d-none').length === 0) {
+        const btn = document.getElementById('load-more-button');
+        if (btn) {
+            btn.classList.add('d-none');
+        }
+    }
 }
 </script>
 

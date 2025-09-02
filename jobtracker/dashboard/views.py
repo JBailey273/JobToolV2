@@ -257,6 +257,20 @@ def project_detail(request, pk):
     else:
         labor_percent = equipment_percent = material_percent = 0
 
+    # Prepare combined timeline items of job entries and payments
+    timeline_map = {}
+    for entry in job_entries:
+        timeline_map.setdefault(entry.date, {"entries": [], "payments": []})
+        timeline_map[entry.date]["entries"].append(entry)
+    for payment in payments:
+        timeline_map.setdefault(payment.date, {"entries": [], "payments": []})
+        timeline_map[payment.date]["payments"].append(payment)
+    timeline_items = [
+        {"date": date, "entries": data["entries"], "payments": data["payments"]}
+        for date, data in sorted(timeline_map.items(), key=lambda x: x[0], reverse=True)
+    ]
+    timeline_items = timeline_items[:10]
+
     # Weekly breakdown for analytics
     weekly_data = []
     for week in range(4):  # Last 4 weeks
@@ -286,8 +300,9 @@ def project_detail(request, pk):
         "dashboard/project_detail.html",
         {
             "project": project,
-            "job_entries": job_entries[:20],  # Limit for performance
+            "job_entries": job_entries,
             "payments": payments[:10],
+            "timeline_items": timeline_items,
             "total_billable": total_billable,
             "total_payments": total_payments,
             "outstanding": outstanding,
