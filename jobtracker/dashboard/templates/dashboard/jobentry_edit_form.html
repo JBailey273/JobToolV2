@@ -17,34 +17,28 @@
 
 <div class="row justify-content-center">
     <div class="col-lg-10">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Entry Details
-                </h5>
-            </div>
-            <div class="card-body">
-                <form method="post" id="edit-form">
-                    {% csrf_token %}
-                    
-                    <!-- Date Row -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-12 col-md-4">
-                            <label for="date" class="form-label">
-                                <i class="fas fa-calendar me-2"></i>Date
-                            </label>
+        <form method="post" id="edit-form">
+            {% csrf_token %}
+
+            <!-- Date Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Entry Date</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Date</label>
                             <input type="date" class="form-control" id="date" name="date" value="{{ entry.date|date:'Y-m-d' }}" required>
                             <div class="form-text">Date when this work was performed</div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <label for="hours" class="form-label">
-                                <i class="fas fa-clock me-2"></i>Hours / Quantity
-                            </label>
+                        <div class="col-md-4">
+                            <label for="hours" class="form-label">Hours / Quantity</label>
                             <input type="number" step="0.01" class="form-control" id="hours" name="hours" value="{{ entry.hours }}" placeholder="0.00">
                             <div class="form-text">Hours worked or quantity used</div>
                         </div>
-                        <div class="col-12 col-md-4">
-                            <div class="alert alert-info mb-0">
+                        <div class="col-md-4 d-flex align-items-end">
+                            <div class="alert alert-info w-100 mb-0">
                                 <small>
                                     <i class="fas fa-calculator me-1"></i>
                                     <strong>Current Values:</strong><br>
@@ -54,13 +48,29 @@
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Resources Row -->
+                </div>
+            </div>
+
+            <!-- Entry Type Tabs -->
+            <ul class="nav nav-tabs" id="entryTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="labor-tab" data-bs-toggle="tab" data-bs-target="#labor" type="button">
+                        <i class="fas fa-cogs me-2"></i>Equipment & Labor
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button">
+                        <i class="fas fa-boxes me-2"></i>Materials & Supplies
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content border border-top-0 rounded-bottom p-3">
+                <!-- Equipment & Labor Tab -->
+                <div class="tab-pane fade show active" id="labor">
                     <div class="row g-3 mb-4">
                         <div class="col-md-6">
-                            <label for="asset" class="form-label">
-                                <i class="fas fa-tools me-2"></i>Asset
-                            </label>
+                            <label for="asset" class="form-label">Asset</label>
                             <select class="form-select" id="asset" name="asset">
                                 <option value="">Select Asset...</option>
                                 {% for asset in assets %}
@@ -72,9 +82,7 @@
                             <div class="form-text">Equipment or asset used for this work</div>
                         </div>
                         <div class="col-md-6">
-                            <label for="employee" class="form-label">
-                                <i class="fas fa-user-hard-hat me-2"></i>Employee
-                            </label>
+                            <label for="employee" class="form-label">Employee</label>
                             <select class="form-select" id="employee" name="employee">
                                 <option value="">Select Employee...</option>
                                 {% for emp in employees %}
@@ -86,20 +94,26 @@
                             <div class="form-text">Employee who performed this work</div>
                         </div>
                     </div>
-                    
-                    <!-- Materials Row -->
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-12">
+                            <label for="description" class="form-label">Work Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Detailed description of work performed">{{ entry.description }}</textarea>
+                            <div class="form-text">Detailed description of the work performed</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Materials Tab -->
+                <div class="tab-pane fade" id="materials">
                     <div class="row g-3 mb-4">
                         <div class="col-md-8">
-                            <label for="material_description" class="form-label">
-                                <i class="fas fa-box me-2"></i>Material Description
-                            </label>
+                            <label for="material_description" class="form-label">Material Description</label>
                             <input type="text" class="form-control" id="material_description" name="material_description" value="{{ entry.material_description }}" placeholder="Description of materials used">
                             <div class="form-text">Describe any materials used for this work</div>
                         </div>
                         <div class="col-md-4">
-                            <label for="material_cost" class="form-label">
-                                <i class="fas fa-dollar-sign me-2"></i>Material Cost
-                            </label>
+                            <label for="material_cost" class="form-label">Material Cost</label>
                             <div class="input-group">
                                 <span class="input-group-text">$</span>
                                 <input type="number" step="0.01" class="form-control" id="material_cost" name="material_cost" value="{{ entry.material_cost|default_if_none:'' }}" placeholder="0.00">
@@ -107,30 +121,19 @@
                             <div class="form-text">Cost per hour/unit of material</div>
                         </div>
                     </div>
-                    
-                    <!-- Description Row -->
-                    <div class="row g-3 mb-4">
-                        <div class="col-12">
-                            <label for="description" class="form-label">
-                                <i class="fas fa-file-alt me-2"></i>Work Description
-                            </label>
-                            <textarea class="form-control" id="description" name="description" rows="3" placeholder="Detailed description of work performed">{{ entry.description }}</textarea>
-                            <div class="form-text">Detailed description of the work performed</div>
-                        </div>
-                    </div>
-                    
-                    <!-- Submit Buttons -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <a href="{% url 'dashboard:project_detail' entry.project.pk %}" class="btn btn-outline-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Cancel
-                        </a>
-                        <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
-                            <i class="fas fa-save me-2"></i>Update Entry
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
+
+            <!-- Submit Buttons -->
+            <div class="d-flex justify-content-between align-items-center mt-4">
+                <a href="{% url 'dashboard:project_detail' entry.project.pk %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Cancel
+                </a>
+                <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                    <i class="fas fa-save me-2"></i>Update Entry
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 
@@ -138,28 +141,18 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('edit-form');
     const submitBtn = document.getElementById('submit-btn');
-    
+
     // Form submission
-    form.addEventListener('submit', function(e) {
-        // Show loading state
+    form.addEventListener('submit', function() {
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
     });
-    
-    // Add change detection
-    const originalFormData = new FormData(form);
+
+    // Change detection
     let hasChanges = false;
-    
-    form.addEventListener('input', function() {
-        hasChanges = true;
-        updateSubmitButton();
-    });
-    
-    form.addEventListener('change', function() {
-        hasChanges = true;
-        updateSubmitButton();
-    });
-    
+    form.addEventListener('input', () => { hasChanges = true; updateSubmitButton(); });
+    form.addEventListener('change', () => { hasChanges = true; updateSubmitButton(); });
+
     function updateSubmitButton() {
         if (hasChanges) {
             submitBtn.classList.remove('btn-primary');
@@ -167,8 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.innerHTML = '<i class="fas fa-save me-2"></i>Save Changes';
         }
     }
-    
-    // Warn user about unsaved changes
+
+    // Warn about unsaved changes
     window.addEventListener('beforeunload', function(e) {
         if (hasChanges) {
             e.preventDefault();
@@ -176,11 +169,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return e.returnValue;
         }
     });
-    
-    // Remove warning when form is submitted
-    form.addEventListener('submit', function() {
-        hasChanges = false;
-    });
+
+    form.addEventListener('submit', function() { hasChanges = false; });
+
+    // If material fields have values, show the materials tab
+    const materialDesc = document.getElementById('material_description').value;
+    const materialCost = document.getElementById('material_cost').value;
+    if (materialDesc || materialCost) {
+        const tab = new bootstrap.Tab(document.querySelector('#materials-tab'));
+        tab.show();
+    }
 });
 </script>
 
@@ -216,3 +214,4 @@ textarea.form-control {
 </style>
 
 {% endblock %}
+
