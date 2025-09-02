@@ -295,16 +295,47 @@ class ReportButtonPlacementTests(TestCase):
         self.assertContains(response, "View Projects")
         self.assertNotContains(response, "Contractor Summary Report")
         self.assertNotContains(response, "Customer Reports")
-        self.assertNotContains(response, "Add Job Entry")
+        self.assertNotContains(response, "Quick Entry")
         self.assertNotContains(response, "Add Payment")
 
     def test_contractor_summary_shows_job_and_payment_buttons_with_project(self):
         self.contractor.projects.create(name="Proj", start_date="2024-01-01")
         response = self.client.get(reverse("dashboard:contractor_summary"))
-        self.assertContains(response, "Add Job Entry")
+        self.assertContains(response, "Quick Entry")
         self.assertContains(response, "Add Payment")
 
     def test_project_list_shows_contractor_summary_report_button(self):
         self.contractor.projects.create(name="Proj", start_date="2024-01-01")
         response = self.client.get(reverse("dashboard:project_list"))
         self.assertContains(response, "Contractor Summary Report")
+
+
+class ContractorSummaryProjectTotalsTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def test_project_totals_display_correctly(self):
+        asset = self.contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        project = self.contractor.projects.create(name="Proj", start_date="2024-01-01")
+        JobEntry.objects.create(
+            project=project, date="2024-01-02", hours=Decimal("1"), asset=asset
+        )
+        Payment.objects.create(
+            project=project, amount=Decimal("5"), date="2024-01-03"
+        )
+
+        response = self.client.get(reverse("dashboard:contractor_summary"))
+
+        self.assertContains(response, "$20")
+        self.assertContains(response, "$5")
+        self.assertContains(response, "$15")
