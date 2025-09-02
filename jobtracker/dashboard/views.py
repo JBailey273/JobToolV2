@@ -37,16 +37,16 @@ def link_callback(uri, rel):
 
 def _render_pdf(template_src, context, filename):
     if pisa is None:
-        return None
+        return HttpResponse("PDF generation is unavailable", status=500)
     template = get_template(template_src)
     html = template.render(context)
     result = BytesIO()
     try:
         pdf = pisa.CreatePDF(html, dest=result, link_callback=link_callback)
     except Exception:
-        return None
+        return HttpResponse("Error generating PDF", status=500)
     if pdf.err:
-        return None
+        return HttpResponse("Error generating PDF", status=500)
     result.seek(0)
     response = HttpResponse(result.getvalue(), content_type="application/pdf")
     response["Content-Disposition"] = f"attachment; filename={filename}"

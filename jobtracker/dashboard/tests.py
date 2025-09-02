@@ -147,7 +147,7 @@ class CustomerReportHeaderTests(TestCase):
         url = reverse("dashboard:customer_report", args=[project.pk])
         from unittest.mock import patch
 
-        with patch("dashboard.views.pisa", None):
+        with patch("dashboard.views._render_pdf", return_value=None):
             response = self.client.get(url + "?export=pdf")
 
         self.assertContains(response, contractor.logo_thumbnail.url)
@@ -371,7 +371,7 @@ class PdfExportTests(TestCase):
         )
 
     def _fake_pdf(self, html, dest, link_callback=None):
-        dest.write(b"PDF")
+        dest.write(b"%PDF-1.4\n")
         return SimpleNamespace(err=0)
 
     @patch("dashboard.views.pisa")
@@ -382,6 +382,7 @@ class PdfExportTests(TestCase):
         )
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
 
     @patch("dashboard.views.pisa")
     def test_contractor_job_report_pdf(self, mock_pisa):
@@ -390,6 +391,7 @@ class PdfExportTests(TestCase):
         response = self.client.get(url + "?export=pdf")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
 
     @patch("dashboard.views.pisa")
     def test_customer_report_pdf(self, mock_pisa):
@@ -398,15 +400,16 @@ class PdfExportTests(TestCase):
         response = self.client.get(url + "?export=pdf")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
 
     @patch("dashboard.views.pisa")
-    def test_pdf_export_error_returns_html(self, mock_pisa):
+    def test_pdf_export_error_returns_error(self, mock_pisa):
         mock_pisa.CreatePDF.side_effect = Exception("boom")
         response = self.client.get(
             reverse("dashboard:contractor_report") + "?export=pdf"
         )
-        self.assertEqual(response.status_code, 200)
-        self.assertTrue(response["Content-Type"].startswith("text/html"))
+        self.assertEqual(response.status_code, 500)
+        self.assertIn(b"Error generating PDF", response.content)
 
 
 class JobEntryOrderingTests(TestCase):
