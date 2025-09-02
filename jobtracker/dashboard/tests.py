@@ -398,3 +398,63 @@ class PdfExportTests(TestCase):
         response = self.client.get(url + "?export=pdf")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
+
+
+class JobEntryOrderingTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.asset = self.contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        self.project = self.contractor.projects.create(
+            name="Proj", start_date="2024-01-01"
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def _create_entries(self):
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-01",
+            hours=Decimal("1"),
+            asset=self.asset,
+        )
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-10",
+            hours=Decimal("1"),
+            asset=self.asset,
+        )
+
+    def test_customer_report_entries_sorted_desc(self):
+        self._create_entries()
+        url = reverse("dashboard:customer_report", args=[self.project.pk])
+        response = self.client.get(url)
+        entries = list(response.context["entries"])
+        self.assertEqual(
+            [e.date.isoformat() for e in entries], ["2024-01-10", "2024-01-01"]
+        )
+
+    def test_contractor_job_report_entries_sorted_desc(self):
+        self._create_entries()
+        url = reverse("dashboard:contractor_job_report", args=[self.project.pk])
+        response = self.client.get(url)
+        entries = list(response.context["entries"])
+        self.assertEqual(
+            [e.date.isoformat() for e in entries], ["2024-01-10", "2024-01-01"]
+        )
+
+    def test_search_entries_sorted_desc(self):
+        self._create_entries()
+        url = reverse("dashboard:search_entries")
+        response = self.client.get(url)
+        results = response.json()["results"]
+        self.assertEqual(
+            [r["date"] for r in results], ["2024-01-10", "2024-01-01"]
+        )
