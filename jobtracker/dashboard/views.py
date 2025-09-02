@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, Q, F, ExpressionWrapper, DecimalField
+from django.db.models import Sum, Count, Q, F, ExpressionWrapper, DecimalField, Value
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
@@ -257,6 +257,52 @@ def project_detail(request, pk):
     else:
         labor_percent = equipment_percent = material_percent = 0
 
+    # Billable breakdown
+    billable_labor = job_entries.filter(employee__isnull=False).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("employee__billable_rate") * F("hours"),
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            )
+        )
+    )["total"] or Decimal("0")
+
+    billable_equipment = job_entries.filter(asset__isnull=False).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("asset__billable_rate") * F("hours"),
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            )
+        )
+    )["total"] or Decimal("0")
+
+    contractor_margin = getattr(project.contractor, "material_margin", Decimal("0")) or Decimal("0")
+    material_margin = contractor_margin / Decimal("100")
+    margin_multiplier = Decimal("1") - material_margin
+    if margin_multiplier > 0:
+        billable_material = (
+            job_entries.exclude(material_cost__isnull=True)
+            .aggregate(
+                total=Sum(
+                    ExpressionWrapper(
+                        F("material_cost") * F("hours") / Value(margin_multiplier),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    )
+                )
+            )
+            .get("total")
+            or Decimal("0")
+        )
+    else:
+        billable_material = Decimal("0")
+
+    if total_billable:
+        billable_labor_percent = (billable_labor / total_billable) * 100
+        billable_equipment_percent = (billable_equipment / total_billable) * 100
+        billable_material_percent = (billable_material / total_billable) * 100
+    else:
+        billable_labor_percent = billable_equipment_percent = billable_material_percent = 0
+
     # Weekly breakdown for analytics
     weekly_data = []
     for week in range(4):  # Last 4 weeks
@@ -300,6 +346,12 @@ def project_detail(request, pk):
             "labor_percent": labor_percent,
             "equipment_percent": equipment_percent,
             "material_percent": material_percent,
+            "billable_labor": billable_labor,
+            "billable_equipment": billable_equipment,
+            "billable_material": billable_material,
+            "billable_labor_percent": billable_labor_percent,
+            "billable_equipment_percent": billable_equipment_percent,
+            "billable_material_percent": billable_material_percent,
             "weekly_data": weekly_data,
             "entry_filter": entry_filter,
             "search_query": search_query,
