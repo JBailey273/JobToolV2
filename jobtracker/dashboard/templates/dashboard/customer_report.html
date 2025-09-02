@@ -656,7 +656,7 @@ body {
         <i class="fas {% if outstanding > 0 %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-2x me-3"></i>
         <div>
             <h6 class="mb-1">Outstanding Balance</h6>
-            <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2|intcomma }}</p>
+            <p class="mb-0 fs-4 fw-bold">Outstanding Balance: ${{ outstanding|floatformat:0|intcomma }}</p>
         </div>
     </div>
     {% else %}

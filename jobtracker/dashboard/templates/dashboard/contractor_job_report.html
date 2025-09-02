@@ -384,7 +384,7 @@ body {
     </div>
     <div class="summary-item">
         <div class="summary-label">Profit Margin</div>
-        <div class="summary-value {% if overall_margin >= 0 %}positive{% else %}negative{% endif %}">{{ overall_margin|floatformat:1 }}%</div>
+        <div class="summary-value {% if overall_margin >= 0 %}positive{% else %}negative{% endif %}">{{ overall_margin|floatformat:2 }}%</div>
     </div>
 </div>
 {% endif %}
@@ -454,7 +454,7 @@ body {
                 <td class="text-right font-mono amount" data-label="Actual Cost">${{ e.cost_amount|floatformat:2|intcomma }}</td>
                 <td class="text-right font-mono amount positive" data-label="Billable Amount">${{ e.billable_amount|floatformat:2|intcomma }}</td>
                 <td class="text-right font-mono amount {% if e.profit >= 0 %}positive{% else %}negative{% endif %}" data-label="Profit">${{ e.profit|floatformat:2|intcomma }}</td>
-                <td class="text-right font-mono {% if e.margin >= 0 %}positive{% else %}negative{% endif %}" data-label="Margin">{{ e.margin|floatformat:1 }}%</td>
+                <td class="text-right font-mono {% if e.margin >= 0 %}positive{% else %}negative{% endif %}" data-label="Margin">{{ e.margin|floatformat:2 }}%</td>
             </tr>
         {% empty %}
             <tr>
@@ -473,7 +473,7 @@ body {
             <td class="text-right font-mono"><strong>${{ total_cost|floatformat:2|intcomma }}</strong></td>
             <td class="text-right font-mono"><strong>${{ total_billable|floatformat:2|intcomma }}</strong></td>
             <td class="text-right font-mono"><strong>${{ total_profit|floatformat:2|intcomma }}</strong></td>
-            <td class="text-right font-mono"><strong>{{ overall_margin|floatformat:1 }}%</strong></td>
+            <td class="text-right font-mono"><strong>{{ overall_margin|floatformat:2 }}%</strong></td>
         </tr>
         {% endif %}
         </tbody>
