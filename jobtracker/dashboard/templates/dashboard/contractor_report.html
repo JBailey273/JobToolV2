@@ -3,15 +3,598 @@
 {% block title %}Contractor Summary Report{% endblock %}
 {% block content %}
 
+{% if report %}
+<style>
+/* Professional Portfolio Summary PDF Styling */
+@page {
+    size: A4 landscape;
+    margin: 0.75in 0.5in 0.5in 0.5in;
+    @top-center {
+        content: "Contractor Portfolio Summary Report";
+        font-size: 10px;
+        color: #666;
+    }
+    @bottom-center {
+        content: "Page " counter(page) " of " counter(pages) " | Confidential Business Report";
+        font-size: 9px;
+        color: #666;
+    }
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 10px;
+    line-height: 1.4;
+    color: #333;
+    background: white;
+    margin: 0;
+    padding: 0;
+}
+
+/* Executive Header */
+.report-header {
+    text-align: center;
+    margin-bottom: 35px;
+    padding: 30px 20px;
+    border: 3px solid #4a7c2a;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #f8faf6 0%, #ffffff 30%, #f8faf6 100%);
+    position: relative;
+}
+
+.report-header::after {
+    content: '';
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    right: 8px;
+    bottom: 8px;
+    border: 1px solid #4a7c2a;
+    border-radius: 8px;
+    opacity: 0.3;
+}
+
+.report-header img {
+    max-height: 70px;
+    margin-bottom: 15px;
+    position: relative;
+    z-index: 1;
+}
+
+.report-header h1 {
+    font-size: 28px;
+    font-weight: bold;
+    color: #2d5016;
+    margin: 15px 0 10px 0;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    position: relative;
+    z-index: 1;
+}
+
+.report-header .contractor-info {
+    font-size: 16px;
+    color: #4a7c2a;
+    margin: 10px 0;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+
+.report-header .report-period {
+    font-size: 12px;
+    color: #666;
+    margin: 15px 0;
+    font-style: italic;
+    position: relative;
+    z-index: 1;
+}
+
+/* Executive Dashboard */
+.executive-dashboard {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
+    margin: 30px 0;
+    padding: 25px;
+    background: linear-gradient(135deg, #e8f0de 0%, #f1f5ec 100%);
+    border: 2px solid #4a7c2a;
+    border-radius: 10px;
+}
+
+.metric-card {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-left: 4px solid #4a7c2a;
+    position: relative;
+}
+
+.metric-card::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background: #4a7c2a;
+    border-radius: 50%;
+    opacity: 0.1;
+}
+
+.metric-label {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 700;
+    letter-spacing: 1px;
+    margin-bottom: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.metric-value {
+    font-size: 20px;
+    font-weight: bold;
+    color: #2d5016;
+    font-family: 'Courier New', monospace;
+    margin-bottom: 5px;
+    position: relative;
+    z-index: 1;
+}
+
+.metric-value.revenue {
+    color: #228b22;
+}
+
+.metric-value.cost {
+    color: #8b4513;
+}
+
+.metric-value.profit {
+    color: #2d5016;
+}
+
+.metric-change {
+    font-size: 8px;
+    color: #666;
+    font-weight: 600;
+    position: relative;
+    z-index: 1;
+}
+
+.metric-change.positive {
+    color: #228b22;
+}
+
+.metric-change.negative {
+    color: #8b4513;
+}
+
+/* Portfolio Table */
+.portfolio-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 30px 0;
+    background: white;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.portfolio-table thead {
+    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    color: white;
+}
+
+.portfolio-table th {
+    padding: 15px 12px;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    text-align: left;
+    border-right: 1px solid rgba(255,255,255,0.2);
+    position: relative;
+}
+
+.portfolio-table th:last-child {
+    border-right: none;
+}
+
+.portfolio-table th::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: rgba(255,255,255,0.3);
+}
+
+.portfolio-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: all 0.2s ease;
+}
+
+.portfolio-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.portfolio-table tbody tr:hover {
+    background: #f0f4f0;
+    transform: translateX(2px);
+}
+
+.portfolio-table td {
+    padding: 12px;
+    font-size: 9px;
+    vertical-align: middle;
+    border-right: 1px solid #e0e0e0;
+}
+
+.portfolio-table td:last-child {
+    border-right: none;
+}
+
+/* Project Name Styling */
+.project-name {
+    font-weight: bold;
+    color: #2d5016;
+    font-size: 10px;
+    margin-bottom: 3px;
+}
+
+.project-meta {
+    font-size: 8px;
+    color: #666;
+    font-style: italic;
+}
+
+/* Amount Styling */
+.amount {
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    text-align: right;
+}
+
+.amount.revenue {
+    color: #228b22;
+}
+
+.amount.cost {
+    color: #8b4513;
+}
+
+.amount.profit {
+    color: #2d5016;
+}
+
+.amount.negative {
+    color: #dc3545;
+}
+
+/* Margin Bar */
+.margin-bar {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.margin-percentage {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 9px;
+    min-width: 35px;
+    text-align: right;
+}
+
+.margin-percentage.excellent {
+    color: #228b22;
+}
+
+.margin-percentage.good {
+    color: #4a7c2a;
+}
+
+.margin-percentage.fair {
+    color: #daa520;
+}
+
+.margin-percentage.poor {
+    color: #8b4513;
+}
+
+.margin-indicator {
+    width: 40px;
+    height: 6px;
+    border-radius: 3px;
+    background: #e0e0e0;
+    overflow: hidden;
+    position: relative;
+}
+
+.margin-fill {
+    height: 100%;
+    border-radius: 3px;
+    transition: width 0.3s ease;
+}
+
+.margin-fill.excellent {
+    background: linear-gradient(90deg, #228b22, #32cd32);
+}
+
+.margin-fill.good {
+    background: linear-gradient(90deg, #4a7c2a, #7cb342);
+}
+
+.margin-fill.fair {
+    background: linear-gradient(90deg, #daa520, #ffd700);
+}
+
+.margin-fill.poor {
+    background: linear-gradient(90deg, #8b4513, #cd853f);
+}
+
+/* Performance Analysis */
+.performance-section {
+    margin: 40px 0;
+    padding: 25px;
+    background: white;
+    border: 2px solid #4a7c2a;
+    border-radius: 10px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.performance-header {
+    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    color: white;
+    padding: 15px 25px;
+    margin: -25px -25px 20px -25px;
+    border-radius: 8px 8px 0 0;
+    font-size: 14px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.performance-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.analysis-section h4 {
+    color: #2d5016;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #4a7c2a;
+    padding-bottom: 5px;
+}
+
+.analysis-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.analysis-item:last-child {
+    border-bottom: none;
+}
+
+.analysis-label {
+    font-size: 9px;
+    color: #666;
+    font-weight: 500;
+}
+
+.analysis-value {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+    font-size: 10px;
+    color: #2d5016;
+}
+
+/* Recommendations Box */
+.recommendations {
+    margin: 30px 0;
+    padding: 25px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #daa520;
+    border-radius: 10px;
+    position: relative;
+}
+
+.recommendations::before {
+    content: '💡';
+    position: absolute;
+    top: -15px;
+    left: 20px;
+    background: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 16px;
+}
+
+.recommendations h4 {
+    color: #856404;
+    font-size: 12px;
+    font-weight: bold;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.recommendation-item {
+    margin: 10px 0;
+    padding: 8px 12px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 5px;
+    border-left: 3px solid #daa520;
+}
+
+.recommendation-item .recommendation-type {
+    font-size: 8px;
+    color: #856404;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-bottom: 3px;
+}
+
+.recommendation-item .recommendation-text {
+    font-size: 9px;
+    color: #333;
+    line-height: 1.3;
+}
+
+/* Summary Footer */
+.summary-totals {
+    margin: 30px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+    color: white;
+    border-radius: 10px;
+    text-align: center;
+}
+
+.summary-totals h3 {
+    font-size: 14px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.totals-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.total-item {
+    text-align: center;
+}
+
+.total-label {
+    font-size: 9px;
+    opacity: 0.8;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.total-value {
+    font-size: 18px;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+/* Report Footer */
+.report-footer {
+    margin-top: 50px;
+    padding: 25px 0;
+    border-top: 3px solid #4a7c2a;
+    text-align: center;
+    background: linear-gradient(to right, #f8faf6, #ffffff, #f8faf6);
+}
+
+.report-footer .footer-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+}
+
+.footer-section h5 {
+    font-size: 10px;
+    color: #2d5016;
+    font-weight: bold;
+    margin-bottom: 5px;
+    text-transform: uppercase;
+}
+
+.footer-section p {
+    font-size: 8px;
+    color: #666;
+    margin: 2px 0;
+}
+
+.confidentiality-notice {
+    margin-top: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 5px;
+    font-size: 8px;
+    color: #666;
+    font-style: italic;
+    text-align: center;
+}
+
+/* Utility Classes */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-left { text-align: left !important; }
+
+.font-mono {
+    font-family: 'Courier New', monospace;
+}
+
+.break-word {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+.no-data {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+    font-style: italic;
+    background: #f9f9f9;
+    border-radius: 8px;
+    border: 2px dashed #ddd;
+}
+
+.no-data .no-data-icon {
+    font-size: 24px;
+    color: #ccc;
+    margin-bottom: 10px;
+}
+
+/* Page Breaks */
+.page-break {
+    page-break-before: always;
+}
+
+.avoid-break {
+    page-break-inside: avoid;
+}
+
+/* Column Widths */
+.portfolio-table .project-col { width: 35%; }
+.portfolio-table .cost-col { width: 16%; }
+.portfolio-table .billable-col { width: 16%; }
+.portfolio-table .profit-col { width: 16%; }
+.portfolio-table .margin-col { width: 17%; }
+</style>
+{% endif %}
+
 <!-- Report Header -->
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
     {% if contractor_logo_url %}
-    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo img-fluid" />
+    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo" />
     {% endif %}
-    <h1>Contractor Summary Report</h1>
-    {% if not report %}
-    <p class="text-muted">Complete portfolio overview and profitability analysis</p>
-    {% endif %}
+    <h1>Portfolio Summary Report</h1>
+    <div class="contractor-info">{{ contractor.name|default:contractor.email }}</div>
+    <div class="report-period">Complete Business Analysis • Generated {{ "now"|date:"F d, Y" }}</div>
 </div>
 
 <!-- Export Button -->
@@ -25,6 +608,34 @@
         </div>
         <div class="text-muted">
             <small><i class="fas fa-info-circle me-1"></i>Report generated on {{ "now"|date:"F d, Y" }}</small>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Executive Dashboard -->
+{% if report %}
+<div class="executive-dashboard avoid-break">
+    <div class="metric-card">
+        <div class="metric-label">Active Projects</div>
+        <div class="metric-value">{{ projects|length }}</div>
+        <div class="metric-change">Portfolio Size</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Total Revenue</div>
+        <div class="metric-value revenue">${{ total_revenue|floatformat:0|intcomma }}</div>
+        <div class="metric-change positive">Billable Work</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Total Investment</div>
+        <div class="metric-value cost">${{ total_cost|floatformat:0|intcomma }}</div>
+        <div class="metric-change">Project Costs</div>
+    </div>
+    <div class="metric-card">
+        <div class="metric-label">Net Profit</div>
+        <div class="metric-value profit">${{ total_profit|floatformat:0|intcomma }}</div>
+        <div class="metric-change {% if total_profit >= 0 %}positive{% else %}negative{% endif %}">
+            {{ average_margin|floatformat:1 }}% Avg Margin
         </div>
     </div>
 </div>
@@ -64,33 +675,23 @@
 </div>
 {% endif %}
 
-<!-- Main Report Table -->
+<!-- Portfolio Table -->
 <div class="{% if not report %}table-responsive card{% endif %}" style="{% if not report %}box-shadow: var(--shadow-lg);{% endif %}">
-    <table class="{% if report %}pdf-table{% else %}table mb-0{% endif %}">
+    <table class="{% if report %}portfolio-table{% else %}table mb-0{% endif %}">
         <thead>
             <tr>
-                <th class="text-left" style="{% if report %}width: 35%;{% endif %}">
-                    <i class="fas fa-project-diagram me-2"></i>Project
-                </th>
-                <th class="text-right" style="{% if report %}width: 16%;{% endif %}">
-                    <i class="fas fa-dollar-sign me-2"></i>Actual Cost
-                </th>
-                <th class="text-right" style="{% if report %}width: 16%;{% endif %}">
-                    <i class="fas fa-receipt me-2"></i>Billable Total
-                </th>
-                <th class="text-right" style="{% if report %}width: 16%;{% endif %}">
-                    <i class="fas fa-chart-line me-2"></i>Profit
-                </th>
-                <th class="text-right" style="{% if report %}width: 17%;{% endif %}">
-                    <i class="fas fa-percentage me-2"></i>Margin
-                </th>
+                <th class="project-col text-left">Project Details</th>
+                <th class="cost-col text-right">Actual Cost</th>
+                <th class="billable-col text-right">Billable Total</th>
+                <th class="profit-col text-right">Net Profit</th>
+                <th class="margin-col text-right">Profit Margin</th>
             </tr>
         </thead>
         <tbody>
         {% for p in projects %}
             <tr>
                 <td class="text-left" data-label="Project">
-                    <div class="d-flex align-items-center">
+                    <div class="{% if not report %}d-flex align-items-center{% endif %}">
                         {% if not report %}
                         <div class="me-3">
                             <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
@@ -100,8 +701,10 @@
                         </div>
                         {% endif %}
                         <div>
-                            <div class="fw-bold">{{ p.name }}</div>
-                            {% if not report %}
+                            <div class="{% if report %}project-name{% else %}fw-bold{% endif %}">{{ p.name }}</div>
+                            {% if report %}
+                            <div class="project-meta">Active Project</div>
+                            {% else %}
                             <small class="text-muted">
                                 <i class="fas fa-calendar me-1"></i>Project Overview
                             </small>
@@ -110,22 +713,32 @@
                     </div>
                 </td>
                 <td class="text-right" data-label="Actual Cost">
-                    <span class="{% if not report %}text-danger fw-semibold{% endif %}">
+                    <span class="{% if report %}amount cost{% else %}text-danger fw-semibold{% endif %}">
                         ${{ p.total_cost|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>
                 <td class="text-right" data-label="Billable Total">
-                    <span class="{% if not report %}text-primary fw-semibold{% endif %}">
+                    <span class="{% if report %}amount revenue{% else %}text-primary fw-semibold{% endif %}">
                         ${{ p.total_billable|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>
-                <td class="text-right" data-label="Profit">
-                    <span class="{% if not report %}{% if p.profit >= 0 %}text-success{% else %}text-danger{% endif %} fw-semibold{% endif %}">
+                <td class="text-right" data-label="Net Profit">
+                    <span class="{% if report %}amount {% if p.profit >= 0 %}profit{% else %}negative{% endif %}{% else %}{% if p.profit >= 0 %}text-success{% else %}text-danger{% endif %} fw-semibold{% endif %}">
                         {% if p.profit >= 0 %}+{% endif %}${{ p.profit|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>
                 <td class="text-right" data-label="Margin">
-                    {% if not report %}
+                    {% if report %}
+                    <div class="margin-bar">
+                        <span class="margin-percentage {% if p.margin >= 25 %}excellent{% elif p.margin >= 15 %}good{% elif p.margin >= 5 %}fair{% else %}poor{% endif %}">
+                            {{ p.margin|floatformat:1 }}%
+                        </span>
+                        <div class="margin-indicator">
+                            <div class="margin-fill {% if p.margin >= 25 %}excellent{% elif p.margin >= 15 %}good{% elif p.margin >= 5 %}fair{% else %}poor{% endif %}" 
+                                 style="width: {% if p.margin > 50 %}100{% else %}{{ p.margin|floatformat:0|add:0 }}{% endif %}%"></div>
+                        </div>
+                    </div>
+                    {% else %}
                     <div class="d-flex align-items-center justify-content-end">
                         <span class="{% if p.margin >= 20 %}text-success{% elif p.margin >= 10 %}text-warning{% else %}text-danger{% endif %} fw-bold me-2">
                             {{ p.margin|floatformat:1 }}%
@@ -135,20 +748,19 @@
                                  role="progressbar" style="width: {% if p.margin > 50 %}100{% else %}{{ p.margin|floatformat:0 }}{% endif %}%"></div>
                         </div>
                     </div>
-                    {% else %}
-                    {{ p.margin|floatformat:1 }}%
                     {% endif %}
                 </td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="5" class="text-center py-5">
-                    {% if not report %}
+                <td colspan="5" class="no-data">
+                    {% if report %}
+                    <div class="no-data-icon">📁</div>
+                    <div>No active projects found</div>
+                    {% else %}
                     <i class="fas fa-folder-open fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">No Projects Found</h5>
                     <p class="text-muted">No projects have been created yet.</p>
-                    {% else %}
-                    No projects found.
                     {% endif %}
                 </td>
             </tr>
@@ -156,6 +768,119 @@
         </tbody>
     </table>
 </div>
+
+<!-- Performance Analysis (PDF Only) -->
+{% if report and projects %}
+<div class="performance-section avoid-break">
+    <div class="performance-header">
+        Business Performance Analysis
+    </div>
+    <div class="performance-grid">
+        <div class="analysis-section">
+            <h4>Profitability Distribution</h4>
+            <div class="analysis-item">
+                <span class="analysis-label">Highly Profitable Projects (>20% margin):</span>
+                <span class="analysis-value">{{ profitable_count }}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Break-even Projects (0-10% margin):</span>
+                <span class="analysis-value">{{ breakeven_count }}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Loss-making Projects (<0% margin):</span>
+                <span class="analysis-value">{{ unprofitable_count }}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Portfolio Success Rate:</span>
+                <span class="analysis-value">
+                    {% if projects %}
+                        {% widthratio profitable_count projects|length 100 as success_rate %}
+                        {{ success_rate|default:0 }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+        <div class="analysis-section">
+            <h4>Key Financial Metrics</h4>
+            <div class="analysis-item">
+                <span class="analysis-label">Average Project Margin:</span>
+                <span class="analysis-value">{{ average_margin|floatformat:1 }}%</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Total Active Projects:</span>
+                <span class="analysis-value">{{ projects|length }}</span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Overall Return on Investment:</span>
+                <span class="analysis-value">
+                    {% if roi is not None %}{{ roi|floatformat:1 }}%{% else %}N/A{% endif %}
+                </span>
+            </div>
+            <div class="analysis-item">
+                <span class="analysis-label">Revenue per Project:</span>
+                <span class="analysis-value">
+                    {% if projects %}
+                        ${% widthratio total_revenue projects|length 1 as avg_revenue %}{{ avg_revenue|floatformat:0|intcomma }}
+                    {% else %}
+                        $0
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recommendations -->
+<div class="recommendations avoid-break">
+    <h4>Strategic Recommendations</h4>
+    {% if average_margin < 15 %}
+    <div class="recommendation-item">
+        <div class="recommendation-type">Pricing Strategy</div>
+        <div class="recommendation-text">Current average margin of {{ average_margin|floatformat:1 }}% is below industry standards. Consider reviewing pricing structure and cost management practices to improve profitability.</div>
+    </div>
+    {% endif %}
+    
+    {% if projects|length < 3 %}
+    <div class="recommendation-item">
+        <div class="recommendation-type">Portfolio Growth</div>
+        <div class="recommendation-text">With {{ projects|length }} active project{{ projects|length|pluralize }}, consider diversifying your portfolio to reduce risk and increase revenue potential.</div>
+    </div>
+    {% endif %}
+    
+    {% if unprofitable_count > 0 %}
+    <div class="recommendation-item">
+        <div class="recommendation-type">Performance Optimization</div>
+        <div class="recommendation-text">{{ unprofitable_count }} project{{ unprofitable_count|pluralize }} showing negative margins. Review cost control and operational efficiency for these engagements.</div>
+    </div>
+    {% endif %}
+    
+    <div class="recommendation-item">
+        <div class="recommendation-type">Best Practice</div>
+        <div class="recommendation-text">Continue tracking material costs closely and maintain regular project reviews to ensure optimal margin control and client satisfaction.</div>
+    </div>
+</div>
+
+<!-- Portfolio Totals -->
+<div class="summary-totals avoid-break">
+    <h3>Portfolio Performance Summary</h3>
+    <div class="totals-grid">
+        <div class="total-item">
+            <div class="total-label">Total Revenue</div>
+            <div class="total-value">${{ total_revenue|floatformat:0|intcomma }}</div>
+        </div>
+        <div class="total-item">
+            <div class="total-label">Total Investment</div>
+            <div class="total-value">${{ total_cost|floatformat:0|intcomma }}</div>
+        </div>
+        <div class="total-item">
+            <div class="total-label">Net Profit</div>
+            <div class="total-value">${{ total_profit|floatformat:0|intcomma }}</div>
+        </div>
+    </div>
+</div>
+{% endif %}
 
 <!-- Portfolio Analysis (Screen Only) -->
 {% if not report and projects %}
@@ -252,6 +977,37 @@
                 </div>
             </div>
         </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Report Footer (PDF Only) -->
+{% if report %}
+<div class="report-footer">
+    <div class="footer-content">
+        <div class="footer-section">
+            <h5>Report Details</h5>
+            <p>Generated: {{ "now"|date:"F d, Y \a\t g:i A" }}</p>
+            <p>Report Type: Portfolio Summary</p>
+            <p>Data Period: All Active Projects</p>
+        </div>
+        <div class="footer-section">
+            <h5>Company Information</h5>
+            <p>{{ contractor.name|default:"Squire Enterprises" }}</p>
+            <p>Professional Services</p>
+            <p>{{ contractor.email }}</p>
+        </div>
+        <div class="footer-section">
+            <h5>System Information</h5>
+            <p>Squire Enterprises</p>
+            <p>Job Tracking System v2.0</p>
+            <p>Business Intelligence Report</p>
+        </div>
+    </div>
+    
+    <div class="confidentiality-notice">
+        <strong>CONFIDENTIAL:</strong> This report contains proprietary business information and financial data. 
+        Distribution is restricted to authorized personnel only. Unauthorized disclosure is prohibited.
     </div>
 </div>
 {% endif %}
