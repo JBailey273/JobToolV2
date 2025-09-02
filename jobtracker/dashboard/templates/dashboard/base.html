@@ -281,26 +281,32 @@
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Breadcrumb Navigation System
-    const backButton = document.getElementById('back-button');
-    
-    if (backButton) {
-        const currentHref = window.location.href;
-        const currentTitle = document.title.split('|')[0].trim();
+    const currentHref = window.location.href;
+    const currentTitle = document.title.split('|')[0].trim();
+    const urlName = "{{ request.resolver_match.url_name }}";
 
-        let breadcrumbs = [];
-        try {
-            breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
-        } catch (e) {
-            breadcrumbs = [];
-        }
+    let breadcrumbs = [];
+    try {
+        breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
+    } catch (e) {
+        breadcrumbs = [];
+    }
 
+    if (urlName === 'contractor_summary') {
+        breadcrumbs = [{ href: currentHref, title: currentTitle }];
+    } else {
         const existingIndex = breadcrumbs.findIndex(b => b.href === currentHref);
         if (existingIndex >= 0) {
             breadcrumbs = breadcrumbs.slice(0, existingIndex + 1);
         } else {
             breadcrumbs.push({ href: currentHref, title: currentTitle });
         }
+    }
 
+    sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+
+    const backButton = document.getElementById('back-button');
+    if (backButton) {
         const prev = breadcrumbs[breadcrumbs.length - 2];
 
         if (prev) {
@@ -318,8 +324,6 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
         backButton.style.display = 'inline-block';
-
-        sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
     }
 
     // Enhanced Responsive Table Handling
