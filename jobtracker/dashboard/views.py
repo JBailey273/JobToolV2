@@ -145,6 +145,24 @@ def project_list(request):
 
 
 @login_required
+def reports(request):
+    """Display available report links."""
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    projects = contractor.projects.filter(end_date__isnull=True)
+
+    return render(
+        request,
+        "dashboard/reports.html",
+        {
+            "projects": projects,
+        },
+    )
+
+
+@login_required
 def project_detail(request, pk):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:

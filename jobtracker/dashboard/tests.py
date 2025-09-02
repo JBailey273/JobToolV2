@@ -496,3 +496,27 @@ class JobEntryOrderingTests(TestCase):
         self.assertEqual(
             [r["date"] for r in results], ["2024-01-10", "2024-01-01"]
         )
+
+
+class ReportsPageTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.project = self.contractor.projects.create(
+            name="Proj", start_date="2024-01-01"
+        )
+
+    def test_reports_page_lists_project_links(self):
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+        response = self.client.get(reverse("dashboard:reports"))
+        self.assertContains(response, "Project Reports")
+        self.assertContains(response, self.project.name)
+        self.assertContains(
+            response, reverse("dashboard:customer_report", args=[self.project.pk])
+        )
