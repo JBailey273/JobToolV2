@@ -442,16 +442,9 @@ def contractor_report(request):
     roi = (total_profit / total_cost * Decimal("100")) if total_cost else None
     
     export_pdf = request.GET.get("export") == "pdf"
-    logo_url = (
-        contractor.logo_thumbnail.url
-        if export_pdf and contractor and contractor.logo_thumbnail
-        else contractor.logo.url if contractor and contractor.logo else None
-    )
-    
     context = {
         "contractor": contractor,
         "projects": projects,
-        "contractor_logo_url": logo_url,
         "report": export_pdf,
         "total_revenue": total_revenue,
         "total_cost": total_cost,
@@ -488,18 +481,12 @@ def customer_report(request, pk):
     outstanding = total - (total_payments or 0)
     
     export_pdf = request.GET.get("export") == "pdf"
-    logo_url = (
-        contractor.logo_thumbnail.url
-        if export_pdf and contractor and contractor.logo_thumbnail
-        else contractor.logo.url if contractor and contractor.logo else None
-    )
-    
+
     context = {
         "contractor": contractor,
         "project": project,
         "entries": entries,
         "total": total,
-        "contractor_logo_url": logo_url,
         "report": export_pdf,
         "colspan_before_total": 6,
         "total_columns": 7,
@@ -552,12 +539,7 @@ def contractor_job_report(request, pk):
     outstanding = total_billable - (total_payments or 0)
     
     export_pdf = request.GET.get("export") == "pdf"
-    logo_url = (
-        contractor.logo_thumbnail.url
-        if export_pdf and contractor and contractor.logo_thumbnail
-        else contractor.logo.url if contractor and contractor.logo else None
-    )
-    
+
     context = {
         "contractor": contractor,
         "project": project,
@@ -566,7 +548,6 @@ def contractor_job_report(request, pk):
         "total_cost": total_cost,
         "total_profit": total_profit,
         "overall_margin": overall_margin,
-        "contractor_logo_url": logo_url,
         "report": export_pdf,
         "payments": payments,
         "total_payments": total_payments or 0,

@@ -343,9 +343,6 @@ body {
 
 <!-- Report Header -->
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
-    {% if contractor_logo_url %}
-    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo" />
-    {% endif %}
     <h2>{{ contractor.name|default:contractor.email }}</h2>
     <h1>Contractor Job Report</h1>
     <div class="project-info">{{ project.name }} • Generated {{ "now"|date:"F d, Y \\a\\t g:i A" }}</div>

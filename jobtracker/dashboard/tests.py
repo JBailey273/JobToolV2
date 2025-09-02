@@ -107,8 +107,8 @@ class DashboardLogoTests(TestCase):
 
 
 class CustomerReportHeaderTests(TestCase):
-    def test_customer_report_displays_logo_and_name(self):
-        """Customer report should show contractor name, logo, and new title."""
+    def test_customer_report_displays_name(self):
+        """Customer report should show contractor name and new title without logo."""
 
         logo_content = (
             b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00"
@@ -133,13 +133,13 @@ class CustomerReportHeaderTests(TestCase):
         url = reverse("dashboard:customer_report", args=[project.pk])
         response = self.client.get(url)
 
-        self.assertContains(response, contractor.logo.url)
-        self.assertContains(response, "contractor-logo")
+        self.assertNotContains(response, contractor.logo.url)
+        self.assertNotContains(response, "contractor-logo")
         self.assertContains(response, contractor.name)
         self.assertContains(response, "Summary of Work")
 
-    def test_customer_report_pdf_uses_thumbnail_logo(self):
-        """PDF export should use the contractor's thumbnail logo."""
+    def test_customer_report_pdf_renders_without_logo(self):
+        """PDF export should render without contractor logo."""
 
         logo_content = (
             b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00"
@@ -167,8 +167,8 @@ class CustomerReportHeaderTests(TestCase):
         with patch("dashboard.views._render_pdf", return_value=None):
             response = self.client.get(url + "?export=pdf")
 
-        self.assertContains(response, contractor.logo_thumbnail.url)
-        self.assertContains(response, "contractor-logo")
+        self.assertNotContains(response, contractor.logo_thumbnail.url)
+        self.assertNotContains(response, "contractor-logo")
 
 
 class CustomerReportPaymentsTests(TestCase):
@@ -216,7 +216,7 @@ class ContractorSummaryReportTests(TestCase):
         response = self.client.get(reverse("dashboard:contractor_report"))
         self.assertContains(response, "Contractor Summary Report")
 
-    def test_contractor_report_displays_logo(self):
+    def test_contractor_report_excludes_logo(self):
         logo_content = (
             b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00"
             b"\x00\x00\x00\xff\xff\xff!\xf9\x04\x01\n\x00\x01\x00,"
@@ -237,8 +237,8 @@ class ContractorSummaryReportTests(TestCase):
 
         response = self.client.get(reverse("dashboard:contractor_report"))
 
-        self.assertContains(response, contractor.logo.url)
-        self.assertContains(response, "contractor-logo")
+        self.assertNotContains(response, contractor.logo.url)
+        self.assertNotContains(response, "contractor-logo")
 
 
 class ContractorJobReportTests(TestCase):
@@ -270,7 +270,7 @@ class ContractorJobReportTests(TestCase):
         self.assertContains(response, "$20")
         self.assertContains(response, "40.00%")
 
-    def test_contractor_job_report_displays_logo(self):
+    def test_contractor_job_report_excludes_logo(self):
         logo_content = (
             b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00"
             b"\x00\x00\x00\xff\xff\xff!\xf9\x04\x01\n\x00\x01\x00,"
@@ -293,8 +293,8 @@ class ContractorJobReportTests(TestCase):
         url = reverse("dashboard:contractor_job_report", args=[project.pk])
         response = self.client.get(url)
 
-        self.assertContains(response, contractor.logo.url)
-        self.assertContains(response, "contractor-logo")
+        self.assertNotContains(response, contractor.logo.url)
+        self.assertNotContains(response, "contractor-logo")
 
 
 class ReportButtonPlacementTests(TestCase):
