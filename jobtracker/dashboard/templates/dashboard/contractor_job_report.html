@@ -345,7 +345,7 @@ body {
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
     <h2>{{ contractor.name|default:contractor.email }}</h2>
     <h1>Contractor Job Report</h1>
-    <div class="project-info">{{ project.name }} • Generated {{ "now"|date:"F d, Y \\a\\t g:i A" }}</div>
+    <div class="project-info">{{ project.name }} • Generated {% now "F d, Y \\a\\t g:i A" %}</div>
 </div>
 
 <!-- Export Button -->
@@ -358,7 +358,7 @@ body {
             </a>
         </div>
         <div class="text-muted">
-            <small><i class="fas fa-info-circle me-1"></i>Report generated on {{ "now"|date:"F d, Y \\a\\t g:i A" }}</small>
+            <small><i class="fas fa-info-circle me-1"></i>Report generated on {% now "F d, Y \\a\\t g:i A" %}</small>
         </div>
     </div>
 </div>
@@ -541,8 +541,8 @@ body {
 {% if report %}
 <div class="report-footer">
     <div class="generation-info">
-        <strong>Report generated on {{ "now"|date:"F d, Y \a\t g:i A" }}</strong> | 
-        {{ contractor.name|default:contractor.email }} | 
+        <strong>Report generated on {% now "F d, Y \a\t g:i A" %}</strong> |
+        {{ contractor.name|default:contractor.email }} |
         Squire Enterprises Job Tracking System
     </div>
     <div class="confidential">
