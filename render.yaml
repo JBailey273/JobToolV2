@@ -29,6 +29,8 @@ services:
         value: "https://*.onrender.com,https://app.squire.enterprises"
       - key: MEDIA_ROOT
         value: /var/media
+      - key: TZ
+        value: America/New_York
 databases:
   - name: jobtracker-db
     plan: free
