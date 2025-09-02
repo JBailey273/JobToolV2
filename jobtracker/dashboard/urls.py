@@ -12,6 +12,11 @@ urlpatterns = [
         views.select_job_entry_project,
         name="select_job_entry_project",
     ),
+    path(
+        "projects/add-payment/select/",
+        views.select_payment_project,
+        name="select_payment_project",
+    ),
     path("projects/<int:pk>/add-entry/", views.add_job_entry, name="add_job_entry"),
     path("entries/<int:pk>/edit/", views.edit_job_entry, name="edit_job_entry"),
     path("projects/<int:pk>/add-payment/", views.add_payment, name="add_payment"),
