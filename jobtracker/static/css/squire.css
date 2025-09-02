@@ -1252,7 +1252,11 @@ textarea:focus {
 
 .nav-tabs .nav-link.active {
     background: var(--primary-gradient);
-    color: white;
+    color: #fff !important;
+}
+
+.nav-tabs .nav-link.active i {
+    color: #fff !important;
 }
 
 .tab-content {
