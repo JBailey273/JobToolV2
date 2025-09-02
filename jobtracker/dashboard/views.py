@@ -41,7 +41,10 @@ def _render_pdf(template_src, context, filename):
     template = get_template(template_src)
     html = template.render(context)
     result = BytesIO()
-    pdf = pisa.CreatePDF(html, dest=result, link_callback=link_callback)
+    try:
+        pdf = pisa.CreatePDF(html, dest=result, link_callback=link_callback)
+    except Exception:
+        return None
     if pdf.err:
         return None
     result.seek(0)

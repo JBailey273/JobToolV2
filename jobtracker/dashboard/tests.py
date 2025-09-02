@@ -399,6 +399,15 @@ class PdfExportTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
 
+    @patch("dashboard.views.pisa")
+    def test_pdf_export_error_returns_html(self, mock_pisa):
+        mock_pisa.CreatePDF.side_effect = Exception("boom")
+        response = self.client.get(
+            reverse("dashboard:contractor_report") + "?export=pdf"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response["Content-Type"].startswith("text/html"))
+
 
 class JobEntryOrderingTests(TestCase):
     def setUp(self):
