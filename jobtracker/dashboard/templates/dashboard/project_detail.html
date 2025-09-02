@@ -460,22 +460,46 @@
                     <div class="col-md-6">
                         <div class="card h-100">
                             <div class="card-body">
-                                <h6 class="card-title">Cost Breakdown</h6>
-                                <div class="progress mb-2" style="height: 25px;">
-                                    <div class="progress-bar bg-primary" style="width: {{ labor_percent|floatformat:0 }}%;" title="Labor">
-                                        Labor {{ labor_percent|floatformat:0 }}%
+                                <h6 class="card-title">Project Breakdown</h6>
+                                <div class="mb-3">
+                                    <div class="small fw-semibold">Cost</div>
+                                    <div class="progress mb-1" style="height: 15px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ labor_percent|floatformat:0 }}%;" title="Labor">
+                                            Labor {{ labor_percent|floatformat:0 }}%
+                                        </div>
+                                        <div class="progress-bar bg-warning" style="width: {{ equipment_percent|floatformat:0 }}%;" title="Equipment">
+                                            Equipment {{ equipment_percent|floatformat:0 }}%
+                                        </div>
+                                        <div class="progress-bar bg-secondary" style="width: {{ material_percent|floatformat:0 }}%;" title="Materials">
+                                            Materials {{ material_percent|floatformat:0 }}%
+                                        </div>
                                     </div>
-                                    <div class="progress-bar bg-warning" style="width: {{ equipment_percent|floatformat:0 }}%;" title="Equipment">
-                                        Equipment {{ equipment_percent|floatformat:0 }}%
-                                    </div>
-                                    <div class="progress-bar bg-secondary" style="width: {{ material_percent|floatformat:0 }}%;" title="Materials">
-                                        Materials {{ material_percent|floatformat:0 }}%
+                                    <div class="small text-muted">
+                                        Labor: ${{ labor_cost|floatformat:2|intcomma }} |
+                                        Equipment: ${{ equipment_cost|floatformat:2|intcomma }} |
+                                        Materials: ${{ material_cost|floatformat:2|intcomma }} |
+                                        Total: ${{ total_cost|floatformat:2|intcomma }}
                                     </div>
                                 </div>
-                                <div class="small text-muted">
-                                    <div>Labor: ${{ labor_cost|floatformat:2|intcomma }}</div>
-                                    <div>Equipment: ${{ equipment_cost|floatformat:2|intcomma }}</div>
-                                    <div>Materials: ${{ material_cost|floatformat:2|intcomma }}</div>
+                                <div>
+                                    <div class="small fw-semibold">Billable</div>
+                                    <div class="progress mb-1" style="height: 15px;">
+                                        <div class="progress-bar bg-primary" style="width: {{ billable_labor_percent|floatformat:0 }}%;" title="Labor">
+                                            Labor {{ billable_labor_percent|floatformat:0 }}%
+                                        </div>
+                                        <div class="progress-bar bg-warning" style="width: {{ billable_equipment_percent|floatformat:0 }}%;" title="Equipment">
+                                            Equipment {{ billable_equipment_percent|floatformat:0 }}%
+                                        </div>
+                                        <div class="progress-bar bg-secondary" style="width: {{ billable_material_percent|floatformat:0 }}%;" title="Materials">
+                                            Materials {{ billable_material_percent|floatformat:0 }}%
+                                        </div>
+                                    </div>
+                                    <div class="small text-muted">
+                                        Labor: ${{ billable_labor|floatformat:2|intcomma }} |
+                                        Equipment: ${{ billable_equipment|floatformat:2|intcomma }} |
+                                        Materials: ${{ billable_material|floatformat:2|intcomma }} |
+                                        Total: ${{ total_billable|floatformat:2|intcomma }}
+                                    </div>
                                 </div>
                             </div>
                         </div>
