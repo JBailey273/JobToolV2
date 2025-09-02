@@ -55,7 +55,17 @@ def contractor_summary(request):
     if contractor is None:
         return redirect("login")
     
-    projects = contractor.projects.filter(end_date__isnull=True)
+    projects = (
+        contractor.projects.filter(end_date__isnull=True)
+        .annotate(
+            total_billable=Sum("job_entries__billable_amount"),
+            total_payments=Sum("payments__amount"),
+        )
+    )
+    for p in projects:
+        p.total_billable = p.total_billable or 0
+        p.total_payments = p.total_payments or 0
+        p.outstanding = p.total_billable - p.total_payments
     first_project = projects.first()
     
     overall_billable = (
