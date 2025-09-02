@@ -4,4 +4,4 @@ gunicorn
 psycopg2-binary
 python-dotenv
 Pillow
-xhtml2pdf
+WeasyPrint

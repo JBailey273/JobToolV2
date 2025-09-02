@@ -8,7 +8,24 @@ from django.urls import reverse
 from django.templatetags.static import static
 
 from tracker.models import Contractor, ContractorUser, Asset, JobEntry, Payment
+from dashboard.views import _render_pdf
 
+
+class RenderPdfTests(TestCase):
+    def test_render_pdf_generates_pdf(self):
+        template = SimpleNamespace(render=lambda ctx: "<html></html>")
+        pdf_bytes = b"%PDF-1.4"
+        html_obj = SimpleNamespace(write_pdf=lambda: pdf_bytes)
+        with patch("dashboard.views.get_template", return_value=template):
+            with patch("dashboard.views.HTML", return_value=html_obj):
+                response = _render_pdf("tpl.html", {}, "out.pdf")
+        assert response.status_code == 200
+        assert response.content.startswith(b"%PDF")
+
+    def test_render_pdf_missing_library_returns_500(self):
+        with patch("dashboard.views.HTML", None):
+            response = _render_pdf("tpl.html", {}, "out.pdf")
+        assert response.status_code == 500
 
 class DashboardLogoTests(TestCase):
     def test_dashboard_displays_contractor_logo(self):
@@ -370,13 +387,12 @@ class PdfExportTests(TestCase):
             reverse("login"), {"username": "user@example.com", "password": "secret"}
         )
 
-    def _fake_pdf(self, html, dest, link_callback=None):
-        dest.write(b"%PDF-1.4\n")
-        return SimpleNamespace(err=0)
+    def _fake_html(self, pdf_bytes=b"%PDF-1.4\n"):
+        return SimpleNamespace(write_pdf=lambda: pdf_bytes)
 
-    @patch("dashboard.views.pisa")
-    def test_contractor_report_pdf(self, mock_pisa):
-        mock_pisa.CreatePDF.side_effect = self._fake_pdf
+    @patch("dashboard.views.HTML")
+    def test_contractor_report_pdf(self, mock_html):
+        mock_html.side_effect = lambda *args, **kwargs: self._fake_html()
         response = self.client.get(
             reverse("dashboard:contractor_report") + "?export=pdf"
         )
@@ -384,54 +400,36 @@ class PdfExportTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
 
-    @patch("dashboard.views.pisa")
-    def test_contractor_job_report_pdf(self, mock_pisa):
-        mock_pisa.CreatePDF.side_effect = self._fake_pdf
+    @patch("dashboard.views.HTML")
+    def test_contractor_job_report_pdf(self, mock_html):
+        mock_html.side_effect = lambda *args, **kwargs: self._fake_html()
         url = reverse("dashboard:contractor_job_report", args=[self.project.pk])
         response = self.client.get(url + "?export=pdf")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
 
-    @patch("dashboard.views.pisa")
-    def test_customer_report_pdf(self, mock_pisa):
-        mock_pisa.CreatePDF.side_effect = self._fake_pdf
+    @patch("dashboard.views.HTML")
+    def test_customer_report_pdf(self, mock_html):
+        mock_html.side_effect = lambda *args, **kwargs: self._fake_html()
         url = reverse("dashboard:customer_report", args=[self.project.pk])
         response = self.client.get(url + "?export=pdf")
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
 
-    @patch("dashboard.views.pisa")
-    def test_pdf_export_error_returns_error(self, mock_pisa):
-        mock_pisa.CreatePDF.side_effect = Exception("boom")
+    @patch("dashboard.views.HTML")
+    def test_pdf_export_error_returns_error(self, mock_html):
+        mock_html.side_effect = Exception("boom")
         response = self.client.get(
             reverse("dashboard:contractor_report") + "?export=pdf"
         )
         self.assertEqual(response.status_code, 500)
         self.assertIn(b"Error generating PDF", response.content)
 
-    @patch("dashboard.views.pisa")
-    def test_pdf_still_returned_if_pisa_reports_error(self, mock_pisa):
-        def fake_pdf(html, dest, link_callback=None):
-            dest.write(b"%PDF-1.4\n")
-            return SimpleNamespace(err=1)
-
-        mock_pisa.CreatePDF.side_effect = fake_pdf
-        response = self.client.get(
-            reverse("dashboard:contractor_report") + "?export=pdf"
-        )
-        self.assertEqual(response.status_code, 200)
-        self.assertEqual(response["Content-Type"], "application/pdf")
-        self.assertTrue(response.content.startswith(b"%PDF"))
-
-    @patch("dashboard.views.pisa")
-    def test_pdf_with_leading_whitespace_is_trimmed(self, mock_pisa):
-        def fake_pdf(html, dest, link_callback=None):
-            dest.write(b"\n%PDF-1.4\n")
-            return SimpleNamespace(err=0)
-
-        mock_pisa.CreatePDF.side_effect = fake_pdf
+    @patch("dashboard.views.HTML")
+    def test_pdf_with_leading_whitespace_is_trimmed(self, mock_html):
+        mock_html.side_effect = lambda *args, **kwargs: self._fake_html(b"\n%PDF-1.4\n")
         response = self.client.get(
             reverse("dashboard:contractor_report") + "?export=pdf"
         )

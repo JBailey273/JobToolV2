@@ -1,55 +1,36 @@
 from decimal import Decimal
-import os
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.contrib.staticfiles import finders
 from django.db.models import Sum, Count, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
-from io import BytesIO
 from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime, timedelta
 
 try:
-    from xhtml2pdf import pisa
+    from weasyprint import HTML
 except Exception:  # pragma: no cover - optional dependency
-    pisa = None
+    HTML = None
 
 from tracker.models import Asset, Employee, JobEntry, Payment, Project
 
 
-def link_callback(uri, rel):
-    if settings.MEDIA_URL and uri.startswith(settings.MEDIA_URL):
-        path = os.path.join(settings.MEDIA_ROOT, uri.replace(settings.MEDIA_URL, ""))
-    elif settings.STATIC_URL and uri.startswith(settings.STATIC_URL):
-        path = finders.find(uri.replace(settings.STATIC_URL, "")) or os.path.join(
-            settings.STATIC_ROOT, uri.replace(settings.STATIC_URL, "")
-        )
-    else:
-        return uri
-    if not os.path.isfile(path):
-        return uri
-    return path
-
-
 def _render_pdf(template_src, context, filename):
-    if pisa is None:
+    if HTML is None:
         return HttpResponse("PDF generation is unavailable", status=500)
     template = get_template(template_src)
     html = template.render(context)
-    result = BytesIO()
     try:
-        pisa.CreatePDF(html, dest=result, link_callback=link_callback)
+        pdf = HTML(string=html, base_url=str(settings.BASE_DIR)).write_pdf()
     except Exception:
         return HttpResponse("Error generating PDF", status=500)
-    content = result.getvalue()
-    start = content.find(b"%PDF")
+    start = pdf.find(b"%PDF")
     if start == -1:
         return HttpResponse("Error generating PDF", status=500)
-    response = HttpResponse(content[start:], content_type="application/pdf")
+    response = HttpResponse(pdf[start:], content_type="application/pdf")
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
