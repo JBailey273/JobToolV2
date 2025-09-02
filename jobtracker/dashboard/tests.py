@@ -527,3 +527,35 @@ class ReportsPageTests(TestCase):
         )
         response = self.client.get(reverse("dashboard:reports"))
         self.assertNotContains(response, '<nav aria-label="breadcrumb"')
+
+
+class ProjectDetailRobustnessTests(TestCase):
+    def test_project_detail_handles_bad_numeric_data(self):
+        contractor = Contractor.objects.create(
+            name="Test Contractor", email="user2@example.com"
+        )
+        user = ContractorUser.objects.create_user(
+            email="user2@example.com", password="secret", contractor=contractor
+        )
+        project = contractor.projects.create(name="Proj", start_date="2024-01-01")
+        asset = contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        JobEntry.objects.create(
+            project=project,
+            date="2024-01-02",
+            hours=Decimal("1"),
+            asset=asset,
+            cost_amount=Decimal("10"),
+            billable_amount=Decimal("20"),
+        )
+        # Corrupt asset cost_rate with invalid value to simulate bad data
+        from django.db import connection
+
+        with connection.cursor() as cursor:
+            cursor.execute("UPDATE tracker_asset SET cost_rate='' WHERE id=%s", [asset.id])
+
+        self.client.force_login(user)
+        url = reverse("dashboard:project_detail", args=[project.pk])
+        response = self.client.get(url, HTTP_HOST="localhost")
+        self.assertEqual(response.status_code, 200)
