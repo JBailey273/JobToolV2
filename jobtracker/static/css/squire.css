@@ -759,17 +759,21 @@ textarea:focus {
 }
 
 /* Floating Action Buttons */
+
 .floating-add {
     position: fixed;
     bottom: 30px;
     right: 30px;
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     background: var(--primary-gradient);
     border: none;
     color: white;
-    font-size: 24px;
+    font-size: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 8px 25px rgba(74, 124, 42, 0.3);
     z-index: 1000;
     transition: all 0.3s ease;
@@ -788,13 +792,16 @@ textarea:focus {
 }
 
 .floating-btn {
-    width: 60px;
-    height: 60px;
+    width: 70px;
+    height: 70px;
     border-radius: 50%;
     border: none;
     color: white;
-    font-size: 20px;
+    font-size: 28px;
     margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
     transition: all 0.3s ease;
 }
@@ -1569,9 +1576,9 @@ textarea.form-control {
     }
     
     .floating-btn {
-        width: 50px;
-        height: 50px;
-        font-size: 18px;
+        width: 60px;
+        height: 60px;
+        font-size: 24px;
         margin-left: 8px;
     }
 }
