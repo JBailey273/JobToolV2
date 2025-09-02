@@ -330,12 +330,18 @@ class ContractorSummaryProjectTotalsTests(TestCase):
         JobEntry.objects.create(
             project=project, date="2024-01-02", hours=Decimal("1"), asset=asset
         )
+        JobEntry.objects.create(
+            project=project, date="2024-01-03", hours=Decimal("0.5"), asset=asset
+        )
         Payment.objects.create(
-            project=project, amount=Decimal("5"), date="2024-01-03"
+            project=project, amount=Decimal("5"), date="2024-01-04"
+        )
+        Payment.objects.create(
+            project=project, amount=Decimal("8"), date="2024-01-05"
         )
 
         response = self.client.get(reverse("dashboard:contractor_summary"))
 
-        self.assertContains(response, "$20")
-        self.assertContains(response, "$5")
-        self.assertContains(response, "$15")
+        self.assertContains(response, "$30")
+        self.assertContains(response, "$13")
+        self.assertContains(response, "$17")
