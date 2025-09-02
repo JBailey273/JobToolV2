@@ -3,13 +3,352 @@
 {% block title %}Contractor Job Report{% endblock %}
 {% block content %}
 
+{% if report %}
+<style>
+/* Professional PDF Report Styling */
+@page {
+    size: A4 landscape;
+    margin: 0.75in 0.5in 0.5in 0.5in;
+    @top-center {
+        content: "Contractor Job Report - {{ project.name }}";
+        font-size: 10px;
+        color: #666;
+    }
+    @bottom-center {
+        content: "Page " counter(page) " of " counter(pages);
+        font-size: 9px;
+        color: #666;
+    }
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-size: 10px;
+    line-height: 1.4;
+    color: #333;
+    background: white;
+    margin: 0;
+    padding: 0;
+}
+
+/* Report Header */
+.report-header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding: 20px 0;
+    border-bottom: 3px solid #4a7c2a;
+    background: linear-gradient(to right, #f8faf6, #ffffff, #f8faf6);
+}
+
+.report-header img {
+    max-height: 50px;
+    margin-bottom: 10px;
+}
+
+.report-header h1 {
+    font-size: 22px;
+    font-weight: bold;
+    color: #2d5016;
+    margin: 10px 0 5px 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.report-header h2 {
+    font-size: 16px;
+    color: #4a7c2a;
+    margin: 5px 0;
+    font-weight: 600;
+}
+
+.report-header .project-info {
+    font-size: 12px;
+    color: #666;
+    margin: 10px 0;
+    font-style: italic;
+}
+
+/* Executive Summary Box */
+.executive-summary {
+    background: #f8faf6;
+    border: 2px solid #4a7c2a;
+    border-radius: 8px;
+    padding: 20px;
+    margin: 20px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+.summary-item {
+    text-align: center;
+    padding: 10px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.summary-label {
+    font-size: 9px;
+    color: #666;
+    text-transform: uppercase;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+}
+
+.summary-value {
+    font-size: 16px;
+    font-weight: bold;
+    color: #2d5016;
+}
+
+.summary-value.positive {
+    color: #228b22;
+}
+
+.summary-value.negative {
+    color: #8b4513;
+}
+
+/* Main Data Table */
+.main-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.main-table thead {
+    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    color: white;
+}
+
+.main-table th {
+    padding: 12px 8px;
+    font-size: 9px;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    text-align: left;
+    border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.main-table th:last-child {
+    border-right: none;
+}
+
+.main-table th.text-right {
+    text-align: right;
+}
+
+.main-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.main-table tbody tr:nth-child(even) {
+    background: #f9f9f9;
+}
+
+.main-table tbody tr:hover {
+    background: #f0f4f0;
+}
+
+.main-table td {
+    padding: 10px 8px;
+    font-size: 9px;
+    vertical-align: top;
+    border-right: 1px solid #e0e0e0;
+}
+
+.main-table td:last-child {
+    border-right: none;
+}
+
+.main-table .date-col { width: 8%; }
+.main-table .description-col { width: 25%; }
+.main-table .asset-col { width: 12%; }
+.main-table .employee-col { width: 12%; }
+.main-table .material-col { width: 15%; }
+.main-table .hours-col { width: 8%; text-align: right; }
+.main-table .cost-col { width: 10%; text-align: right; }
+.main-table .billable-col { width: 10%; text-align: right; }
+.main-table .profit-col { width: 8%; text-align: right; }
+.main-table .margin-col { width: 6%; text-align: right; }
+
+/* Totals Row */
+.totals-row {
+    background: linear-gradient(135deg, #e8f0de 0%, #d4d4aa 100%) !important;
+    font-weight: bold;
+    border-top: 3px solid #4a7c2a !important;
+    border-bottom: 3px solid #4a7c2a !important;
+}
+
+.totals-row td {
+    padding: 15px 8px !important;
+    font-size: 10px !important;
+    font-weight: bold;
+    color: #2d5016;
+}
+
+/* Amount Formatting */
+.amount {
+    font-family: 'Courier New', monospace;
+    font-weight: bold;
+}
+
+.amount.positive {
+    color: #228b22;
+}
+
+.amount.negative {
+    color: #8b4513;
+}
+
+/* Payments Section */
+.payments-section {
+    margin: 30px 0;
+    page-break-inside: avoid;
+}
+
+.section-header {
+    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    color: white;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: bold;
+    border-radius: 6px 6px 0 0;
+    margin-bottom: 0;
+}
+
+.payments-table {
+    width: 60%;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    border-radius: 0 0 6px 6px;
+    overflow: hidden;
+}
+
+.payments-table th {
+    background: #f8faf6;
+    padding: 10px 15px;
+    font-size: 10px;
+    font-weight: bold;
+    color: #2d5016;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 2px solid #4a7c2a;
+}
+
+.payments-table td {
+    padding: 10px 15px;
+    font-size: 10px;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.payments-table .totals-row {
+    background: #e8f0de !important;
+    border-top: 2px solid #4a7c2a;
+    font-weight: bold;
+}
+
+/* Outstanding Balance Alert */
+.outstanding-section {
+    margin: 25px 0;
+    padding: 20px;
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+    border: 2px solid #daa520;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.outstanding-section.paid {
+    background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+    border-color: #228b22;
+}
+
+.outstanding-section h3 {
+    font-size: 14px;
+    color: #856404;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.outstanding-section.paid h3 {
+    color: #155724;
+}
+
+.outstanding-amount {
+    font-size: 24px;
+    font-weight: bold;
+    color: #856404;
+    font-family: 'Courier New', monospace;
+}
+
+.outstanding-section.paid .outstanding-amount {
+    color: #155724;
+}
+
+/* Report Footer */
+.report-footer {
+    margin-top: 40px;
+    padding: 20px 0;
+    border-top: 2px solid #4a7c2a;
+    text-align: center;
+    font-size: 9px;
+    color: #666;
+    background: #f8faf6;
+}
+
+.report-footer .generation-info {
+    margin-bottom: 10px;
+}
+
+.report-footer .confidential {
+    font-style: italic;
+    color: #999;
+}
+
+/* Utility Classes */
+.text-center { text-align: center !important; }
+.text-right { text-align: right !important; }
+.text-left { text-align: left !important; }
+
+.font-mono {
+    font-family: 'Courier New', monospace;
+}
+
+.break-word {
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+}
+
+/* No content message */
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+    background: #f9f9f9;
+    border-radius: 6px;
+}
+</style>
+{% endif %}
+
 <!-- Report Header -->
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
     {% if contractor_logo_url %}
-    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo img-fluid" />
+    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo" />
     {% endif %}
     <h2>{{ contractor.name|default:contractor.email }}</h2>
-    <h1>Contractor Job Report - {{ project.name }}</h1>
+    <h1>Contractor Job Report</h1>
+    <div class="project-info">{{ project.name }} • Generated {{ "now"|date:"F d, Y" }}</div>
 </div>
 
 <!-- Export Button -->
@@ -28,149 +367,192 @@
 </div>
 {% endif %}
 
+<!-- Executive Summary -->
+{% if report %}
+<div class="executive-summary">
+    <div class="summary-item">
+        <div class="summary-label">Total Cost</div>
+        <div class="summary-value">${{ total_cost|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Total Billable</div>
+        <div class="summary-value positive">${{ total_billable|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Total Profit</div>
+        <div class="summary-value {% if total_profit >= 0 %}positive{% else %}negative{% endif %}">${{ total_profit|floatformat:2|intcomma }}</div>
+    </div>
+    <div class="summary-item">
+        <div class="summary-label">Profit Margin</div>
+        <div class="summary-value {% if overall_margin >= 0 %}positive{% else %}negative{% endif %}">{{ overall_margin|floatformat:1 }}%</div>
+    </div>
+</div>
+{% endif %}
+
 <!-- Main Report Table -->
 <div class="{% if not report %}table-responsive card{% endif %}" style="{% if not report %}box-shadow: var(--shadow-lg);{% endif %}">
-    <table class="{% if report %}pdf-table contractor-report-table{% else %}table mb-0{% endif %}">
+    <table class="{% if report %}main-table{% else %}table mb-0{% endif %}">
         <thead>
             <tr>
-                <th class="{% if report %}col-date{% endif %} text-left">Date</th>
-                <th class="{% if report %}col-description{% endif %} text-left">Description</th>
-                <th class="{% if report %}col-asset{% endif %} text-left">Asset</th>
-                <th class="{% if report %}col-employee{% endif %} text-left">Employee</th>
-                <th class="{% if report %}col-material{% endif %} text-left">Material</th>
-                <th class="{% if report %}col-hours{% endif %} text-right">Hrs/Qty</th>
-                <th class="{% if report %}col-cost{% endif %} text-right">Actual Cost</th>
-                <th class="{% if report %}col-billable{% endif %} text-right">Billable Amount</th>
-                <th class="{% if report %}col-profit{% endif %} text-right">Profit</th>
-                <th class="{% if report %}col-margin{% endif %} text-right">Margin</th>
+                <th class="date-col text-left">Date</th>
+                <th class="description-col text-left">Description</th>
+                <th class="asset-col text-left">Asset</th>
+                <th class="employee-col text-left">Employee</th>
+                <th class="material-col text-left">Material</th>
+                <th class="hours-col text-right">Hrs/Qty</th>
+                <th class="cost-col text-right">Actual Cost</th>
+                <th class="billable-col text-right">Billable Amount</th>
+                <th class="profit-col text-right">Profit</th>
+                <th class="margin-col text-right">Margin</th>
             </tr>
         </thead>
         <tbody>
         {% for e in entries %}
             <tr>
-                <td class="text-left" data-label="Date">{{ e.date|date:"m/d/Y" }}</td>
-                <td class="text-left" data-label="Description">
+                <td class="text-left break-word" data-label="Date">{{ e.date|date:"m/d/Y" }}</td>
+                <td class="text-left break-word" data-label="Description">
                     {% if e.description|length > 35 and report %}
                         {{ e.description|truncatechars:35 }}
                     {% else %}
                         {{ e.description }}
                     {% endif %}
                 </td>
-                <td class="text-left" data-label="Asset">
+                <td class="text-left break-word" data-label="Asset">
                     {% if e.asset %}
                         {% if e.asset.name|length > 12 and report %}
                             {{ e.asset.name|truncatechars:12 }}
                         {% else %}
                             {{ e.asset.name }}
                         {% endif %}
+                    {% else %}
+                        —
                     {% endif %}
                 </td>
-                <td class="text-left" data-label="Employee">
+                <td class="text-left break-word" data-label="Employee">
                     {% if e.employee %}
                         {% if e.employee.name|length > 12 and report %}
                             {{ e.employee.name|truncatechars:12 }}
                         {% else %}
                             {{ e.employee.name }}
                         {% endif %}
-                    {% endif %}
-                </td>
-                <td class="text-left" data-label="Material">
-                    {% if e.material_description|length > 18 and report %}
-                        {{ e.material_description|truncatechars:18 }}
                     {% else %}
-                        {{ e.material_description }}
+                        —
                     {% endif %}
                 </td>
-                <td class="text-right" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
-                <td class="text-right" data-label="Actual Cost">${{ e.cost_amount|floatformat:2|intcomma }}</td>
-                <td class="text-right" data-label="Billable Amount">${{ e.billable_amount|floatformat:2|intcomma }}</td>
-                <td class="text-right" data-label="Profit">${{ e.profit|floatformat:2|intcomma }}</td>
-                <td class="text-right" data-label="Margin">{{ e.margin|floatformat:2 }}%</td>
+                <td class="text-left break-word" data-label="Material">
+                    {% if e.material_description %}
+                        {% if e.material_description|length > 18 and report %}
+                            {{ e.material_description|truncatechars:18 }}
+                        {% else %}
+                            {{ e.material_description }}
+                        {% endif %}
+                    {% else %}
+                        —
+                    {% endif %}
+                </td>
+                <td class="text-right font-mono" data-label="Hours/Qty">{{ e.hours|floatformat:2 }}</td>
+                <td class="text-right font-mono amount" data-label="Actual Cost">${{ e.cost_amount|floatformat:2|intcomma }}</td>
+                <td class="text-right font-mono amount positive" data-label="Billable Amount">${{ e.billable_amount|floatformat:2|intcomma }}</td>
+                <td class="text-right font-mono amount {% if e.profit >= 0 %}positive{% else %}negative{% endif %}" data-label="Profit">${{ e.profit|floatformat:2|intcomma }}</td>
+                <td class="text-right font-mono {% if e.margin >= 0 %}positive{% else %}negative{% endif %}" data-label="Margin">{{ e.margin|floatformat:1 }}%</td>
             </tr>
         {% empty %}
             <tr>
-                <td colspan="10" class="text-center">
-                    <i class="fas fa-inbox me-2"></i>No job entries found.
+                <td colspan="10" class="no-data">
+                    No job entries found for this project.
                 </td>
             </tr>
         {% endfor %}
         
         <!-- Totals Row -->
+        {% if entries %}
         <tr class="totals-row">
             <td colspan="6" class="text-right">
-                <strong><i class="fas fa-calculator me-2"></i>TOTALS</strong>
+                <strong>PROJECT TOTALS</strong>
             </td>
-            <td class="text-right"><strong>${{ total_cost|floatformat:2|intcomma }}</strong></td>
-            <td class="text-right"><strong>${{ total_billable|floatformat:2|intcomma }}</strong></td>
-            <td class="text-right"><strong>${{ total_profit|floatformat:2|intcomma }}</strong></td>
-            <td class="text-right"><strong>{{ overall_margin|floatformat:2 }}%</strong></td>
+            <td class="text-right font-mono"><strong>${{ total_cost|floatformat:2|intcomma }}</strong></td>
+            <td class="text-right font-mono"><strong>${{ total_billable|floatformat:2|intcomma }}</strong></td>
+            <td class="text-right font-mono"><strong>${{ total_profit|floatformat:2|intcomma }}</strong></td>
+            <td class="text-right font-mono"><strong>{{ overall_margin|floatformat:1 }}%</strong></td>
         </tr>
+        {% endif %}
         </tbody>
     </table>
 </div>
 
 <!-- Payments Section -->
 {% if payments %}
-<div class="{% if report %}summary-section{% else %}mt-4{% endif %}">
-    <h3 class="{% if not report %}mb-3{% endif %}">
+<div class="{% if report %}payments-section{% else %}mt-4{% endif %}">
+    {% if report %}
+    <div class="section-header">
+        Payments Received
+    </div>
+    {% else %}
+    <h3 class="mb-3">
         <i class="fas fa-credit-card me-2"></i>Payments Received
     </h3>
+    {% endif %}
     
-    <div class="{% if not report %}card{% endif %}">
-        <div class="{% if not report %}table-responsive{% endif %}">
-            <table class="{% if report %}pdf-table payment-table{% else %}table mb-0{% endif %}">
-                <thead>
-                    <tr>
-                        <th class="{% if report %}col-date{% endif %} text-left">Date</th>
-                        <th class="{% if report %}col-amount{% endif %} text-right">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for p in payments %}
-                    <tr>
-                        <td class="text-left" data-label="Date">{{ p.date|date:"m/d/Y" }}</td>
-                        <td class="text-right" data-label="Amount">${{ p.amount|floatformat:2|intcomma }}</td>
-                    </tr>
-                {% endfor %}
-                <tr class="totals-row">
-                    <td class="text-right"><strong>Total Payments</strong></td>
-                    <td class="text-right"><strong>${{ total_payments|floatformat:2|intcomma }}</strong></td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-    </div>
+    <table class="{% if report %}payments-table{% else %}table{% endif %}">
+        <thead>
+            <tr>
+                <th class="text-left">Date</th>
+                <th class="text-right">Amount</th>
+                {% if not report %}<th class="text-left">Notes</th>{% endif %}
+            </tr>
+        </thead>
+        <tbody>
+        {% for p in payments %}
+            <tr>
+                <td class="text-left" data-label="Date">{{ p.date|date:"m/d/Y" }}</td>
+                <td class="text-right font-mono amount positive" data-label="Amount">${{ p.amount|floatformat:2|intcomma }}</td>
+                {% if not report %}
+                <td class="text-left" data-label="Notes">{{ p.notes|default:"—" }}</td>
+                {% endif %}
+            </tr>
+        {% endfor %}
+        <tr class="totals-row">
+            <td class="text-right"><strong>Total Payments</strong></td>
+            <td class="text-right font-mono"><strong>${{ total_payments|floatformat:2|intcomma }}</strong></td>
+            {% if not report %}<td></td>{% endif %}
+        </tr>
+        </tbody>
+    </table>
 </div>
-{% else %}
-{% if not report %}
-<div class="card mt-4">
-    <div class="card-body text-center py-4">
-        <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
-        <h5>No Payments Recorded</h5>
-        <p class="text-muted">No payments have been recorded for this project yet.</p>
-    </div>
-</div>
-{% else %}
-<div class="summary-section">
-    <p><strong>No payments have been recorded.</strong></p>
-</div>
-{% endif %}
 {% endif %}
 
-<!-- Summary Footer -->
-<div class="{% if report %}summary-section{% else %}alert alert-info mt-4{% endif %}">
+<!-- Outstanding Balance -->
+<div class="{% if report %}outstanding-section{% if outstanding <= 0 %} paid{% endif %}{% else %}alert {% if outstanding > 0 %}alert-warning{% else %}alert-success{% endif %} mt-4{% endif %}">
     {% if not report %}
     <div class="d-flex align-items-center">
-        <i class="fas fa-info-circle fa-2x me-3"></i>
+        <i class="fas {% if outstanding > 0 %}fa-exclamation-triangle{% else %}fa-check-circle{% endif %} fa-2x me-3"></i>
         <div>
             <h6 class="mb-1">Outstanding Balance</h6>
             <p class="mb-0 fs-4 fw-bold">${{ outstanding|floatformat:2|intcomma }}</p>
         </div>
     </div>
     {% else %}
-    <p><strong>Outstanding Balance: ${{ outstanding|floatformat:2|intcomma }}</strong></p>
+    <h3>{% if outstanding > 0 %}Outstanding Balance{% else %}Project Status: Fully Paid{% endif %}</h3>
+    <div class="outstanding-amount">${{ outstanding|floatformat:2|intcomma }}</div>
+    {% if outstanding <= 0 %}
+    <p style="margin: 10px 0 0 0; color: #155724; font-weight: 600;">✓ This project has been paid in full</p>
+    {% endif %}
     {% endif %}
 </div>
+
+<!-- Report Footer (PDF Only) -->
+{% if report %}
+<div class="report-footer">
+    <div class="generation-info">
+        <strong>Report generated on {{ "now"|date:"F d, Y \a\t g:i A" }}</strong> | 
+        {{ contractor.name|default:contractor.email }} | 
+        Squire Enterprises Job Tracking System
+    </div>
+    <div class="confidential">
+        This report contains confidential and proprietary information. Distribution is restricted to authorized personnel only.
+    </div>
+</div>
+{% endif %}
 
 {% if not report %}
 <!-- Additional Actions -->
