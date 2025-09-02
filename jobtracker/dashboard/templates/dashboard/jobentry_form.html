@@ -95,42 +95,12 @@
             <div class="tab-content border border-top-0 rounded-bottom p-3">
                 <!-- Equipment & Labor Tab -->
                 <div class="tab-pane fade show active" id="labor">
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <div class="card h-100 text-center quick-add-card" onclick="addLaborEntry('equipment')">
-                                <div class="card-body">
-                                    <i class="fas fa-tools fa-3x text-primary mb-2"></i>
-                                    <h6>Equipment Used</h6>
-                                    <small class="text-muted">Machinery, tools, vehicles</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card h-100 text-center quick-add-card" onclick="addLaborEntry('labor')">
-                                <div class="card-body">
-                                    <i class="fas fa-hard-hat fa-3x text-success mb-2"></i>
-                                    <h6>Labor Work</h6>
-                                    <small class="text-muted">Employee hours, services</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-4">
-                            <div class="card h-100 text-center quick-add-card" onclick="addLaborEntry('custom')">
-                                <div class="card-body">
-                                    <i class="fas fa-plus fa-3x text-info mb-2"></i>
-                                    <h6>Custom Entry</h6>
-                                    <small class="text-muted">Mixed or other work</small>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
                     <div id="laborEntries">
                         <!-- Labor entries will be added here dynamically -->
                     </div>
 
-                    <button type="button" class="btn btn-outline-primary w-100" onclick="addLaborEntry('custom')">
-                        <i class="fas fa-plus me-2"></i>Add Equipment/Labor Entry
+                    <button type="button" class="btn btn-outline-primary w-100" onclick="addLaborEntry()">
+                        <i class="fas fa-plus me-2"></i>Add Equipment / Labor Entry
                     </button>
                 </div>
 
@@ -372,14 +342,14 @@ function startEntryTimer() {
     }, 1000);
 }
 
-function addLaborEntry(type) {
+function addLaborEntry() {
     const container = document.getElementById('laborEntries');
     const entryDiv = document.createElement('div');
     entryDiv.className = 'entry-row';
-    
+
     entryDiv.innerHTML = `
         <div class="d-flex justify-content-between align-items-center mb-3">
-            <h6 class="mb-0">${type === 'equipment' ? 'Equipment Used' : type === 'labor' ? 'Labor Work' : 'Custom Entry'}</h6>
+            <h6 class="mb-0">Equipment / Labor Entry</h6>
             <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEntry(this)">
                 <i class="fas fa-times"></i>
             </button>
@@ -390,9 +360,9 @@ function addLaborEntry(type) {
                 <input type="number" class="form-control" name="hours[]" step="0.25" placeholder="0.00" onchange="updateTotals()">
             </div>
             <div class="col-md-4">
-                <label class="form-label">${type === 'equipment' ? 'Equipment' : 'Asset'}</label>
+                <label class="form-label">Equipment or Asset</label>
                 <select class="form-select" name="asset[]" onchange="updateTotals()">
-                    <option value="">Select ${type === 'equipment' ? 'Equipment' : 'Asset'}...</option>
+                    <option value="">Select Equipment or Asset...</option>
                     {% for asset in assets %}
                     <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
                         {{ asset.name }} (${{ asset.billable_rate|floatformat:2 }}/hr)
@@ -420,7 +390,7 @@ function addLaborEntry(type) {
             </div>
         </div>
     `;
-    
+
     container.appendChild(entryDiv);
     updateTotals();
 }
