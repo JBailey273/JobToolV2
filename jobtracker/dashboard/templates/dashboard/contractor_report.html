@@ -42,18 +42,6 @@ body {
     position: relative;
 }
 
-.report-header::after {
-    content: '';
-    position: absolute;
-    top: 8px;
-    left: 8px;
-    right: 8px;
-    bottom: 8px;
-    border: 1px solid #4a7c2a;
-    border-radius: 8px;
-    opacity: 0.3;
-}
-
 .report-header img {
     max-height: 70px;
     margin-bottom: 15px;
@@ -110,18 +98,6 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     border-left: 4px solid #4a7c2a;
     position: relative;
-}
-
-.metric-card::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    width: 30px;
-    height: 30px;
-    background: #4a7c2a;
-    border-radius: 50%;
-    opacity: 0.1;
 }
 
 .metric-label {
@@ -202,16 +178,6 @@ body {
 
 .portfolio-table th:last-child {
     border-right: none;
-}
-
-.portfolio-table th::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: rgba(255,255,255,0.3);
 }
 
 .portfolio-table tbody tr {
@@ -411,17 +377,6 @@ body {
     border: 2px solid #daa520;
     border-radius: 10px;
     position: relative;
-}
-
-.recommendations::before {
-    content: '💡';
-    position: absolute;
-    top: -15px;
-    left: 20px;
-    background: white;
-    padding: 5px 10px;
-    border-radius: 15px;
-    font-size: 16px;
 }
 
 .recommendations h4 {
@@ -635,7 +590,7 @@ body {
         <div class="metric-label">Net Profit</div>
         <div class="metric-value profit">${{ total_profit|floatformat:0|intcomma }}</div>
         <div class="metric-change {% if total_profit >= 0 %}positive{% else %}negative{% endif %}">
-            {{ average_margin|floatformat:1 }}% Avg Margin
+            {{ average_margin|floatformat:2 }}% Avg Margin
         </div>
     </div>
 </div>
@@ -731,21 +686,21 @@ body {
                     {% if report %}
                     <div class="margin-bar">
                         <span class="margin-percentage {% if p.margin >= 25 %}excellent{% elif p.margin >= 15 %}good{% elif p.margin >= 5 %}fair{% else %}poor{% endif %}">
-                            {{ p.margin|floatformat:1 }}%
+                              {{ p.margin|floatformat:2 }}%
                         </span>
                         <div class="margin-indicator">
                             <div class="margin-fill {% if p.margin >= 25 %}excellent{% elif p.margin >= 15 %}good{% elif p.margin >= 5 %}fair{% else %}poor{% endif %}" 
-                                 style="width: {% if p.margin > 50 %}100{% else %}{{ p.margin|floatformat:0|add:0 }}{% endif %}%"></div>
+                                 style="width: {% if p.margin > 50 %}100{% elif p.margin < 0 %}0{% else %}{{ p.margin|floatformat:0|add:0 }}{% endif %}%"></div>
                         </div>
                     </div>
                     {% else %}
                     <div class="d-flex align-items-center justify-content-end">
                         <span class="{% if p.margin >= 20 %}text-success{% elif p.margin >= 10 %}text-warning{% else %}text-danger{% endif %} fw-bold me-2">
-                            {{ p.margin|floatformat:1 }}%
+                              {{ p.margin|floatformat:2 }}%
                         </span>
                         <div class="progress" style="width: 50px; height: 6px;">
                             <div class="progress-bar {% if p.margin >= 20 %}bg-success{% elif p.margin >= 10 %}bg-warning{% else %}bg-danger{% endif %}" 
-                                 role="progressbar" style="width: {% if p.margin > 50 %}100{% else %}{{ p.margin|floatformat:0 }}{% endif %}%"></div>
+                                 role="progressbar" style="width: {% if p.margin > 50 %}100{% elif p.margin < 0 %}0{% else %}{{ p.margin|floatformat:0 }}{% endif %}%"></div>
                         </div>
                     </div>
                     {% endif %}
@@ -806,7 +761,7 @@ body {
             <h4>Key Financial Metrics</h4>
             <div class="analysis-item">
                 <span class="analysis-label">Average Project Margin:</span>
-                <span class="analysis-value">{{ average_margin|floatformat:1 }}%</span>
+                <span class="analysis-value">{{ average_margin|floatformat:2 }}%</span>
             </div>
             <div class="analysis-item">
                 <span class="analysis-label">Total Active Projects:</span>
@@ -815,7 +770,7 @@ body {
             <div class="analysis-item">
                 <span class="analysis-label">Overall Return on Investment:</span>
                 <span class="analysis-value">
-                    {% if roi is not None %}{{ roi|floatformat:1 }}%{% else %}N/A{% endif %}
+                    {% if roi is not None %}{{ roi|floatformat:2 }}%{% else %}N/A{% endif %}
                 </span>
             </div>
             <div class="analysis-item">
@@ -838,7 +793,7 @@ body {
     {% if average_margin < 15 %}
     <div class="recommendation-item">
         <div class="recommendation-type">Pricing Strategy</div>
-        <div class="recommendation-text">Current average margin of {{ average_margin|floatformat:1 }}% is below industry standards. Consider reviewing pricing structure and cost management practices to improve profitability.</div>
+        <div class="recommendation-text">Current average margin of {{ average_margin|floatformat:2 }}% is below industry standards. Consider reviewing pricing structure and cost management practices to improve profitability.</div>
     </div>
     {% endif %}
     
@@ -921,7 +876,7 @@ body {
                             <div class="d-flex justify-content-between">
                                 <span>Average Margin:</span>
                                 <span class="fw-bold">
-                                    <span class="{% if average_margin >= 20 %}text-success{% elif average_margin >= 10 %}text-warning{% else %}text-danger{% endif %}">{{ average_margin|floatformat:1 }}%</span>
+                                    <span class="{% if average_margin >= 20 %}text-success{% elif average_margin >= 10 %}text-warning{% else %}text-danger{% endif %}">{{ average_margin|floatformat:2 }}%</span>
                                 </span>
                             </div>
                         </div>
@@ -936,7 +891,7 @@ body {
                                 <span>Overall ROI:</span>
                                 <span class="fw-bold">
                                     {% if roi is not None %}
-                                    <span class="{% if roi >= 25 %}text-success{% elif roi >= 15 %}text-warning{% else %}text-danger{% endif %}">{{ roi|floatformat:1 }}%</span>
+                                    <span class="{% if roi >= 25 %}text-success{% elif roi >= 15 %}text-warning{% else %}text-danger{% endif %}">{{ roi|floatformat:2 }}%</span>
                                     {% else %}
                                     <span class="text-muted">N/A</span>
                                     {% endif %}
