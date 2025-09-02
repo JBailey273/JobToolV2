@@ -42,13 +42,13 @@ def _render_pdf(template_src, context, filename):
     html = template.render(context)
     result = BytesIO()
     try:
-        pdf = pisa.CreatePDF(html, dest=result, link_callback=link_callback)
+        pisa.CreatePDF(html, dest=result, link_callback=link_callback)
     except Exception:
         return HttpResponse("Error generating PDF", status=500)
-    if pdf.err:
+    content = result.getvalue()
+    if not content.startswith(b"%PDF"):
         return HttpResponse("Error generating PDF", status=500)
-    result.seek(0)
-    response = HttpResponse(result.getvalue(), content_type="application/pdf")
+    response = HttpResponse(content, content_type="application/pdf")
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 

@@ -411,6 +411,20 @@ class PdfExportTests(TestCase):
         self.assertEqual(response.status_code, 500)
         self.assertIn(b"Error generating PDF", response.content)
 
+    @patch("dashboard.views.pisa")
+    def test_pdf_still_returned_if_pisa_reports_error(self, mock_pisa):
+        def fake_pdf(html, dest, link_callback=None):
+            dest.write(b"%PDF-1.4\n")
+            return SimpleNamespace(err=1)
+
+        mock_pisa.CreatePDF.side_effect = fake_pdf
+        response = self.client.get(
+            reverse("dashboard:contractor_report") + "?export=pdf"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
+
 
 class JobEntryOrderingTests(TestCase):
     def setUp(self):
