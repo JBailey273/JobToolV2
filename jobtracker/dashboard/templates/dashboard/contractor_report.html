@@ -544,9 +544,6 @@ body {
 
 <!-- Report Header -->
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
-    {% if contractor_logo_url %}
-    <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="contractor-logo" />
-    {% endif %}
     <h1>Portfolio Summary Report</h1>
     <div class="contractor-info">{{ contractor.name|default:contractor.email }}</div>
     <div class="report-period">Complete Business Analysis • Generated {{ "now"|date:"F d, Y \\a\\t g:i A" }}</div>

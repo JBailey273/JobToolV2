@@ -38,5 +38,4 @@ def contractor(request):
         if getattr(user, "is_authenticated", False)
         else None
     )
-    logo_url = contract.logo.url if contract and contract.logo else None
-    return {"contractor": contract, "contractor_logo_url": logo_url}
+    return {"contractor": contract}
