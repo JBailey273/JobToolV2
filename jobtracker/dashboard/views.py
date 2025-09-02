@@ -486,7 +486,7 @@ def customer_report(request, pk):
         return redirect("login")
     
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries_qs = project.job_entries.select_related("asset", "employee")
+    entries_qs = project.job_entries.select_related("asset", "employee").order_by("-date")
     entries = list(entries_qs)
     total = project.job_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
     payments = list(project.payments.all())
@@ -531,7 +531,7 @@ def contractor_job_report(request, pk):
         return redirect("login")
     
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries_qs = project.job_entries.select_related("asset", "employee")
+    entries_qs = project.job_entries.select_related("asset", "employee").order_by("-date")
     entries = []
     total_billable = Decimal("0")
     total_cost = Decimal("0")
@@ -614,6 +614,8 @@ def search_entries(request):
             Q(asset__name__icontains=query) |
             Q(employee__name__icontains=query)
         )
+
+    entries = entries.order_by('-date')
     
     results = []
     for entry in entries[:10]:  # Limit results
