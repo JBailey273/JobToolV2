@@ -368,47 +368,6 @@ body {
     color: #2d5016;
 }
 
-/* Compact Recommendations Box */
-.recommendations {
-    margin: 20px 0;
-    padding: 15px;
-    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    border: 1px solid #daa520;
-    border-radius: 6px;
-    position: relative;
-}
-
-.recommendations h4 {
-    color: #856404;
-    font-size: 10px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-    letter-spacing: 0.3px;
-}
-
-.recommendation-item {
-    margin: 6px 0;
-    padding: 6px 8px;
-    background: rgba(255,255,255,0.7);
-    border-radius: 3px;
-    border-left: 2px solid #daa520;
-}
-
-.recommendation-item .recommendation-type {
-    font-size: 7px;
-    color: #856404;
-    font-weight: bold;
-    text-transform: uppercase;
-    margin-bottom: 2px;
-}
-
-.recommendation-item .recommendation-text {
-    font-size: 8px;
-    color: #333;
-    line-height: 1.2;
-}
-
 /* Compact Summary Footer */
 .summary-totals {
     margin: 20px 0;
@@ -782,35 +741,7 @@ body {
     </div>
 </div>
 
-<!-- Recommendations -->
-<div class="recommendations avoid-break">
-    <h4>Strategic Recommendations</h4>
-    {% if average_margin < 15 %}
-    <div class="recommendation-item">
-        <div class="recommendation-type">Pricing Strategy</div>
-        <div class="recommendation-text">Current average margin of {{ average_margin|floatformat:2 }}% is below industry standards. Consider reviewing pricing structure and cost management practices to improve profitability.</div>
-    </div>
-    {% endif %}
-    
-    {% if projects|length < 3 %}
-    <div class="recommendation-item">
-        <div class="recommendation-type">Portfolio Growth</div>
-        <div class="recommendation-text">With {{ projects|length }} active project{{ projects|length|pluralize }}, consider diversifying your portfolio to reduce risk and increase revenue potential.</div>
-    </div>
-    {% endif %}
-    
-    {% if unprofitable_count > 0 %}
-    <div class="recommendation-item">
-        <div class="recommendation-type">Performance Optimization</div>
-        <div class="recommendation-text">{{ unprofitable_count }} project{{ unprofitable_count|pluralize }} showing negative margins. Review cost control and operational efficiency for these engagements.</div>
-    </div>
-    {% endif %}
-    
-    <div class="recommendation-item">
-        <div class="recommendation-type">Best Practice</div>
-        <div class="recommendation-text">Continue tracking material costs closely and maintain regular project reviews to ensure optimal margin control and client satisfaction.</div>
-    </div>
-</div>
+
 
 <!-- Portfolio Totals -->
 <div class="summary-totals avoid-break">
@@ -939,19 +870,18 @@ body {
             <h5>Report Details</h5>
             <p>Generated: {% now "F d, Y" %} at {% now "g:i A" %}</p>
             <p>Report Type: Portfolio Summary</p>
-            <p>Data Period: All Active Projects</p>
+            <p>Dataset: All Active Projects</p>
         </div>
         <div class="footer-section">
             <h5>Company Information</h5>
             <p>{{ contractor.name|default:"Squire Enterprises" }}</p>
-            <p>Professional Services</p>
             <p>{{ contractor.email }}</p>
         </div>
         <div class="footer-section">
             <h5>System Information</h5>
             <p>Squire Enterprises</p>
             <p>Job Tracking System v2.0</p>
-            <p>Business Intelligence Report</p>
+            <p>Project Analysis Report</p>
         </div>
     </div>
     
