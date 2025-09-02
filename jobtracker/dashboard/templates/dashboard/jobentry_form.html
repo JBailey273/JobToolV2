@@ -11,11 +11,8 @@
         <p class="text-muted mb-0">Add job entries for <strong>{{ project.name }}</strong></p>
     </div>
     <div>
-        <button class="btn btn-outline-secondary me-2" type="button" onclick="loadRecentEntry()">
+        <button class="btn btn-outline-secondary" type="button" onclick="loadRecentEntry()">
             <i class="fas fa-history me-2"></i>Load Recent Entry
-        </button>
-        <button class="btn btn-primary" type="button" onclick="useTemplate()">
-            <i class="fas fa-template me-2"></i>Use Template
         </button>
     </div>
 </div>
@@ -107,16 +104,7 @@
                 <!-- Materials Tab -->
                 <div class="tab-pane fade" id="materials">
                     <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="card h-100 text-center quick-add-card" onclick="addMaterialTemplate()">
-                                <div class="card-body">
-                                    <i class="fas fa-clipboard-list fa-3x text-warning mb-2"></i>
-                                    <h6>Use Template</h6>
-                                    <small class="text-muted">Common material combinations</small>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
+                        <div class="col-12">
                             <div class="card h-100 text-center quick-add-card" onclick="bulkAddMaterials()">
                                 <div class="card-body">
                                     <i class="fas fa-list fa-3x text-secondary mb-2"></i>
@@ -240,7 +228,7 @@
                 </div>
             </div>
 
-            <!-- Recent Templates -->
+            <!-- Quick Actions -->
             <div class="card">
                 <div class="card-header">
                     <h6 class="mb-0"><i class="fas fa-history me-2"></i>Quick Actions</h6>
@@ -249,9 +237,6 @@
                     <div class="d-grid gap-2">
                         <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadYesterday()">
                             <i class="fas fa-calendar-minus me-1"></i>Yesterday's Entry
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="useTemplate()">
-                            <i class="fas fa-clipboard-list me-1"></i>Common Template
                         </button>
                         <button type="button" class="btn btn-outline-info btn-sm" onclick="clearAll()">
                             <i class="fas fa-eraser me-1"></i>Clear All
@@ -488,39 +473,15 @@ function clearAllMaterials() {
     updateTotals();
 }
 
-function addMaterialTemplate() {
-    // Add some common materials
-    const templates = [
-        {desc: 'Office Supplies - Basic', qty: 1, unit: 'Each', cost: 25.00},
-        {desc: 'Cleaning Supplies', qty: 1, unit: 'Each', cost: 15.00},
-        {desc: 'Safety Equipment', qty: 1, unit: 'Each', cost: 45.00}
-    ];
-    
-    templates.forEach(template => {
-        addMaterialRow();
-        const lastRow = document.querySelector('#materialsTable tbody').lastElementChild;
-        const inputs = lastRow.querySelectorAll('input');
-        inputs[0].value = template.desc;
-        inputs[1].value = template.qty;
-        inputs[2].value = template.cost;
-        lastRow.querySelector('select').value = template.unit;
-        calculateRowTotal(inputs[2]);
-    });
-}
-
 function saveDraft() {
     // Implement draft saving
     alert('Draft saved locally');
 }
 
-function loadYesterday() {
-    // Load yesterday's entry as template
-    alert('Loading yesterday\'s entry...');
-}
 
-function useTemplate() {
-    // Load common template
-    alert('Loading template...');
+function loadYesterday() {
+    // Load yesterday's entry
+    alert('Loading yesterday\'s entry...');
 }
 
 function clearAll() {
