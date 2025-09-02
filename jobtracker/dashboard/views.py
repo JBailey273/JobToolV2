@@ -72,7 +72,15 @@ def contractor_summary(request):
     recent_payments = Payment.objects.filter(
         project__contractor=contractor
     ).select_related('project').order_by('-date')[:5]
-    
+
+    current_hour = timezone.localtime().hour
+    if current_hour < 12:
+        greeting = "Good Morning"
+    elif current_hour < 18:
+        greeting = "Good Afternoon"
+    else:
+        greeting = "Good Evening"
+
     return render(
         request,
         'dashboard/contractor_summary.html',
@@ -86,6 +94,7 @@ def contractor_summary(request):
             'contractor_logo_url': contractor.logo.url if contractor.logo else None,
             'recent_entries': recent_entries,
             'recent_payments': recent_payments,
+            'greeting': greeting,
         },
     )
 

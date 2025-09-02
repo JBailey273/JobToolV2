@@ -10,8 +10,7 @@
         <img src="{{ contractor_logo_url }}" alt="Contractor logo" class="img-fluid contractor-logo" style="filter: brightness(0) invert(1);">
     </div>
     {% endif %}
-    {% now "H" as current_hour %}
-    <h1><i class="fas fa-tachometer-alt me-3"></i>Good {% if current_hour|add:0 < 12 %}Morning{% elif current_hour|add:0 < 18 %}Afternoon{% else %}Evening{% endif %}!</h1>
+    <h1><i class="fas fa-tachometer-alt me-3"></i>{{ greeting }}!</h1>
     <p>Here's what's happening with your projects today</p>
 </div>
 
