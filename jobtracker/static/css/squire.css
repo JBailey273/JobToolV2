@@ -659,6 +659,9 @@ textarea:focus {
 .action-buttons .btn {
     flex: 1;
     min-width: 140px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 /* Input group styling */
