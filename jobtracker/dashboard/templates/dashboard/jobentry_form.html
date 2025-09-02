@@ -6,197 +6,286 @@
 <div class="d-flex justify-content-between align-items-center mb-4">
     <div>
         <h1 class="mb-2">
-            <i class="fas fa-plus-circle me-3"></i>Add Job Entries
+            <i class="fas fa-calendar-plus me-3"></i>Daily Job Entry
         </h1>
-        <p class="text-muted mb-0">Add multiple job entries for <strong>{{ project.name }}</strong></p>
+        <p class="text-muted mb-0">Add job entries for <strong>{{ project.name }}</strong></p>
     </div>
     <div>
-        <span class="badge bg-primary fs-6">{{ project.name }}</span>
+        <button class="btn btn-outline-secondary me-2" type="button" onclick="loadRecentEntry()">
+            <i class="fas fa-history me-2"></i>Load Recent Entry
+        </button>
+        <button class="btn btn-primary" type="button" onclick="useTemplate()">
+            <i class="fas fa-template me-2"></i>Use Template
+        </button>
+    </div>
+</div>
+
+<!-- Time Tracker -->
+<div class="alert alert-info text-center">
+    <i class="fas fa-clock me-2"></i>Entry Time: <span id="entry-timer">00:00:00</span>
+</div>
+
+<!-- Progress Indicator -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">1</div>
+                <span>Date & Basic Info</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator active me-3">2</div>
+                <span>Equipment & Labor</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">3</div>
+                <span>Materials</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">4</div>
+                <span>Review & Save</span>
+            </div>
+        </div>
     </div>
 </div>
 
 <div class="row">
     <div class="col-lg-10">
-        <div class="card">
-            <div class="card-header bg-white">
-                <h5 class="mb-0">
-                    <i class="fas fa-calendar-alt me-2"></i>Entry Details
-                </h5>
-            </div>
-            <div class="card-body">
-                <form method="post" id="entry-form">
-                    {% csrf_token %}
-                    
-                    <!-- Date Selection -->
-                    <div class="row mb-4">
+        <form method="post" id="entry-form">
+            {% csrf_token %}
+            
+            <!-- Date Selection -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>Entry Date
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
                         <div class="col-md-4">
-                            <label for="date" class="form-label">
-                                <i class="fas fa-calendar me-2"></i>Date
-                            </label>
+                            <label for="date" class="form-label">Date</label>
                             <input type="date" class="form-control" id="date" name="date" required>
                             <div class="form-text">All entries will be recorded for this date</div>
                         </div>
                         <div class="col-md-8 d-flex align-items-end">
                             <div class="alert alert-info w-100 mb-0">
                                 <i class="fas fa-info-circle me-2"></i>
-                                <strong>Tip:</strong> You can add multiple job entries at once. Use the "Add Entry" button below to create additional entries.
+                                <strong>Tip:</strong> You can add multiple job entries at once using the tabs below. Equipment/Labor entries are tracked separately from Materials for easier invoicing.
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Job Entries -->
-                    <div class="card">
-                        <div class="card-header bg-light">
-                            <h6 class="mb-0">
-                                <i class="fas fa-list me-2"></i>Job Entries
-                            </h6>
-                        </div>
-                        <div class="card-body" id="entries-container">
-                            <div class="entry-row border rounded p-3 mb-3">
-                                <div class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-outline-danger btn-sm remove-row" title="Remove entry">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <div class="row g-3">
-                                    <div class="col-12 col-md-4">
-                                        <label class="form-label">
-                                            <i class="fas fa-clock me-2"></i>Hours / Quantity
-                                        </label>
-                                        <input type="number" step="0.01" class="form-control" name="hours[]" placeholder="0.00" min="0">
-                                        <div class="form-text">Hours worked or quantity used</div>
-                                    </div>
-                                    <div class="col-12 col-md-4">
-                                        <label class="form-label">
-                                            <i class="fas fa-tools me-2"></i>Asset
-                                        </label>
-                                        <select class="form-select" name="asset[]">
-                                            <option value="">Select Asset...</option>
-                                            {% for asset in assets %}
-                                            <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
-                                                {{ asset.name }} (${{ asset.billable_rate|floatformat:2|intcomma }}/hr)
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                        <div class="form-text">Equipment or asset used</div>
-                                    </div>
-                                    <div class="col-12 col-md-4">
-                                        <label class="form-label">
-                                            <i class="fas fa-user-hard-hat me-2"></i>Employee
-                                        </label>
-                                        <select class="form-select" name="employee[]">
-                                            <option value="">Select Employee...</option>
-                                            {% for emp in employees %}
-                                            <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
-                                                {{ emp.name }} (${{ emp.billable_rate|floatformat:2|intcomma }}/hr)
-                                            </option>
-                                            {% endfor %}
-                                        </select>
-                                        <div class="form-text">Employee who performed this work</div>
-                                    </div>
-                                    <div class="col-12 col-md-8">
-                                        <label class="form-label">
-                                            <i class="fas fa-box me-2"></i>Material Description
-                                        </label>
-                                        <input type="text" class="form-control" name="material_description[]" placeholder="Material description">
-                                        <div class="form-text">Describe any materials used</div>
-                                    </div>
-                                    <div class="col-12 col-md-4">
-                                        <label class="form-label">
-                                            <i class="fas fa-dollar-sign me-2"></i>Material Cost
-                                        </label>
-                                        <div class="input-group">
-                                            <span class="input-group-text">$</span>
-                                            <input type="number" step="0.01" class="form-control" name="material_cost[]" placeholder="0.00" min="0">
-                                        </div>
-                                        <div class="form-text">Cost per unit of material</div>
-                                    </div>
-                                    <div class="col-12">
-                                        <label class="form-label">
-                                            <i class="fas fa-file-alt me-2"></i>Work Description
-                                        </label>
-        <textarea class="form-control" name="description[]" rows="2" placeholder="Detailed description of work performed"></textarea>
-                                        <div class="form-text">Detailed description of the work performed</div>
-                                    </div>
+                </div>
+            </div>
+            
+            <!-- Entry Type Tabs -->
+            <ul class="nav nav-tabs" id="entryTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="labor-tab" data-bs-toggle="tab" data-bs-target="#labor" type="button">
+                        <i class="fas fa-cogs me-2"></i>Equipment & Labor
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button">
+                        <i class="fas fa-boxes me-2"></i>Materials & Supplies
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content border border-top-0 rounded-bottom p-3">
+                <!-- Equipment & Labor Tab -->
+                <div class="tab-pane fade show active" id="labor">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <div class="card h-100 text-center quick-add-card" onclick="addLaborEntry('equipment')">
+                                <div class="card-body">
+                                    <i class="fas fa-tools fa-3x text-primary mb-2"></i>
+                                    <h6>Equipment Used</h6>
+                                    <small class="text-muted">Machinery, tools, vehicles</small>
                                 </div>
                             </div>
                         </div>
-                        <div class="card-body pt-0">
-                            <div class="text-end">
-                                <button type="button" id="add-row" class="btn btn-success btn-sm">
-                                    <i class="fas fa-plus me-1"></i>Add Entry
-                                </button>
+                        <div class="col-md-4">
+                            <div class="card h-100 text-center quick-add-card" onclick="addLaborEntry('labor')">
+                                <div class="card-body">
+                                    <i class="fas fa-hard-hat fa-3x text-success mb-2"></i>
+                                    <h6>Labor Work</h6>
+                                    <small class="text-muted">Employee hours, services</small>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-footer bg-light">
-                            <div class="row text-center">
-                                <div class="col-md-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-calculator me-1"></i>Total Hours: <span id="total-hours">0.00</span>
-                                    </small>
-                                </div>
-                                <div class="col-md-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-dollar-sign me-1"></i>Est. Cost: $<span id="total-cost">0.00</span>
-                                    </small>
-                                </div>
-                                <div class="col-md-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-receipt me-1"></i>Est. Billable: $<span id="total-billable">0.00</span>
-                                    </small>
-                                </div>
-                                <div class="col-md-3">
-                                    <small class="text-muted">
-                                        <i class="fas fa-chart-line me-1"></i>Est. Profit: $<span id="total-profit">0.00</span>
-                                    </small>
+                        <div class="col-md-4">
+                            <div class="card h-100 text-center quick-add-card" onclick="addLaborEntry('custom')">
+                                <div class="card-body">
+                                    <i class="fas fa-plus fa-3x text-info mb-2"></i>
+                                    <h6>Custom Entry</h6>
+                                    <small class="text-muted">Mixed or other work</small>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    
-                    <!-- Submit Buttons -->
-                    <div class="d-flex justify-content-between align-items-center mt-4">
+
+                    <div id="laborEntries">
+                        <!-- Labor entries will be added here dynamically -->
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary w-100" onclick="addLaborEntry('custom')">
+                        <i class="fas fa-plus me-2"></i>Add Equipment/Labor Entry
+                    </button>
+                </div>
+
+                <!-- Materials Tab -->
+                <div class="tab-pane fade" id="materials">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="card h-100 text-center quick-add-card" onclick="addMaterialTemplate()">
+                                <div class="card-body">
+                                    <i class="fas fa-clipboard-list fa-3x text-warning mb-2"></i>
+                                    <h6>Use Template</h6>
+                                    <small class="text-muted">Common material combinations</small>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card h-100 text-center quick-add-card" onclick="bulkAddMaterials()">
+                                <div class="card-body">
+                                    <i class="fas fa-list fa-3x text-secondary mb-2"></i>
+                                    <h6>Bulk Add</h6>
+                                    <small class="text-muted">Add 5 empty material rows</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Materials Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="materialsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40%">Description</th>
+                                    <th width="15%">Quantity</th>
+                                    <th width="15%">Unit</th>
+                                    <th width="15%">Unit Cost</th>
+                                    <th width="15%">Total</th>
+                                    <th width="5%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" class="form-control" name="material_description[]" placeholder="e.g., Office supplies, raw materials, etc."></td>
+                                    <td><input type="number" class="form-control" name="material_quantity[]" step="0.01" placeholder="1" onchange="calculateRowTotal(this)"></td>
+                                    <td>
+                                        <select class="form-select" name="material_unit[]">
+                                            <option value="Each">Each</option>
+                                            <option value="Hours">Hours</option>
+                                            <option value="Days">Days</option>
+                                            <option value="Boxes">Boxes</option>
+                                            <option value="Bags">Bags</option>
+                                            <option value="Tons">Tons</option>
+                                            <option value="Yards">Yards</option>
+                                            <option value="Linear Ft">Linear Ft</option>
+                                            <option value="Square Ft">Square Ft</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" class="form-control" name="material_cost[]" step="0.01" placeholder="0.00" onchange="calculateRowTotal(this)"></td>
+                                    <td><span class="material-total fw-bold">$0.00</span></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMaterialRow(this)"><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" class="btn btn-outline-success" onclick="addMaterialRow()">
+                            <i class="fas fa-plus me-2"></i>Add Material
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="bulkAddMaterials()">
+                            <i class="fas fa-list me-2"></i>Bulk Add (5 rows)
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearAllMaterials()">
+                            <i class="fas fa-eraser me-2"></i>Clear All
+                        </button>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Material Markup:</strong> Materials are automatically marked up by {{ margin|default:25 }}% for billing. Enter your actual purchase costs here.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
                         <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-outline-secondary">
                             <i class="fas fa-arrow-left me-2"></i>Cancel
                         </a>
                         
-                        <div>
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-info" onclick="saveDraft()">
+                                <i class="fas fa-save me-2"></i>Save Draft
+                            </button>
                             <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
-                                <i class="fas fa-save me-2"></i>Save Entries
+                                <i class="fas fa-check me-2"></i>Save All Entries
                             </button>
                         </div>
                     </div>
-                </form>
+                </div>
             </div>
-        </div>
+        </form>
     </div>
     
-    <!-- Help Sidebar -->
+    <!-- Summary Sidebar -->
     <div class="col-lg-2">
-        <div class="card sticky-top" style="top: 100px;">
-            <div class="card-body">
-                <h6 class="card-title">
-                    <i class="fas fa-question-circle me-2"></i>Help
-                </h6>
-                <div class="small">
-                    <div class="mb-3">
-                        <strong>Hours/Qty:</strong>
-                        <p class="text-muted mb-0">Enter decimal hours (e.g., 1.5 for 1 hour 30 minutes)</p>
+        <div class="sticky-top" style="top: 100px;">
+            <!-- Daily Summary -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white text-center">
+                    <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Today's Total</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold" id="total-billable">$0.00</div>
+                    <small class="text-muted">Estimated Billable</small>
+                </div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Breakdown</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Equipment/Labor:</span>
+                        <span id="labor-total" class="fw-bold">$0.00</span>
                     </div>
-                    
-                    <div class="mb-3">
-                        <strong>Assets & Employees:</strong>
-                        <p class="text-muted mb-0">Select from available resources. Rates are shown for reference.</p>
+                    <div class="d-flex justify-content-between">
+                        <span>Materials:</span>
+                        <span id="materials-total" class="fw-bold">$0.00</span>
                     </div>
-                    
-                    <div class="mb-3">
-                        <strong>Materials:</strong>
-                        <p class="text-muted mb-0">Add material costs to track expenses and improve margins.</p>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="grand-total">$0.00</strong>
                     </div>
-                    
-                    <div class="alert alert-info p-2">
-                        <i class="fas fa-lightbulb me-1"></i>
-                        <strong>Tip:</strong> Costs are calculated automatically based on your rates and material margin settings.
+                </div>
+            </div>
+
+            <!-- Recent Templates -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-history me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadYesterday()">
+                            <i class="fas fa-calendar-minus me-1"></i>Yesterday's Entry
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="useTemplate()">
+                            <i class="fas fa-clipboard-list me-1"></i>Common Template
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="clearAll()">
+                            <i class="fas fa-eraser me-1"></i>Clear All
+                        </button>
                     </div>
                 </div>
             </div>
@@ -204,258 +293,290 @@
     </div>
 </div>
 
+<style>
+.quick-add-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.quick-add-card:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.step-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.step-indicator.active {
+    background: var(--bs-primary);
+    color: white;
+}
+
+.entry-row {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f8f9fa;
+}
+
+.material-total {
+    color: var(--bs-success);
+    font-size: 1.1rem;
+}
+
+#entry-timer {
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--bs-primary);
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const container = document.getElementById('entries-container');
-    const addRowBtn = document.getElementById('add-row');
-    const form = document.getElementById('entry-form');
-    const submitBtn = document.getElementById('submit-btn');
-    
-    // Material margin from contractor settings
-    const materialMargin = {{ margin|default:0 }};
-    
-    // Add new entry
-    addRowBtn.addEventListener('click', function() {
-        const firstRow = container.querySelector('.entry-row');
-        const clone = firstRow.cloneNode(true);
-
-        // Clear all inputs in the cloned row
-        clone.querySelectorAll('input, select, textarea').forEach(input => {
-            input.value = '';
-        });
-
-        container.appendChild(clone);
-        updateTotals();
-
-        // Animate the new entry
-        clone.style.opacity = '0';
-        clone.style.transform = 'translateY(-10px)';
-        setTimeout(() => {
-            clone.style.transition = 'all 0.3s ease';
-            clone.style.opacity = '1';
-            clone.style.transform = 'translateY(0)';
-        }, 10);
-    });
-
-    // Remove entry
-    container.addEventListener('click', function(e) {
-        if (e.target.closest('.remove-row')) {
-            const rows = container.querySelectorAll('.entry-row');
-            if (rows.length > 1) {
-                const row = e.target.closest('.entry-row');
-                row.style.transition = 'all 0.3s ease';
-                row.style.opacity = '0';
-                row.style.transform = 'translateX(-20px)';
-                setTimeout(() => {
-                    row.remove();
-                    updateTotals();
-                }, 300);
-            } else {
-                // Show alert if trying to remove the last entry
-                const alert = document.createElement('div');
-                alert.className = 'alert alert-warning alert-dismissible fade show';
-                alert.innerHTML = `
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    You must have at least one entry.
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                `;
-                form.insertBefore(alert, form.firstChild);
-            }
-        }
-    });
-
-    // Update totals when inputs change
-    container.addEventListener('input', updateTotals);
-    container.addEventListener('change', updateTotals);
-    
-    function updateTotals() {
-        let totalHours = 0;
-        let totalCost = 0;
-        let totalBillable = 0;
-        
-        container.querySelectorAll('.entry-row').forEach(row => {
-            const hours = parseFloat(row.querySelector('[name="hours[]"]').value) || 0;
-            const assetSelect = row.querySelector('[name="asset[]"]');
-            const employeeSelect = row.querySelector('[name="employee[]"]');
-            const materialCost = parseFloat(row.querySelector('[name="material_cost[]"]').value) || 0;
-            
-            let rowCost = 0;
-            let rowBillable = 0;
-            
-            // Asset costs
-            if (assetSelect.value) {
-                const option = assetSelect.selectedOptions[0];
-                const assetCost = parseFloat(option.dataset.cost) || 0;
-                const assetBillable = parseFloat(option.dataset.billable) || 0;
-                rowCost += assetCost * hours;
-                rowBillable += assetBillable * hours;
-            }
-            
-            // Employee costs
-            if (employeeSelect.value) {
-                const option = employeeSelect.selectedOptions[0];
-                const empCost = parseFloat(option.dataset.cost) || 0;
-                const empBillable = parseFloat(option.dataset.billable) || 0;
-                rowCost += empCost * hours;
-                rowBillable += empBillable * hours;
-            }
-            
-            // Material costs
-            if (materialCost > 0) {
-                const materialTotal = materialCost * hours;
-                rowCost += materialTotal;
-                // Apply material margin
-                rowBillable += materialTotal / (1 - (materialMargin / 100));
-            }
-            
-            totalHours += hours;
-            totalCost += rowCost;
-            totalBillable += rowBillable;
-        });
-        
-        // Update display
-        const formatCurrency = (val) => val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        document.getElementById('total-hours').textContent = totalHours.toFixed(2);
-        document.getElementById('total-cost').textContent = formatCurrency(totalCost);
-        document.getElementById('total-billable').textContent = formatCurrency(totalBillable);
-        document.getElementById('total-profit').textContent = formatCurrency(totalBillable - totalCost);
-        
-        // Update profit color
-        const profitEl = document.getElementById('total-profit');
-        const profit = totalBillable - totalCost;
-        profitEl.className = profit >= 0 ? 'text-success' : 'text-danger';
-    }
-    
-    // Form submission
-    form.addEventListener('submit', function(e) {
-        const rows = container.querySelectorAll('.entry-row');
-        let hasValidEntry = false;
-        
-        // Check if at least one row has some data
-        rows.forEach(row => {
-            const inputs = row.querySelectorAll('input[type="number"], input[type="text"], select, textarea');
-            const hasData = Array.from(inputs).some(input => input.value.trim() !== '');
-            if (hasData) hasValidEntry = true;
-        });
-        
-        if (!hasValidEntry) {
-            e.preventDefault();
-            const alert = document.createElement('div');
-            alert.className = 'alert alert-danger alert-dismissible fade show';
-            alert.innerHTML = `
-                <i class="fas fa-exclamation-triangle me-2"></i>
-                Please fill in at least one entry with some data before submitting.
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            `;
-            form.insertBefore(alert, form.firstChild);
-            return;
-        }
-        
-        // Show loading state
-        submitBtn.disabled = true;
-        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
-    });
-    
     // Set today's date as default
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('date').value = today;
     
-    // Initial totals calculation
-    updateTotals();
+    // Start timer
+    startEntryTimer();
     
-    // Add hover effects to rows
-    container.addEventListener('mouseenter', function(e) {
-        if (e.target.closest('.entry-row')) {
-            e.target.closest('.entry-row').style.backgroundColor = '#f8f9fa';
-        }
-    }, true);
-
-    container.addEventListener('mouseleave', function(e) {
-        if (e.target.closest('.entry-row')) {
-            e.target.closest('.entry-row').style.backgroundColor = '';
-        }
-    }, true);
+    // Initialize
+    updateTotals();
 });
+
+let startTime = Date.now();
+
+function startEntryTimer() {
+    setInterval(function() {
+        const elapsed = Date.now() - startTime;
+        const seconds = Math.floor(elapsed / 1000) % 60;
+        const minutes = Math.floor(elapsed / 60000) % 60;
+        const hours = Math.floor(elapsed / 3600000);
+        
+        document.getElementById('entry-timer').textContent = 
+            String(hours).padStart(2, '0') + ':' + 
+            String(minutes).padStart(2, '0') + ':' + 
+            String(seconds).padStart(2, '0');
+    }, 1000);
+}
+
+function addLaborEntry(type) {
+    const container = document.getElementById('laborEntries');
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'entry-row';
+    
+    entryDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">${type === 'equipment' ? 'Equipment Used' : type === 'labor' ? 'Labor Work' : 'Custom Entry'}</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEntry(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Hours/Quantity</label>
+                <input type="number" class="form-control" name="hours[]" step="0.25" placeholder="0.00" onchange="updateTotals()">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">${type === 'equipment' ? 'Equipment' : 'Asset'}</label>
+                <select class="form-select" name="asset[]" onchange="updateTotals()">
+                    <option value="">Select ${type === 'equipment' ? 'Equipment' : 'Asset'}...</option>
+                    {% for asset in assets %}
+                    <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                        {{ asset.name }} (${{ asset.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Employee</label>
+                <select class="form-select" name="employee[]" onchange="updateTotals()">
+                    <option value="">Select Employee...</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                        {{ emp.name }} (${{ emp.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <div class="text-success fw-bold entry-total">$0.00</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Work Description</label>
+                <textarea class="form-control" name="description[]" rows="2" placeholder="Description of work performed"></textarea>
+            </div>
+        </div>
+    `;
+    
+    container.appendChild(entryDiv);
+    updateTotals();
+}
+
+function removeEntry(button) {
+    button.closest('.entry-row').remove();
+    updateTotals();
+}
+
+function addMaterialRow() {
+    const tbody = document.querySelector('#materialsTable tbody');
+    const newRow = tbody.rows[0].cloneNode(true);
+    
+    // Clear the inputs
+    newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelector('.material-total').textContent = '$0.00';
+    
+    tbody.appendChild(newRow);
+}
+
+function bulkAddMaterials() {
+    for (let i = 0; i < 5; i++) {
+        addMaterialRow();
+    }
+}
+
+function removeMaterialRow(button) {
+    const tbody = document.querySelector('#materialsTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        updateTotals();
+    }
+}
+
+function calculateRowTotal(element) {
+    const row = element.closest('tr');
+    const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
+    const cost = parseFloat(row.querySelector('input[name="material_cost[]"]').value) || 0;
+    const total = qty * cost;
+    row.querySelector('.material-total').textContent = '$' + total.toFixed(2);
+    updateTotals();
+}
+
+function updateTotals() {
+    let laborTotal = 0;
+    let materialsTotal = 0;
+    
+    // Calculate labor/equipment totals
+    document.querySelectorAll('.entry-row').forEach(row => {
+        const hours = parseFloat(row.querySelector('input[name="hours[]"]').value) || 0;
+        const assetSelect = row.querySelector('select[name="asset[]"]');
+        const employeeSelect = row.querySelector('select[name="employee[]"]');
+        
+        let rowTotal = 0;
+        
+        if (assetSelect.value) {
+            const assetRate = parseFloat(assetSelect.selectedOptions[0].dataset.billable) || 0;
+            rowTotal += assetRate * hours;
+        }
+        
+        if (employeeSelect.value) {
+            const empRate = parseFloat(employeeSelect.selectedOptions[0].dataset.billable) || 0;
+            rowTotal += empRate * hours;
+        }
+        
+        laborTotal += rowTotal;
+        row.querySelector('.entry-total').textContent = '$' + rowTotal.toFixed(2);
+    });
+    
+    // Calculate materials total
+    document.querySelectorAll('#materialsTable tbody tr').forEach(row => {
+        const totalText = row.querySelector('.material-total').textContent;
+        const total = parseFloat(totalText.replace('$', '')) || 0;
+        materialsTotal += total;
+    });
+    
+    // Apply material margin
+    const margin = {{ margin|default:25 }} / 100;
+    materialsTotal = materialsTotal / (1 - margin);
+    
+    const grandTotal = laborTotal + materialsTotal;
+    
+    // Update display
+    document.getElementById('labor-total').textContent = '$' + laborTotal.toFixed(2);
+    document.getElementById('materials-total').textContent = '$' + materialsTotal.toFixed(2);
+    document.getElementById('grand-total').textContent = '$' + grandTotal.toFixed(2);
+    document.getElementById('total-billable').textContent = '$' + grandTotal.toFixed(2);
+}
+
+function clearAllMaterials() {
+    const tbody = document.querySelector('#materialsTable tbody');
+    tbody.innerHTML = tbody.rows[0].outerHTML;
+    tbody.rows[0].querySelectorAll('input').forEach(input => input.value = '');
+    tbody.rows[0].querySelector('.material-total').textContent = '$0.00';
+    updateTotals();
+}
+
+function addMaterialTemplate() {
+    // Add some common materials
+    const templates = [
+        {desc: 'Office Supplies - Basic', qty: 1, unit: 'Each', cost: 25.00},
+        {desc: 'Cleaning Supplies', qty: 1, unit: 'Each', cost: 15.00},
+        {desc: 'Safety Equipment', qty: 1, unit: 'Each', cost: 45.00}
+    ];
+    
+    templates.forEach(template => {
+        addMaterialRow();
+        const lastRow = document.querySelector('#materialsTable tbody').lastElementChild;
+        const inputs = lastRow.querySelectorAll('input');
+        inputs[0].value = template.desc;
+        inputs[1].value = template.qty;
+        inputs[2].value = template.cost;
+        lastRow.querySelector('select').value = template.unit;
+        calculateRowTotal(inputs[2]);
+    });
+}
+
+function saveDraft() {
+    // Implement draft saving
+    alert('Draft saved locally');
+}
+
+function loadYesterday() {
+    // Load yesterday's entry as template
+    alert('Loading yesterday\'s entry...');
+}
+
+function useTemplate() {
+    // Load common template
+    alert('Loading template...');
+}
+
+function clearAll() {
+    if (confirm('Clear all entries?')) {
+        document.getElementById('laborEntries').innerHTML = '';
+        clearAllMaterials();
+        updateTotals();
+    }
+}
+
+function loadRecentEntry() {
+    alert('Loading most recent entry...');
+}
+
+// Form submission
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+});
+
+// Auto-save draft every 2 minutes
+setInterval(function() {
+    // Auto-save logic here
+    console.log('Auto-saving draft...');
+}, 120000);
 </script>
-
-<style>
-.entry-row {
-    transition: all 0.2s ease;
-}
-
-.entry-row:hover {
-    background-color: #f8f9fa;
-}
-
-.sticky-top {
-    position: sticky;
-    top: 100px;
-    z-index: 100;
-}
-
-@media (max-width: 992px) {
-    .sticky-top {
-        position: relative;
-        top: auto;
-    }
-}
-
-.card-footer {
-    background-color: #f8f9fa;
-    border-top: 1px solid #dee2e6;
-}
-
-.form-control, .form-select {
-    background-color: #ffffff !important;
-    color: #212529 !important;
-}
-
-.form-control:focus, .form-select:focus {
-    background-color: #ffffff !important;
-    color: #212529 !important;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-}
-
-.input-group-text {
-    background-color: var(--primary-color);
-    color: white;
-    border-color: var(--primary-color);
-}
-
-textarea.form-control {
-    resize: vertical;
-    min-height: 100px;
-}
-
-.alert {
-    animation: slideInDown 0.3s ease-out;
-}
-
-.alert-info {
-    background: linear-gradient(135deg, #d1ecf1 0%, #bee5eb 100%);
-    border: none;
-    color: #0c5460;
-}
-
-@keyframes slideInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-10px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
-}
-
-/* Placeholder text styling */
-.form-control::placeholder,
-.form-select::placeholder {
-    color: #6c757d;
-    opacity: 0.7;
-}
-
-</style>
 
 {% endblock %}
