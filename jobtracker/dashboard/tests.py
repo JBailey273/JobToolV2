@@ -520,3 +520,10 @@ class ReportsPageTests(TestCase):
         self.assertContains(
             response, reverse("dashboard:customer_report", args=[self.project.pk])
         )
+
+    def test_reports_page_has_no_breadcrumb(self):
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+        response = self.client.get(reverse("dashboard:reports"))
+        self.assertNotContains(response, '<nav aria-label="breadcrumb"')
