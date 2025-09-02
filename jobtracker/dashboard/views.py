@@ -276,17 +276,23 @@ def project_detail(request, pk):
         )
     )["total"] or Decimal("0")
 
-    material_margin = project.contractor.material_margin / Decimal("100")
+    contractor_margin = getattr(project.contractor, "material_margin", Decimal("0")) or Decimal("0")
+    material_margin = contractor_margin / Decimal("100")
     margin_multiplier = Decimal("1") - material_margin
     if margin_multiplier > 0:
-        billable_material = job_entries.exclude(material_cost__isnull=True).aggregate(
-            total=Sum(
-                ExpressionWrapper(
-                    F("material_cost") * F("hours") / Value(margin_multiplier),
-                    output_field=DecimalField(max_digits=10, decimal_places=2),
+        billable_material = (
+            job_entries.exclude(material_cost__isnull=True)
+            .aggregate(
+                total=Sum(
+                    ExpressionWrapper(
+                        F("material_cost") * F("hours") / Value(margin_multiplier),
+                        output_field=DecimalField(max_digits=10, decimal_places=2),
+                    )
                 )
             )
-        )["total"] or Decimal("0")
+            .get("total")
+            or Decimal("0")
+        )
     else:
         billable_material = Decimal("0")
 
