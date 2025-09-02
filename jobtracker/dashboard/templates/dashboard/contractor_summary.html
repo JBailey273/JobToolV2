@@ -187,29 +187,17 @@
                         </td>
                         <td class="text-center">
                             <span class="fw-semibold text-primary">
-                                ${% with project.job_entries.all|length as entry_count %}
-                                    {% if entry_count > 0 %}
-                                        {{ project.job_entries.all.0.project.job_entries.all|length }}
-                                    {% else %}
-                                        0
-                                    {% endif %}
-                                {% endwith %}
+                                ${{ project.total_billable|floatformat:0|intcomma }}
                             </span>
                         </td>
                         <td class="text-center">
                             <span class="fw-semibold text-success">
-                                ${% with project.payments.all|length as payment_count %}
-                                    {% if payment_count > 0 %}
-                                        {{ project.payments.all.0.project.payments.all|length }}
-                                    {% else %}
-                                        0
-                                    {% endif %}
-                                {% endwith %}
+                                ${{ project.total_payments|floatformat:0|intcomma }}
                             </span>
                         </td>
                         <td class="text-center">
-                            <span class="fw-semibold text-warning">
-                                $0
+                            <span class="fw-semibold {% if project.outstanding > 0 %}text-warning{% else %}text-success{% endif %}">
+                                ${{ project.outstanding|floatformat:0|intcomma }}
                             </span>
                         </td>
                         <td class="text-center">

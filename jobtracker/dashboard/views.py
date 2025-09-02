@@ -55,7 +55,13 @@ def contractor_summary(request):
     if contractor is None:
         return redirect("login")
     
-    projects = contractor.projects.filter(end_date__isnull=True)
+    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
+        "job_entries", "payments"
+    )
+    for p in projects:
+        p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
+        p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
+        p.outstanding = p.total_billable - p.total_payments
     first_project = projects.first()
     
     overall_billable = (
