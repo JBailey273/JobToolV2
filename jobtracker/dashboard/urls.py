@@ -13,4 +13,9 @@ urlpatterns = [
     path('reports/contractor/', views.contractor_report, name='contractor_report'),
     path('projects/<int:pk>/customer-report/', views.customer_report, name='customer_report'),
     path('projects/<int:pk>/contractor-report/', views.contractor_job_report, name='contractor_job_report'),
+    
+    # New API endpoints
+    path('api/search-entries/', views.search_entries, name='search_entries'),
+    path('api/material-templates/', views.get_material_templates, name='material_templates'),
+    path('api/projects/<int:pk>/analytics/', views.project_analytics_data, name='project_analytics'),
 ]
