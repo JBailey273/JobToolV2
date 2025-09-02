@@ -26,98 +26,137 @@
     <!-- Additional CSS -->
     {% block extra_css %}{% endblock %}
     
+    <!-- PDF Report Styling -->
     {% if report %}
     <style>
+        /* Base PDF Styling - Common to all reports */
         @page { 
-            size: landscape; 
-            margin: 0.5in 0.3in;
+            margin: 0.75in 0.5in;
         }
         
         body { 
-            font-family: Arial, sans-serif; 
-            font-size: 9px; 
-            line-height: 1.2;
-            color: #000;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 10px; 
+            line-height: 1.4;
+            color: #333;
             background: white;
             margin: 0;
             padding: 0;
         }
         
-        .pdf-table {
-            width: 100%;
-            border-collapse: collapse;
-            table-layout: fixed;
-            margin-bottom: 12px;
-        }
-        
-        .pdf-table th,
-        .pdf-table td {
-            border: 0.5px solid #333;
-            padding: 3px 2px;
-            vertical-align: top;
-            word-wrap: break-word;
-            overflow-wrap: break-word;
-            hyphens: auto;
-            font-size: 8px;
-            line-height: 1.1;
-        }
-        
-        .pdf-table th {
-            background-color: #e8f0de !important;
-            font-weight: bold;
-            font-size: 8px;
-            text-align: center;
-            padding: 4px 2px;
-        }
-        
+        /* Common PDF Elements */
         .report-header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 30px;
             page-break-inside: avoid;
         }
         
         .report-header img {
-            max-height: 35px;
-            margin-bottom: 6px;
+            max-height: 60px;
+            margin-bottom: 15px;
         }
         
         .report-header h1 {
-            font-size: 14px;
-            margin: 6px 0 3px 0;
+            font-size: 24px;
+            margin: 10px 0;
             font-weight: bold;
-            color: #000;
+            color: #2d5016;
         }
         
         .report-header h2 {
-            font-size: 11px;
-            margin: 3px 0;
-            color: #333;
+            font-size: 18px;
+            margin: 5px 0;
+            color: #4a7c2a;
+        }
+        
+        /* Common Table Styling */
+        .pdf-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+            background: white;
+        }
+        
+        .pdf-table th {
+            background-color: #4a7c2a !important;
+            color: white !important;
+            padding: 10px 8px;
+            font-size: 9px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid #2d5016;
+        }
+        
+        .pdf-table td {
+            padding: 8px;
+            font-size: 9px;
+            border: 1px solid #e0e0e0;
+            vertical-align: top;
+        }
+        
+        .pdf-table tbody tr:nth-child(even) {
+            background-color: #f9f9f9;
         }
         
         .totals-row {
-            background-color: #e9ecef !important;
+            background-color: #e8f0de !important;
             font-weight: bold;
-            border-top: 1px solid #000 !important;
+            border-top: 2px solid #4a7c2a !important;
         }
         
         .totals-row td {
-            font-size: 8px !important;
             font-weight: bold;
-            background-color: #e9ecef !important;
+            color: #2d5016 !important;
+            padding: 12px 8px !important;
         }
         
-        .summary-section {
-            margin: 12px 0;
-            font-size: 10px;
-        }
-        
+        /* Utility Classes */
         .text-left { text-align: left !important; }
         .text-right { text-align: right !important; }
         .text-center { text-align: center !important; }
         
-        .d-print-none { display: none !important; }
+        .font-mono {
+            font-family: 'Courier New', monospace;
+        }
         
-        tr { page-break-inside: avoid; }
+        .amount {
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+        }
+        
+        .break-word {
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
+        }
+        
+        .avoid-break {
+            page-break-inside: avoid;
+        }
+        
+        .page-break {
+            page-break-before: always;
+        }
+        
+        /* Hide screen elements in PDF */
+        .d-print-none,
+        .btn,
+        .navbar,
+        .alert,
+        .no-print {
+            display: none !important;
+        }
+        
+        /* Footer styling */
+        .report-footer {
+            margin-top: 40px;
+            padding: 20px 0;
+            border-top: 2px solid #4a7c2a;
+            text-align: center;
+            font-size: 9px;
+            color: #666;
+        }
     </style>
     {% endif %}
 </head>
@@ -180,9 +219,9 @@
     <!-- Breadcrumb Navigation (for non-dashboard pages) -->
     {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
     <div class="d-print-none mb-4">
-        <a id="back-button" class="btn btn-outline-primary" style="display:none;" role="button">
+        <button type="button" id="back-button" class="btn btn-outline-primary" style="display:none;">
             <i class="fas fa-arrow-left me-2"></i>Back
-        </a>
+        </button>
     </div>
     {% endif %}
     
@@ -236,9 +275,10 @@
 <!-- JavaScript Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-<!-- Breadcrumb Navigation Script -->
+<!-- Enhanced UI and Navigation Scripts -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
+    // Breadcrumb Navigation System
     const backButton = document.getElementById('back-button');
     
     if (backButton) {
@@ -279,23 +319,18 @@ document.addEventListener('DOMContentLoaded', function () {
 
         sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
     }
-});
-</script>
 
-<!-- Enhanced Table and UI Script -->
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // Enhanced responsive table handling
+    // Enhanced Responsive Table Handling
     document.querySelectorAll('.table-responsive table').forEach(function (table) {
         if (table.classList.contains('no-stack')) return;
         const ths = Array.from(table.querySelectorAll('thead th'));
         const headers = ths.map(th => th.innerText.trim());
 
-        // Mobile optimization
+        // Mobile optimization - hide empty columns
         if (window.innerWidth <= 576) {
             ths.forEach(function (th, index) {
                 const cells = Array.from(table.querySelectorAll('tbody tr')).map(row => row.children[index]);
-                const hasContent = cells.some(cell => cell && cell.textContent.trim() !== '');
+                const hasContent = cells.some(cell => cell && cell.textContent.trim() !== '' && cell.textContent.trim() !== '—');
                 
                 if (!hasContent) {
                     th.style.display = 'none';
@@ -306,7 +341,7 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
 
-        // Add data labels for responsive design
+        // Add data labels for responsive stacking
         table.querySelectorAll('tbody tr').forEach(function (row) {
             Array.from(row.children).forEach(function (cell, index) {
                 if (!cell.hasAttribute('data-label') && headers[index]) {
@@ -316,7 +351,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
-    // Add smooth animations to cards
+    // Smooth Card Animations
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -329,11 +364,12 @@ document.addEventListener('DOMContentLoaded', function () {
         observer.observe(card);
     });
     
-    // Enhanced button hover effects
+    // Enhanced Button Interactions
     document.querySelectorAll('.btn').forEach(btn => {
         btn.addEventListener('mouseenter', function() {
             if (!this.disabled) {
                 this.style.transform = 'translateY(-2px)';
+                this.style.transition = 'all 0.3s ease';
             }
         });
         
@@ -342,7 +378,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
     
-    // Add loading state to form submissions
+    // Smart Form Submission Loading States
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function() {
             const submitBtn = this.querySelector('button[type="submit"], input[type="submit"]');
@@ -356,7 +392,7 @@ document.addEventListener('DOMContentLoaded', function () {
                     submitBtn.value = 'Processing...';
                 }
                 
-                // Re-enable after 10 seconds as fallback
+                // Fallback re-enable after 15 seconds
                 setTimeout(() => {
                     submitBtn.disabled = false;
                     if (submitBtn.tagName === 'BUTTON') {
@@ -364,31 +400,35 @@ document.addEventListener('DOMContentLoaded', function () {
                     } else {
                         submitBtn.value = originalText;
                     }
-                }, 10000);
+                }, 15000);
             }
         });
     });
     
-    // Initialize tooltips
+    // Initialize Bootstrap Tooltips
     const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [title]'));
     tooltipTriggerList.map(function (tooltipTriggerEl) {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
-    // Auto-hide alerts after 8 seconds
+    // Auto-hide Success/Info Alerts
     setTimeout(function() {
-        document.querySelectorAll('.alert').forEach(alert => {
+        document.querySelectorAll('.alert-success, .alert-info').forEach(alert => {
             if (alert.classList.contains('show')) {
                 alert.style.opacity = '0';
                 alert.style.transform = 'translateY(-10px)';
-                setTimeout(() => alert.remove(), 300);
+                alert.style.transition = 'all 0.3s ease';
+                setTimeout(() => {
+                    if (alert.parentNode) {
+                        alert.remove();
+                    }
+                }, 300);
             }
         });
     }, 8000);
     
-    // Keyboard shortcuts
+    // Global Keyboard Shortcuts
     document.addEventListener('keydown', function(e) {
-        // Only trigger on Ctrl/Cmd + key combinations
         if (e.ctrlKey || e.metaKey) {
             switch(e.key.toLowerCase()) {
                 case 'h':
@@ -404,7 +444,7 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 });
 
-// Print optimizations
+// Print Optimizations
 window.addEventListener('beforeprint', function() {
     document.body.classList.add('printing');
 });
@@ -413,7 +453,7 @@ window.addEventListener('afterprint', function() {
     document.body.classList.remove('printing');
 });
 
-// Add smooth scroll behavior
+// Smooth scrolling
 document.documentElement.style.scrollBehavior = 'smooth';
 
 // Global utility functions
@@ -429,7 +469,6 @@ window.SquireApp = {
         `;
         alertContainer.insertBefore(alert, alertContainer.firstChild);
         
-        // Auto-dismiss after 5 seconds
         setTimeout(() => {
             if (alert.parentNode) {
                 alert.remove();
