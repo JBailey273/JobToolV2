@@ -1,4 +1,5 @@
 from decimal import Decimal, InvalidOperation
+from collections import defaultdict
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -225,6 +226,24 @@ def project_detail(request, pk):
         job_entries = list(job_entries_qs)
     except Exception:
         job_entries = []
+
+    # Build timeline combining job entries and payments
+    entries_by_date = defaultdict(list)
+    for je in job_entries:
+        if getattr(je, "date", None):
+            entries_by_date[je.date].append(je)
+
+    payments_by_date = defaultdict(list)
+    for payment in payments:
+        if getattr(payment, "date", None):
+            payments_by_date[payment.date].append(payment)
+
+    timeline_items = []
+    for dt in sorted(set(entries_by_date) | set(payments_by_date), reverse=True):
+        if dt in entries_by_date:
+            timeline_items.append({"date": dt, "entries": entries_by_date[dt]})
+        if dt in payments_by_date:
+            timeline_items.append({"date": dt, "payments": payments_by_date[dt]})
 
     # Calculate totals
     total_billable = sum(((je.billable_amount or Decimal("0")) for je in job_entries), Decimal("0"))
