@@ -157,7 +157,14 @@ def reports(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True)
+    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
+        "job_entries", "payments"
+    )
+
+    for p in projects:
+        p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
+        p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
+        p.outstanding = p.total_billable - p.total_payments
 
     return render(
         request,
@@ -254,6 +261,66 @@ def project_detail(request, pk):
             "weekly_data": weekly_data,
             "entry_filter": entry_filter,
             "search_query": search_query,
+        },
+    )
+
+
+@login_required
+def select_job_entry_project(request):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
+        "job_entries", "payments"
+    )
+
+    for p in projects:
+        p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
+        p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
+        p.outstanding = p.total_billable - p.total_payments
+
+    if not projects.exists():
+        messages.info(request, "Please create a project before adding job entries.")
+        return redirect("dashboard:project_list")
+
+    return render(
+        request,
+        "dashboard/select_project.html",
+        {
+            "projects": projects,
+            "action_url_name": "dashboard:add_job_entry",
+            "page_title": "Select Project for Job Entry",
+        },
+    )
+
+
+@login_required
+def select_payment_project(request):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
+        "job_entries", "payments"
+    )
+
+    for p in projects:
+        p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
+        p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
+        p.outstanding = p.total_billable - p.total_payments
+
+    if not projects.exists():
+        messages.info(request, "Please create a project before recording payments.")
+        return redirect("dashboard:project_list")
+
+    return render(
+        request,
+        "dashboard/select_project.html",
+        {
+            "projects": projects,
+            "action_url_name": "dashboard:add_payment",
+            "page_title": "Select Project for Payment",
         },
     )
 
