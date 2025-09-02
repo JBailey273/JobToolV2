@@ -180,9 +180,9 @@
     <!-- Breadcrumb Navigation (for non-dashboard pages) -->
     {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
     <div class="d-print-none mb-4">
-        <button type="button" id="back-button" class="btn btn-outline-primary" style="display:none;">
+        <a id="back-button" class="btn btn-outline-primary" style="display:none;" role="button">
             <i class="fas fa-arrow-left me-2"></i>Back
-        </button>
+        </a>
     </div>
     {% endif %}
     
