@@ -289,8 +289,9 @@ def project_detail(request, pk):
         "dashboard/project_detail.html",
         {
             "project": project,
-            "job_entries": job_entries[:20],  # Limit for performance
+            "job_entries": job_entries,
             "payments": payments[:10],
+            "timeline_items": timeline_items,
             "total_billable": total_billable,
             "total_payments": total_payments,
             "outstanding": outstanding,
