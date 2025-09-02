@@ -4,6 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{% block description %}Squire Enterprises Job Tracking System - Manage projects, track time, and generate reports{% endblock %}">
+    <meta name="keywords" content="{% block keywords %}job tracking, project management, contractor, billing, time tracking{% endblock %}">
+    <title>{% block title %}Dashboard{% endblock %} | Squire Enterprises</title>
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    
+    <!-- External CSS Libraries -->
     {% if not report %}
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -11,9 +19,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     {% endif %}
+    
+    <!-- Custom CSS -->
     <link href="{% static 'css/squire.css' %}" rel="stylesheet">
-    <title>{% block title %}Dashboard{% endblock %} | Squire Enterprises</title>
-    <link rel="icon" type="image/png" href="{% static 'img/favicon.png' %}">
+    
+    <!-- Additional CSS -->
+    {% block extra_css %}{% endblock %}
     
     {% if report %}
     <style>
@@ -52,7 +63,7 @@
         }
         
         .pdf-table th {
-            background-color: #f0f0f0 !important;
+            background-color: #e8f0de !important;
             font-weight: bold;
             font-size: 8px;
             text-align: center;
@@ -113,10 +124,18 @@
 <body class="{% if not report %}bg-light{% endif %}">
 
 {% if not report %}
+<!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg mb-4">
     <div class="container-fluid">
         <div class="d-flex align-items-center">
-            <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:45px;">
+            <!-- Site Logo -->
+            {% if global_settings and global_settings.logo %}
+                <img src="{{ global_settings.logo.url }}" onerror="this.onerror=null;this.src='{% static 'img/logo.png' %}';" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:45px;">
+            {% else %}
+                <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:45px;">
+            {% endif %}
+            
+            <!-- Contractor Name or Site Name -->
             {% if contractor %}
                 <span class="navbar-brand mb-0 fw-bold">{{ contractor.name|default:contractor.email }}</span>
             {% else %}
@@ -124,6 +143,7 @@
             {% endif %}
         </div>
         
+        <!-- Navigation Menu -->
         <div class="navbar-nav ms-auto flex-row align-items-center">
             <a class="nav-link fw-semibold" href="{% url 'dashboard:contractor_summary' %}">
                 <i class="fas fa-tachometer-alt me-2"></i>Dashboard
@@ -136,37 +156,72 @@
                     <i class="fas fa-cog me-2"></i>Admin
                 </a>
             {% endif %}
-            <form class="d-inline" method="post" action="{% url 'logout' %}">
-                {% csrf_token %}
-                <input type="hidden" name="next" value="{% url 'login' %}">
-                <button type="submit" class="nav-link btn btn-link fw-semibold">
-                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                </button>
-            </form>
+            
+            {% if user.is_authenticated %}
+                <form class="d-inline" method="post" action="{% url 'logout' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="next" value="{% url 'login' %}">
+                    <button type="submit" class="nav-link btn btn-link fw-semibold">
+                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                    </button>
+                </form>
+            {% else %}
+                <a class="nav-link fw-semibold" href="{% url 'login' %}">
+                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                </a>
+            {% endif %}
         </div>
     </div>
 </nav>
 {% endif %}
 
+<!-- Main Content Container -->
 <div class="{% if not report %}container{% endif %}">
+    <!-- Breadcrumb Navigation (for non-dashboard pages) -->
     {% if not report and request.resolver_match.url_name != 'contractor_summary' %}
     <div class="d-print-none mb-4">
-        <a href="#" id="back-button" class="btn btn-outline-primary" style="display:none;">
+        <button type="button" id="back-button" class="btn btn-outline-primary" style="display:none;">
             <i class="fas fa-arrow-left me-2"></i>Back
-        </a>
+        </button>
     </div>
     {% endif %}
     
-    {% block content %}{% endblock %}
+    <!-- Messages/Alerts -->
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show d-print-none" role="alert">
+                {% if message.tags == 'success' %}
+                    <i class="fas fa-check-circle me-2"></i>
+                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                {% elif message.tags == 'warning' %}
+                    <i class="fas fa-exclamation-circle me-2"></i>
+                {% elif message.tags == 'info' %}
+                    <i class="fas fa-info-circle me-2"></i>
+                {% endif %}
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+    
+    <!-- Page Content -->
+    {% block content %}
+    <div class="text-center py-5">
+        <h1>Welcome to Squire Enterprises</h1>
+        <p class="lead">Job Tracking System</p>
+    </div>
+    {% endblock %}
 </div>
 
 {% if not report %}
+<!-- Footer -->
 <footer class="mt-5 py-4 bg-white border-top">
     <div class="container">
         <div class="row">
             <div class="col-md-6 text-center text-md-start">
                 <p class="text-muted mb-0">
-                    <small>&copy; 2025 Squire Enterprises. All rights reserved.</small>
+                    <small>&copy; {% now "Y" %} Squire Enterprises. All rights reserved.</small>
                 </p>
             </div>
             <div class="col-md-6 text-center text-md-end">
@@ -178,30 +233,34 @@
     </div>
 </footer>
 
+<!-- JavaScript Libraries -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Breadcrumb Navigation Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     const backButton = document.getElementById('back-button');
-    const currentHref = window.location.href;
-    const currentTitle = document.title.split('|')[0].trim();
-
-    let breadcrumbs = [];
-    try {
-        breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
-    } catch (e) {
-        breadcrumbs = [];
-    }
-
-    const existingIndex = breadcrumbs.findIndex(b => b.href === currentHref);
-    if (existingIndex >= 0) {
-        breadcrumbs = breadcrumbs.slice(0, existingIndex + 1);
-    } else {
-        breadcrumbs.push({ href: currentHref, title: currentTitle });
-    }
-
-    const prev = breadcrumbs[breadcrumbs.length - 2];
-
+    
     if (backButton) {
+        const currentHref = window.location.href;
+        const currentTitle = document.title.split('|')[0].trim();
+
+        let breadcrumbs = [];
+        try {
+            breadcrumbs = JSON.parse(sessionStorage.getItem('breadcrumbs')) || [];
+        } catch (e) {
+            breadcrumbs = [];
+        }
+
+        const existingIndex = breadcrumbs.findIndex(b => b.href === currentHref);
+        if (existingIndex >= 0) {
+            breadcrumbs = breadcrumbs.slice(0, existingIndex + 1);
+        } else {
+            breadcrumbs.push({ href: currentHref, title: currentTitle });
+        }
+
+        const prev = breadcrumbs[breadcrumbs.length - 2];
+
         if (prev) {
             backButton.href = prev.href;
             backButton.innerHTML = '<i class="fas fa-arrow-left me-2"></i>Back to ' + prev.title;
@@ -217,11 +276,13 @@ document.addEventListener('DOMContentLoaded', function () {
             });
         }
         backButton.style.display = 'inline-block';
-    }
 
-    sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+        sessionStorage.setItem('breadcrumbs', JSON.stringify(breadcrumbs));
+    }
 });
 </script>
+
+<!-- Enhanced Table and UI Script -->
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     // Enhanced responsive table handling
@@ -271,7 +332,9 @@ document.addEventListener('DOMContentLoaded', function () {
     // Enhanced button hover effects
     document.querySelectorAll('.btn').forEach(btn => {
         btn.addEventListener('mouseenter', function() {
-            this.style.transform = 'translateY(-2px)';
+            if (!this.disabled) {
+                this.style.transform = 'translateY(-2px)';
+            }
         });
         
         btn.addEventListener('mouseleave', function() {
@@ -283,18 +346,61 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('form').forEach(form => {
         form.addEventListener('submit', function() {
             const submitBtn = this.querySelector('button[type="submit"], input[type="submit"]');
-            if (submitBtn) {
+            if (submitBtn && !submitBtn.disabled) {
                 submitBtn.disabled = true;
                 const originalText = submitBtn.textContent || submitBtn.value;
-                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
                 
-                // Re-enable after 5 seconds as fallback
+                if (submitBtn.tagName === 'BUTTON') {
+                    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Processing...';
+                } else {
+                    submitBtn.value = 'Processing...';
+                }
+                
+                // Re-enable after 10 seconds as fallback
                 setTimeout(() => {
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }, 5000);
+                    if (submitBtn.tagName === 'BUTTON') {
+                        submitBtn.innerHTML = originalText;
+                    } else {
+                        submitBtn.value = originalText;
+                    }
+                }, 10000);
             }
         });
+    });
+    
+    // Initialize tooltips
+    const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"], [title]'));
+    tooltipTriggerList.map(function (tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+    
+    // Auto-hide alerts after 8 seconds
+    setTimeout(function() {
+        document.querySelectorAll('.alert').forEach(alert => {
+            if (alert.classList.contains('show')) {
+                alert.style.opacity = '0';
+                alert.style.transform = 'translateY(-10px)';
+                setTimeout(() => alert.remove(), 300);
+            }
+        });
+    }, 8000);
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Only trigger on Ctrl/Cmd + key combinations
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key.toLowerCase()) {
+                case 'h':
+                    e.preventDefault();
+                    window.location.href = '{% url "dashboard:contractor_summary" %}';
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    window.location.href = '{% url "dashboard:project_list" %}';
+                    break;
+            }
+        }
     });
 });
 
@@ -309,7 +415,48 @@ window.addEventListener('afterprint', function() {
 
 // Add smooth scroll behavior
 document.documentElement.style.scrollBehavior = 'smooth';
+
+// Global utility functions
+window.SquireApp = {
+    showAlert: function(message, type = 'info') {
+        const alertContainer = document.querySelector('.container');
+        const alert = document.createElement('div');
+        alert.className = `alert alert-${type} alert-dismissible fade show`;
+        alert.innerHTML = `
+            <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'danger' ? 'exclamation-triangle' : 'info-circle'} me-2"></i>
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        alertContainer.insertBefore(alert, alertContainer.firstChild);
+        
+        // Auto-dismiss after 5 seconds
+        setTimeout(() => {
+            if (alert.parentNode) {
+                alert.remove();
+            }
+        }, 5000);
+    },
+    
+    formatCurrency: function(amount) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD'
+        }).format(amount);
+    },
+    
+    formatDate: function(date) {
+        return new Intl.DateTimeFormat('en-US', {
+            year: 'numeric',
+            month: 'short',
+            day: 'numeric'
+        }).format(new Date(date));
+    }
+};
 </script>
+
+<!-- Block for additional JavaScript -->
+{% block extra_js %}{% endblock %}
 {% endif %}
+
 </body>
 </html>
