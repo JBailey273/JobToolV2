@@ -12,8 +12,8 @@
 {% if projects %}
 <div class="row">
     {% for project in projects %}
-    <div class="col-lg-4 col-md-6 mb-4">
-        <div class="card h-100 project-card selectable-card"
+    <div class="col-lg-4 col-md-6 mb-4 d-flex">
+        <div class="card h-100 project-card selectable-card flex-fill"
              role="button"
              onclick="location.href='{% url action_url_name project.pk %}'">
                 <div class="card-body">
@@ -89,6 +89,12 @@
     transition: all 0.3s ease;
     border: none;
     box-shadow: var(--shadow-md);
+    display: flex;
+    flex-direction: column;
+}
+
+.project-card .card-body {
+    flex: 1 1 auto;
 }
 
 .project-card:hover {
