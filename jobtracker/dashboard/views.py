@@ -1,8 +1,8 @@
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, Q, F, ExpressionWrapper, DecimalField, Value
+from django.db.models import Sum, Q
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
@@ -16,6 +16,14 @@ except Exception:  # pragma: no cover - optional dependency
     HTML = None
 
 from tracker.models import Asset, Employee, JobEntry, Payment, Project
+
+
+def safe_decimal(value, default=Decimal("0")):
+    """Return a Decimal, falling back to default on invalid input."""
+    try:
+        return Decimal(value)
+    except (TypeError, InvalidOperation, ValueError):
+        return default
 
 
 def _render_pdf(template_src, context, filename):
@@ -212,34 +220,37 @@ def project_detail(request, pk):
     job_entries_qs = job_entries
     payments = list(project.payments.all().order_by("-date"))
 
-    # Convert queryset to list for repeated iteration
-    job_entries = list(job_entries_qs)
+    # Convert queryset to list for repeated iteration, guarding against bad data
+    try:
+        job_entries = list(job_entries_qs)
+    except Exception:
+        job_entries = []
 
     # Calculate totals
-    total_billable = sum((je.billable_amount or 0) for je in job_entries)
-    total_payments = sum((p.amount or 0) for p in payments)
+    total_billable = sum(((je.billable_amount or Decimal("0")) for je in job_entries), Decimal("0"))
+    total_payments = sum(((p.amount or Decimal("0")) for p in payments), Decimal("0"))
     outstanding = total_billable - total_payments
 
     # Cost and billable breakdowns
     labor_cost = equipment_cost = material_cost = Decimal("0")
     billable_labor = billable_equipment = billable_material = Decimal("0")
 
-    contractor_margin = getattr(project.contractor, "material_margin", Decimal("0")) or Decimal("0")
-    contractor_margin = Decimal(contractor_margin)
-    material_margin = contractor_margin / Decimal("100")
+    raw_margin = getattr(project.contractor, "material_margin", 0)
+    contractor_margin = safe_decimal(raw_margin)
+    material_margin = contractor_margin / Decimal("100") if contractor_margin else Decimal("0")
     margin_multiplier = Decimal("1") - material_margin
 
     try:
         for je in job_entries:
-            hours = Decimal(je.hours or 0)
+            hours = safe_decimal(getattr(je, "hours", 0))
             if je.employee:
-                labor_cost += Decimal(je.employee.cost_rate or 0) * hours
-                billable_labor += Decimal(je.employee.billable_rate or 0) * hours
+                labor_cost += safe_decimal(getattr(je.employee, "cost_rate", 0)) * hours
+                billable_labor += safe_decimal(getattr(je.employee, "billable_rate", 0)) * hours
             if je.asset:
-                equipment_cost += Decimal(je.asset.cost_rate or 0) * hours
-                billable_equipment += Decimal(je.asset.billable_rate or 0) * hours
+                equipment_cost += safe_decimal(getattr(je.asset, "cost_rate", 0)) * hours
+                billable_equipment += safe_decimal(getattr(je.asset, "billable_rate", 0)) * hours
             if je.material_cost:
-                cost = Decimal(je.material_cost) * hours
+                cost = safe_decimal(je.material_cost) * hours
                 material_cost += cost
                 if margin_multiplier > 0:
                     billable_material += cost / margin_multiplier
@@ -269,14 +280,16 @@ def project_detail(request, pk):
     # Weekly breakdown for analytics
     weekly_data = []
 
-    for week in range(4):  # Last 4 weeks
+    for week in range(4):  # Last 4 completed weeks
         start_date = timezone.now().date() - timedelta(weeks=week + 1)
         end_date = start_date + timedelta(days=6)
 
-        week_entries = job_entries_qs.filter(date__range=[start_date, end_date])
-        week_hours = week_entries.aggregate(hours=Sum("hours"))["hours"] or 0
-        week_billable = week_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
-        week_cost = week_entries.aggregate(total=Sum("cost_amount"))["total"] or 0
+        week_entries = [
+            je for je in job_entries if start_date <= je.date <= end_date
+        ]
+        week_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in week_entries), Decimal("0"))
+        week_billable = sum((safe_decimal(getattr(je, "billable_amount", 0)) for je in week_entries), Decimal("0"))
+        week_cost = sum((safe_decimal(getattr(je, "cost_amount", 0)) for je in week_entries), Decimal("0"))
 
         weekly_data.append(
             {
