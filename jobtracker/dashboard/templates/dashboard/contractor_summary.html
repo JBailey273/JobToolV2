@@ -17,14 +17,14 @@
 <!-- Quick Actions -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="quick-action-card primary" onclick="location.href='{% if first_project %}{% url 'dashboard:add_job_entry' first_project.pk %}{% else %}{% url 'dashboard:project_list' %}{% endif %}'">
+        <div class="quick-action-card primary" onclick="location.href='{% url 'dashboard:select_job_entry_project' %}'">
             <i class="fas fa-plus-circle quick-action-icon"></i>
             <h5 class="mb-2">New Job Entry</h5>
             <p class="mb-0">Log today's work</p>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="quick-action-card success" onclick="location.href='{% if first_project %}{% url 'dashboard:add_payment' first_project.pk %}{% else %}{% url 'dashboard:project_list' %}{% endif %}'">
+        <div class="quick-action-card success" onclick="location.href='{% url 'dashboard:select_payment_project' %}'">
             <i class="fas fa-money-bill-wave quick-action-icon"></i>
             <h5 class="mb-2">Record Payment</h5>
             <p class="mb-0">Track incoming payments</p>
@@ -86,11 +86,11 @@
                     </a>
                     
                     {% if first_project %}
-                    <a href="{% url 'dashboard:add_job_entry' first_project.pk %}" class="btn btn-success">
+                    <a href="{% url 'dashboard:select_job_entry_project' %}" class="btn btn-success">
                         <i class="fas fa-plus-circle me-2"></i>Quick Entry
                     </a>
                     
-                    <a href="{% url 'dashboard:add_payment' first_project.pk %}" class="btn btn-warning">
+                    <a href="{% url 'dashboard:select_payment_project' %}" class="btn btn-warning">
                         <i class="fas fa-money-bill-wave me-2"></i>Add Payment
                     </a>
                     {% endif %}
@@ -346,13 +346,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 case 'n':
                     e.preventDefault();
                     {% if first_project %}
-                    window.location.href = '{% url "dashboard:add_job_entry" first_project.pk %}';
+                    window.location.href = '{% url "dashboard:select_job_entry_project" %}';
                     {% endif %}
                     break;
                 case 'p':
                     e.preventDefault();
                     {% if first_project %}
-                    window.location.href = '{% url "dashboard:add_payment" first_project.pk %}';
+                    window.location.href = '{% url "dashboard:select_payment_project" %}';
                     {% endif %}
                     break;
                 case 'r':
