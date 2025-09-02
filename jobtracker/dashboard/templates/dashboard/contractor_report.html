@@ -5,118 +5,118 @@
 
 {% if report %}
 <style>
-/* Professional Portfolio Summary PDF Styling */
+/* Professional Portfolio Summary PDF Styling - COMPACT VERSION */
 @page {
-    size: A4 landscape;
-    margin: 0.75in 0.5in 0.5in 0.5in;
+    size: A4 portrait;
+    margin: 0.5in 0.4in 0.4in 0.4in;
     @top-center {
         content: "Contractor Portfolio Summary Report";
-        font-size: 10px;
+        font-size: 9px;
         color: #666;
     }
     @bottom-center {
         content: "Page " counter(page) " of " counter(pages) " | Confidential Business Report";
-        font-size: 9px;
+        font-size: 8px;
         color: #666;
     }
 }
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    font-size: 10px;
-    line-height: 1.4;
+    font-size: 9px;
+    line-height: 1.3;
     color: #333;
     background: white;
     margin: 0;
     padding: 0;
 }
 
-/* Executive Header */
+/* Compact Executive Header */
 .report-header {
     text-align: center;
-    margin-bottom: 35px;
-    padding: 30px 20px;
-    border: 3px solid #4a7c2a;
-    border-radius: 12px;
+    margin-bottom: 20px;
+    padding: 20px 15px;
+    border: 2px solid #4a7c2a;
+    border-radius: 6px;
     background: linear-gradient(135deg, #f8faf6 0%, #ffffff 30%, #f8faf6 100%);
     position: relative;
 }
 
 .report-header img {
-    max-height: 70px;
-    margin-bottom: 15px;
+    max-height: 45px;
+    margin-bottom: 8px;
     position: relative;
     z-index: 1;
 }
 
 .report-header h1 {
-    font-size: 28px;
+    font-size: 20px;
     font-weight: bold;
     color: #2d5016;
-    margin: 15px 0 10px 0;
+    margin: 8px 0 5px 0;
     text-transform: uppercase;
-    letter-spacing: 2px;
+    letter-spacing: 1px;
     position: relative;
     z-index: 1;
 }
 
 .report-header .contractor-info {
-    font-size: 16px;
+    font-size: 13px;
     color: #4a7c2a;
-    margin: 10px 0;
+    margin: 5px 0;
     font-weight: 600;
     position: relative;
     z-index: 1;
 }
 
 .report-header .report-period {
-    font-size: 12px;
+    font-size: 10px;
     color: #666;
-    margin: 15px 0;
+    margin: 8px 0;
     font-style: italic;
     position: relative;
     z-index: 1;
 }
 
-/* Executive Dashboard */
+/* Compact Executive Dashboard */
 .executive-dashboard {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 20px;
-    margin: 30px 0;
-    padding: 25px;
+    gap: 12px;
+    margin: 20px 0;
+    padding: 15px;
     background: linear-gradient(135deg, #e8f0de 0%, #f1f5ec 100%);
-    border: 2px solid #4a7c2a;
-    border-radius: 10px;
+    border: 1px solid #4a7c2a;
+    border-radius: 6px;
 }
 
 .metric-card {
     background: white;
-    padding: 20px;
-    border-radius: 8px;
+    padding: 12px;
+    border-radius: 4px;
     text-align: center;
-    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    border-left: 4px solid #4a7c2a;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    border-left: 3px solid #4a7c2a;
     position: relative;
 }
 
 .metric-label {
-    font-size: 9px;
+    font-size: 7px;
     color: #666;
     text-transform: uppercase;
     font-weight: 700;
-    letter-spacing: 1px;
-    margin-bottom: 8px;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
     position: relative;
     z-index: 1;
 }
 
 .metric-value {
-    font-size: 20px;
+    font-size: 14px;
     font-weight: bold;
     color: #2d5016;
     font-family: 'Courier New', monospace;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     position: relative;
     z-index: 1;
 }
@@ -134,7 +134,7 @@ body {
 }
 
 .metric-change {
-    font-size: 8px;
+    font-size: 7px;
     color: #666;
     font-weight: 600;
     position: relative;
@@ -149,15 +149,15 @@ body {
     color: #8b4513;
 }
 
-/* Portfolio Table */
+/* Compact Portfolio Table */
 .portfolio-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 30px 0;
+    margin: 20px 0;
     background: white;
-    border-radius: 10px;
+    border-radius: 6px;
     overflow: hidden;
-    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.1);
 }
 
 .portfolio-table thead {
@@ -166,11 +166,11 @@ body {
 }
 
 .portfolio-table th {
-    padding: 15px 12px;
-    font-size: 9px;
+    padding: 10px 8px;
+    font-size: 8px;
     font-weight: bold;
     text-transform: uppercase;
-    letter-spacing: 0.8px;
+    letter-spacing: 0.5px;
     text-align: left;
     border-right: 1px solid rgba(255,255,255,0.2);
     position: relative;
@@ -191,12 +191,11 @@ body {
 
 .portfolio-table tbody tr:hover {
     background: #f0f4f0;
-    transform: translateX(2px);
 }
 
 .portfolio-table td {
-    padding: 12px;
-    font-size: 9px;
+    padding: 8px;
+    font-size: 8px;
     vertical-align: middle;
     border-right: 1px solid #e0e0e0;
 }
@@ -209,12 +208,12 @@ body {
 .project-name {
     font-weight: bold;
     color: #2d5016;
-    font-size: 10px;
-    margin-bottom: 3px;
+    font-size: 9px;
+    margin-bottom: 2px;
 }
 
 .project-meta {
-    font-size: 8px;
+    font-size: 7px;
     color: #666;
     font-style: italic;
 }
@@ -242,19 +241,19 @@ body {
     color: #dc3545;
 }
 
-/* Margin Bar */
+/* Compact Margin Bar */
 .margin-bar {
     display: flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 8px;
+    gap: 5px;
 }
 
 .margin-percentage {
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    font-size: 9px;
-    min-width: 35px;
+    font-size: 8px;
+    min-width: 30px;
     text-align: right;
 }
 
@@ -275,9 +274,9 @@ body {
 }
 
 .margin-indicator {
-    width: 40px;
-    height: 6px;
-    border-radius: 3px;
+    width: 30px;
+    height: 4px;
+    border-radius: 2px;
     background: #e0e0e0;
     overflow: hidden;
     position: relative;
@@ -285,7 +284,7 @@ body {
 
 .margin-fill {
     height: 100%;
-    border-radius: 3px;
+    border-radius: 2px;
     transition: width 0.3s ease;
 }
 
@@ -305,50 +304,50 @@ body {
     background: linear-gradient(90deg, #8b4513, #cd853f);
 }
 
-/* Performance Analysis */
+/* Compact Performance Analysis */
 .performance-section {
-    margin: 40px 0;
-    padding: 25px;
+    margin: 25px 0;
+    padding: 15px;
     background: white;
-    border: 2px solid #4a7c2a;
-    border-radius: 10px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    border: 1px solid #4a7c2a;
+    border-radius: 6px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .performance-header {
     background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
     color: white;
-    padding: 15px 25px;
-    margin: -25px -25px 20px -25px;
-    border-radius: 8px 8px 0 0;
-    font-size: 14px;
+    padding: 8px 15px;
+    margin: -15px -15px 12px -15px;
+    border-radius: 5px 5px 0 0;
+    font-size: 11px;
     font-weight: bold;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .performance-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 30px;
+    gap: 20px;
 }
 
 .analysis-section h4 {
     color: #2d5016;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    border-bottom: 2px solid #4a7c2a;
-    padding-bottom: 5px;
+    letter-spacing: 0.3px;
+    border-bottom: 1px solid #4a7c2a;
+    padding-bottom: 3px;
 }
 
 .analysis-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0;
+    padding: 5px 0;
     border-bottom: 1px solid #f0f0f0;
 }
 
@@ -357,7 +356,7 @@ body {
 }
 
 .analysis-label {
-    font-size: 9px;
+    font-size: 8px;
     color: #666;
     font-weight: 500;
 }
@@ -365,72 +364,72 @@ body {
 .analysis-value {
     font-family: 'Courier New', monospace;
     font-weight: bold;
-    font-size: 10px;
+    font-size: 8px;
     color: #2d5016;
 }
 
-/* Recommendations Box */
+/* Compact Recommendations Box */
 .recommendations {
-    margin: 30px 0;
-    padding: 25px;
+    margin: 20px 0;
+    padding: 15px;
     background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
-    border: 2px solid #daa520;
-    border-radius: 10px;
+    border: 1px solid #daa520;
+    border-radius: 6px;
     position: relative;
 }
 
 .recommendations h4 {
     color: #856404;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: bold;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .recommendation-item {
-    margin: 10px 0;
-    padding: 8px 12px;
+    margin: 6px 0;
+    padding: 6px 8px;
     background: rgba(255,255,255,0.7);
-    border-radius: 5px;
-    border-left: 3px solid #daa520;
+    border-radius: 3px;
+    border-left: 2px solid #daa520;
 }
 
 .recommendation-item .recommendation-type {
-    font-size: 8px;
+    font-size: 7px;
     color: #856404;
     font-weight: bold;
     text-transform: uppercase;
-    margin-bottom: 3px;
+    margin-bottom: 2px;
 }
 
 .recommendation-item .recommendation-text {
-    font-size: 9px;
+    font-size: 8px;
     color: #333;
-    line-height: 1.3;
+    line-height: 1.2;
 }
 
-/* Summary Footer */
+/* Compact Summary Footer */
 .summary-totals {
-    margin: 30px 0;
-    padding: 20px;
+    margin: 20px 0;
+    padding: 15px;
     background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
     color: white;
-    border-radius: 10px;
+    border-radius: 6px;
     text-align: center;
 }
 
 .summary-totals h3 {
-    font-size: 14px;
-    margin-bottom: 15px;
+    font-size: 11px;
+    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    letter-spacing: 0.5px;
 }
 
 .totals-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
+    gap: 15px;
 }
 
 .total-item {
@@ -438,24 +437,24 @@ body {
 }
 
 .total-label {
-    font-size: 9px;
+    font-size: 7px;
     opacity: 0.8;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
 .total-value {
-    font-size: 18px;
+    font-size: 14px;
     font-weight: bold;
     font-family: 'Courier New', monospace;
 }
 
-/* Report Footer */
+/* Compact Report Footer */
 .report-footer {
-    margin-top: 50px;
-    padding: 25px 0;
-    border-top: 3px solid #4a7c2a;
+    margin-top: 30px;
+    padding: 15px 0;
+    border-top: 2px solid #4a7c2a;
     text-align: center;
     background: linear-gradient(to right, #f8faf6, #ffffff, #f8faf6);
 }
@@ -463,31 +462,31 @@ body {
 .report-footer .footer-content {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
+    gap: 15px;
     align-items: center;
 }
 
 .footer-section h5 {
-    font-size: 10px;
+    font-size: 8px;
     color: #2d5016;
     font-weight: bold;
-    margin-bottom: 5px;
+    margin-bottom: 3px;
     text-transform: uppercase;
 }
 
 .footer-section p {
-    font-size: 8px;
+    font-size: 7px;
     color: #666;
-    margin: 2px 0;
+    margin: 1px 0;
 }
 
 .confidentiality-notice {
-    margin-top: 20px;
-    padding: 15px;
+    margin-top: 12px;
+    padding: 8px;
     background: #f8f9fa;
     border: 1px solid #dee2e6;
-    border-radius: 5px;
-    font-size: 8px;
+    border-radius: 3px;
+    font-size: 7px;
     color: #666;
     font-style: italic;
     text-align: center;
@@ -510,18 +509,18 @@ body {
 
 .no-data {
     text-align: center;
-    padding: 60px 20px;
+    padding: 40px 15px;
     color: #666;
     font-style: italic;
     background: #f9f9f9;
-    border-radius: 8px;
-    border: 2px dashed #ddd;
+    border-radius: 4px;
+    border: 1px dashed #ddd;
 }
 
 .no-data .no-data-icon {
-    font-size: 24px;
+    font-size: 16px;
     color: #ccc;
-    margin-bottom: 10px;
+    margin-bottom: 6px;
 }
 
 /* Page Breaks */
@@ -538,7 +537,6 @@ body {
 .portfolio-table .cost-col { width: 16%; }
 .portfolio-table .billable-col { width: 16%; }
 .portfolio-table .profit-col { width: 16%; }
-.portfolio-table .margin-col { width: 17%; }
 </style>
 {% endif %}
 
