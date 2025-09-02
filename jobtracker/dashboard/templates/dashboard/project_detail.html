@@ -461,24 +461,22 @@
                         <div class="card h-100">
                             <div class="card-body">
                                 <h6 class="card-title">Cost Breakdown</h6>
-                                {% with labor_entries=job_entries|length equipment_entries=job_entries|length material_entries=job_entries|length %}
                                 <div class="progress mb-2" style="height: 25px;">
-                                    <div class="progress-bar bg-primary" style="width: 40%;" title="Labor">
-                                        Labor 40%
+                                    <div class="progress-bar bg-primary" style="width: {{ labor_percent|floatformat:0 }}%;" title="Labor">
+                                        Labor {{ labor_percent|floatformat:0 }}%
                                     </div>
-                                    <div class="progress-bar bg-warning" style="width: 35%;" title="Equipment">
-                                        Equipment 35%
+                                    <div class="progress-bar bg-warning" style="width: {{ equipment_percent|floatformat:0 }}%;" title="Equipment">
+                                        Equipment {{ equipment_percent|floatformat:0 }}%
                                     </div>
-                                    <div class="progress-bar bg-secondary" style="width: 25%;" title="Materials">
-                                        Materials 25%
+                                    <div class="progress-bar bg-secondary" style="width: {{ material_percent|floatformat:0 }}%;" title="Materials">
+                                        Materials {{ material_percent|floatformat:0 }}%
                                     </div>
                                 </div>
                                 <div class="small text-muted">
-                                    <div>Labor: {{ job_entries|length }} entries</div>
-                                    <div>Equipment: Available in admin</div>
-                                    <div>Materials: Track via entries</div>
+                                    <div>Labor: ${{ labor_cost|floatformat:2|intcomma }}</div>
+                                    <div>Equipment: ${{ equipment_cost|floatformat:2|intcomma }}</div>
+                                    <div>Materials: ${{ material_cost|floatformat:2|intcomma }}</div>
                                 </div>
-                                {% endwith %}
                             </div>
                         </div>
                     </div>

@@ -2,7 +2,7 @@ from decimal import Decimal
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum, Count, Q
+from django.db.models import Sum, Count, Q, F, ExpressionWrapper, DecimalField
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
@@ -221,6 +221,42 @@ def project_detail(request, pk):
     profit = total_billable - total_cost
     margin = (profit / total_billable * 100) if total_billable > 0 else 0
 
+    # Cost breakdown
+    labor_cost = job_entries.filter(employee__isnull=False).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("employee__cost_rate") * F("hours"),
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            )
+        )
+    )["total"] or Decimal("0")
+
+    equipment_cost = job_entries.filter(asset__isnull=False).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("asset__cost_rate") * F("hours"),
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            )
+        )
+    )["total"] or Decimal("0")
+
+    material_cost = job_entries.exclude(material_cost__isnull=True).aggregate(
+        total=Sum(
+            ExpressionWrapper(
+                F("material_cost") * F("hours"),
+                output_field=DecimalField(max_digits=10, decimal_places=2),
+            )
+        )
+    )["total"] or Decimal("0")
+
+    breakdown_total = labor_cost + equipment_cost + material_cost
+    if breakdown_total:
+        labor_percent = (labor_cost / breakdown_total) * 100
+        equipment_percent = (equipment_cost / breakdown_total) * 100
+        material_percent = (material_cost / breakdown_total) * 100
+    else:
+        labor_percent = equipment_percent = material_percent = 0
+
     # Weekly breakdown for analytics
     weekly_data = []
     for week in range(4):  # Last 4 weeks
@@ -258,6 +294,12 @@ def project_detail(request, pk):
             "total_cost": total_cost,
             "profit": profit,
             "margin": margin,
+            "labor_cost": labor_cost,
+            "equipment_cost": equipment_cost,
+            "material_cost": material_cost,
+            "labor_percent": labor_percent,
+            "equipment_percent": equipment_percent,
+            "material_percent": material_percent,
             "weekly_data": weekly_data,
             "entry_filter": entry_filter,
             "search_query": search_query,
