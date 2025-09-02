@@ -546,7 +546,7 @@ body {
 <div class="{% if report %}report-header{% else %}text-center mb-4{% endif %}">
     <h1>Portfolio Summary Report</h1>
     <div class="contractor-info">{{ contractor.name|default:contractor.email }}</div>
-    <div class="report-period">Complete Business Analysis • Generated {% now "F d, Y \\a\\t g:i A" %}</div>
+    <div class="report-period">Complete Business Analysis • Generated {% now "F d, Y" %} at {% now "g:i A" %}</div>
 </div>
 
 <!-- Export Button -->
@@ -559,7 +559,7 @@ body {
             </a>
         </div>
         <div class="text-muted">
-            <small><i class="fas fa-info-circle me-1"></i>Report generated on {% now "F d, Y \\a\\t g:i A" %}</small>
+            <small><i class="fas fa-info-circle me-1"></i>Report generated on {% now "F d, Y" %} at {% now "g:i A" %}</small>
         </div>
     </div>
 </div>
@@ -939,7 +939,7 @@ body {
     <div class="footer-content">
         <div class="footer-section">
             <h5>Report Details</h5>
-            <p>Generated: {% now "F d, Y \a\t g:i A" %}</p>
+            <p>Generated: {% now "F d, Y" %} at {% now "g:i A" %}</p>
             <p>Report Type: Portfolio Summary</p>
             <p>Data Period: All Active Projects</p>
         </div>
