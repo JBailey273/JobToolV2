@@ -425,6 +425,20 @@ class PdfExportTests(TestCase):
         self.assertEqual(response["Content-Type"], "application/pdf")
         self.assertTrue(response.content.startswith(b"%PDF"))
 
+    @patch("dashboard.views.pisa")
+    def test_pdf_with_leading_whitespace_is_trimmed(self, mock_pisa):
+        def fake_pdf(html, dest, link_callback=None):
+            dest.write(b"\n%PDF-1.4\n")
+            return SimpleNamespace(err=0)
+
+        mock_pisa.CreatePDF.side_effect = fake_pdf
+        response = self.client.get(
+            reverse("dashboard:contractor_report") + "?export=pdf"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response["Content-Type"], "application/pdf")
+        self.assertTrue(response.content.startswith(b"%PDF"))
+
 
 class JobEntryOrderingTests(TestCase):
     def setUp(self):

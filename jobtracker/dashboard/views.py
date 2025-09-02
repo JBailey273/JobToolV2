@@ -46,9 +46,10 @@ def _render_pdf(template_src, context, filename):
     except Exception:
         return HttpResponse("Error generating PDF", status=500)
     content = result.getvalue()
-    if not content.startswith(b"%PDF"):
+    start = content.find(b"%PDF")
+    if start == -1:
         return HttpResponse("Error generating PDF", status=500)
-    response = HttpResponse(content, content_type="application/pdf")
+    response = HttpResponse(content[start:], content_type="application/pdf")
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
