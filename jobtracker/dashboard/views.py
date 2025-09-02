@@ -305,6 +305,25 @@ def select_payment_project(request):
 
 
 @login_required
+def select_job_entry_project(request):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    projects = contractor.projects.filter(end_date__isnull=True)
+
+    if not projects.exists():
+        messages.info(request, "Please create a project before adding job entries.")
+        return redirect("dashboard:project_list")
+
+    return render(
+        request,
+        "dashboard/select_job_entry_project.html",
+        {"projects": projects},
+    )
+
+
+@login_required
 def add_job_entry(request, pk):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
