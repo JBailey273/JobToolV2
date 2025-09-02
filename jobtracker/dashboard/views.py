@@ -5,10 +5,10 @@ from django.conf import settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.staticfiles import finders
 from django.db.models import Sum, Count, Q
-from django.http import FileResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import get_template
-from tempfile import NamedTemporaryFile
+from io import BytesIO
 from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime, timedelta
@@ -40,13 +40,14 @@ def _render_pdf(template_src, context, filename):
         return None
     template = get_template(template_src)
     html = template.render(context)
-    tmp = NamedTemporaryFile()
-    pdf = pisa.CreatePDF(html, dest=tmp, link_callback=link_callback)
-    tmp.seek(0)
+    result = BytesIO()
+    pdf = pisa.CreatePDF(html, dest=result, link_callback=link_callback)
     if pdf.err:
-        tmp.close()
         return None
-    return FileResponse(tmp, as_attachment=True, filename=filename)
+    result.seek(0)
+    response = HttpResponse(result.getvalue(), content_type="application/pdf")
+    response["Content-Disposition"] = f"attachment; filename={filename}"
+    return response
 
 
 @login_required
