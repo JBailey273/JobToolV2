@@ -348,7 +348,7 @@ body {
     {% endif %}
     <h2>{{ contractor.name|default:contractor.email }}</h2>
     <h1>Contractor Job Report</h1>
-    <div class="project-info">{{ project.name }} • Generated {{ "now"|date:"F d, Y" }}</div>
+    <div class="project-info">{{ project.name }} • Generated {{ "now"|date:"F d, Y \\a\\t g:i A" }}</div>
 </div>
 
 <!-- Export Button -->
@@ -361,7 +361,7 @@ body {
             </a>
         </div>
         <div class="text-muted">
-            <small><i class="fas fa-info-circle me-1"></i>Report generated on {{ "now"|date:"F d, Y" }}</small>
+            <small><i class="fas fa-info-circle me-1"></i>Report generated on {{ "now"|date:"F d, Y \\a\\t g:i A" }}</small>
         </div>
     </div>
 </div>
