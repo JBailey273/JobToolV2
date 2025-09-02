@@ -4,253 +4,684 @@
 {% block content %}
 
 <!-- Project Header -->
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1 class="mb-2">
-            <i class="fas fa-project-diagram me-3"></i>{{ project.name }}
-        </h1>
-        <p class="text-muted mb-0">
-            <i class="fas fa-calendar me-2"></i>Started {{ project.start_date|date:"F d, Y" }}
-            {% if project.end_date %}
-                • Completed {{ project.end_date|date:"F d, Y" }}
-            {% endif %}
-        </p>
-    </div>
-    <div>
-        <span class="badge bg-success fs-6">
-            <i class="fas fa-play me-2"></i>Active Project
-        </span>
-    </div>
-</div>
+<div class="project-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <!-- Breadcrumb -->
+                <nav aria-label="breadcrumb" class="mb-3">
+                    <ol class="breadcrumb breadcrumb-custom">
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:contractor_summary' %}"><i class="fas fa-home me-1"></i>Dashboard</a></li>
+                        <li class="breadcrumb-item"><a href="{% url 'dashboard:project_list' %}">Projects</a></li>
+                        <li class="breadcrumb-item active">{{ project.name }}</li>
+                    </ol>
+                </nav>
 
-<!-- Summary Cards -->
-<div class="row mb-4">
-    <div class="col-md-4 mb-3">
-        <div class="summary-card">
-            <i class="fas fa-dollar-sign fa-2x mb-3"></i>
-            <h5 class="card-title">Total Billable</h5>
-            <p class="card-text">${{ total_billable|floatformat:2|intcomma }}</p>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="summary-card" style="background: var(--success-gradient);">
-            <i class="fas fa-credit-card fa-2x mb-3"></i>
-            <h5 class="card-title">Total Payments</h5>
-            <p class="card-text">${{ total_payments|floatformat:2|intcomma }}</p>
-        </div>
-    </div>
-    <div class="col-md-4 mb-3">
-        <div class="summary-card" style="{% if outstanding > 0 %}background: var(--warning-gradient);{% else %}background: var(--success-gradient);{% endif %}">
-            <i class="fas fa-balance-scale fa-2x mb-3"></i>
-            <h5 class="card-title">Outstanding</h5>
-            <p class="card-text">${{ outstanding|floatformat:2|intcomma }}</p>
-        </div>
-    </div>
-</div>
-
-<!-- Progress Bar -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="mb-0">Payment Progress</h6>
-            <small class="text-muted">
-                {% widthratio total_payments total_billable 100 as percentage %}
-                {{ percentage|default:0 }}% Complete
-            </small>
-        </div>
-        <div class="progress" style="height: 12px;">
-            <div class="progress-bar bg-gradient" role="progressbar" 
-                 style="width: {{ percentage|default:0 }}%; background: var(--success-gradient);"
-                 aria-valuenow="{{ percentage|default:0 }}" 
-                 aria-valuemin="0" 
-                 aria-valuemax="100">
+                <h1 class="display-5 mb-2">{{ project.name }}</h1>
+                <p class="lead mb-3">
+                    {% if project.end_date %}
+                        Project completed • {{ project.start_date|date:"M d, Y" }} - {{ project.end_date|date:"M d, Y" }}
+                    {% else %}
+                        Active project • Started {{ project.start_date|date:"F d, Y" }}
+                    {% endif %}
+                </p>
+                
+                <div class="d-flex align-items-center gap-3">
+                    <span class="status-badge {% if project.end_date %}status-completed{% else %}status-active{% endif %}">
+                        <i class="fas {% if project.end_date %}fa-check-circle{% else %}fa-play{% endif %} me-1"></i>
+                        {% if project.end_date %}Completed{% else %}Active{% endif %}
+                    </span>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="summary-widget">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <div class="fs-4 fw-bold">
+                                {% widthratio total_payments total_billable 100 as completion_percent %}
+                                {{ completion_percent|default:0 }}%
+                            </div>
+                            <small>Paid</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-4 fw-bold">{{ job_entries|length }}</div>
+                            <small>Entries</small>
+                        </div>
+                        <div class="col-4">
+                            <div class="fs-4 fw-bold">${{ total_billable|floatformat:0|intcomma }}</div>
+                            <small>Revenue</small>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Quick Actions -->
-<div class="card mb-4">
-    <div class="card-body">
-        <h5 class="card-title mb-3">
-            <i class="fas fa-rocket me-2"></i>Quick Actions
-        </h5>
-        <div class="action-buttons">
-            <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-success">
-                <i class="fas fa-plus-circle me-2"></i>Add Job Entry
-            </a>
-            <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-warning">
-                <i class="fas fa-money-bill-wave me-2"></i>Record Payment
-            </a>
-            <a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-primary">
-                <i class="fas fa-file-pdf me-2"></i>Customer Report
-            </a>
-            <a href="{% url 'dashboard:contractor_job_report' project.pk %}" class="btn btn-secondary">
-                <i class="fas fa-hard-hat me-2"></i>Job Report
-            </a>
+<div class="container">
+    <!-- Action Toolbar -->
+    <div class="action-toolbar">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Quick Entry
+                    </a>
+                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
+                        <i class="fas fa-money-bill-wave me-2"></i>Record Payment
+                    </a>
+                    <a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-warning text-white">
+                        <i class="fas fa-file-pdf me-2"></i>Customer Report
+                    </a>
+                    <a href="{% url 'dashboard:contractor_job_report' project.pk %}" class="btn btn-info text-white">
+                        <i class="fas fa-hard-hat me-2"></i>Job Report
+                    </a>
+                    <div class="dropdown">
+                        <button class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-h me-2"></i>More Actions
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-edit me-2"></i>Edit Project</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-copy me-2"></i>Duplicate</a></li>
+                            <li><a class="dropdown-item" href="#"><i class="fas fa-archive me-2"></i>Archive</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="input-group">
+                    <span class="input-group-text"><i class="fas fa-search"></i></span>
+                    <input type="text" class="form-control" placeholder="Search entries..." id="search-entries">
+                </div>
+            </div>
         </div>
     </div>
-</div>
 
-<!-- Job Entries Section -->
-<div class="card mb-4">
-    <div class="card-header bg-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="fas fa-tasks me-2"></i>Job Entries
-            </h5>
-            <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-sm btn-success">
-                <i class="fas fa-plus me-1"></i>Add Entry
-            </a>
+    <!-- Key Metrics -->
+    <div class="row mb-4">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="metric-card">
+                <div class="metric-number text-success">${{ total_billable|floatformat:2|intcomma }}</div>
+                <div class="metric-label">Total Billable</div>
+                <div class="metric-trend {% if total_billable > 0 %}text-success{% else %}text-muted{% endif %}">
+                    <i class="fas fa-arrow-up me-1"></i>Project Revenue
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="metric-card">
+                <div class="metric-number text-primary">${{ total_payments|floatformat:2|intcomma }}</div>
+                <div class="metric-label">Payments Received</div>
+                <div class="metric-trend {% if payments %}text-success{% else %}text-muted{% endif %}">
+                    <i class="fas fa-credit-card me-1"></i>
+                    {% if payments %}Last payment {{ payments.0.date|naturalday }}{% else %}No payments yet{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="metric-card">
+                <div class="metric-number {% if outstanding > 0 %}text-warning{% else %}text-success{% endif %}">${{ outstanding|floatformat:2|intcomma }}</div>
+                <div class="metric-label">Outstanding</div>
+                <div class="metric-trend {% if outstanding > 0 %}text-warning{% else %}text-success{% endif %}">
+                    {% if outstanding > 0 %}
+                        <i class="fas fa-exclamation-triangle me-1"></i>
+                        {% widthratio outstanding total_billable 100 as outstanding_percent %}
+                        {{ outstanding_percent|floatformat:0 }}% of total
+                    {% else %}
+                        <i class="fas fa-check-circle me-1"></i>Fully paid
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="metric-card">
+                <div class="metric-number text-info">{{ job_entries|length }}</div>
+                <div class="metric-label">Total Entries</div>
+                <div class="metric-trend {% if job_entries %}text-success{% else %}text-muted{% endif %}">
+                    {% if job_entries %}
+                        <i class="fas fa-calendar me-1"></i>Last entry {{ job_entries.0.date|naturalday }}
+                    {% else %}
+                        <i class="fas fa-plus me-1"></i>No entries yet
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-    <div class="card-body p-0">
-        {% if job_entries %}
-        <div class="table-responsive">
-            <table class="table mb-0">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-calendar me-1"></i>Date</th>
-                        <th><i class="fas fa-clock me-1"></i>Hours</th>
-                        <th><i class="fas fa-tools me-1"></i>Asset</th>
-                        <th><i class="fas fa-user-hard-hat me-1"></i>Employee</th>
-                        <th><i class="fas fa-box me-1"></i>Material</th>
-                        <th class="text-end"><i class="fas fa-dollar-sign me-1"></i>Cost</th>
-                        <th class="text-end"><i class="fas fa-receipt me-1"></i>Billable</th>
-                        <th><i class="fas fa-file-alt me-1"></i>Description</th>
-                        <th class="text-center">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
+
+    <!-- Progress Section -->
+    <div class="progress-section">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4 class="mb-0">Payment Progress</h4>
+            <span class="badge bg-success fs-6">
+                {% widthratio total_payments total_billable 100 as payment_percent %}
+                {{ payment_percent|default:0 }}% Paid
+            </span>
+        </div>
+        <div class="progress-bar-custom">
+            <div class="progress-fill" style="width: {{ payment_percent|default:0 }}%"></div>
+        </div>
+        <div class="row">
+            <div class="col-md-6">
+                <small class="text-muted">
+                    <i class="fas fa-dollar-sign me-1"></i>
+                    Total revenue: ${{ total_billable|floatformat:2|intcomma }}
+                </small>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <small class="text-muted">
+                    <i class="fas fa-credit-card me-1"></i>
+                    Collected: ${{ total_payments|floatformat:2|intcomma }}
+                </small>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Tabs -->
+    <ul class="nav nav-tabs nav-tabs-custom">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#entries-tab">
+                <i class="fas fa-list me-2"></i>Job Entries ({{ job_entries|length }})
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#payments-tab">
+                <i class="fas fa-credit-card me-2"></i>Payments ({{ payments|length }})
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#timeline-tab">
+                <i class="fas fa-history me-2"></i>Timeline
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#analytics-tab">
+                <i class="fas fa-chart-line me-2"></i>Analytics
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Job Entries Tab -->
+        <div class="tab-pane fade show active" id="entries-tab">
+            <div class="tab-content-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Job Entries</h5>
+                    <div class="d-flex gap-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <input type="radio" class="btn-check" name="entry-filter" id="filter-all" checked>
+                            <label class="btn btn-outline-secondary" for="filter-all">All</label>
+                            
+                            <input type="radio" class="btn-check" name="entry-filter" id="filter-labor">
+                            <label class="btn btn-outline-secondary" for="filter-labor">Labor</label>
+                            
+                            <input type="radio" class="btn-check" name="entry-filter" id="filter-equipment">
+                            <label class="btn btn-outline-secondary" for="filter-equipment">Equipment</label>
+                            
+                            <input type="radio" class="btn-check" name="entry-filter" id="filter-materials">
+                            <label class="btn btn-outline-secondary" for="filter-materials">Materials</label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Entry Rows -->
                 {% for entry in job_entries %}
-                    <tr>
-                        <td data-label="Date">
-                            <span class="badge bg-light text-dark">{{ entry.date|date:"M d" }}</span>
-                        </td>
-                        <td data-label="Hours">
-                            <span class="fw-semibold">{{ entry.hours|floatformat:2 }}</span>
-                        </td>
-                        <td data-label="Asset">
-                            {% if entry.asset %}
-                                <span class="badge bg-primary">{{ entry.asset.name }}</span>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
-                        <td data-label="Employee">
-                            {% if entry.employee %}
-                                <span class="badge bg-info">{{ entry.employee.name }}</span>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
-                        <td data-label="Material">
-                            {% if entry.material_description %}
-                                <span class="text-truncate d-inline-block" style="max-width: 120px;" title="{{ entry.material_description }}">
-                                    {{ entry.material_description }}
-                                </span>
-                                {% if entry.material_cost %}
-                                    <small class="text-muted d-block">${{ entry.material_cost|floatformat:2|intcomma }}</small>
-                                {% endif %}
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-end" data-label="Cost">
-                            <span class="text-danger fw-semibold">${{ entry.cost_amount|floatformat:2|intcomma }}</span>
-                        </td>
-                        <td class="text-end" data-label="Billable">
-                            <span class="text-success fw-semibold">${{ entry.billable_amount|floatformat:2|intcomma }}</span>
-                        </td>
-                        <td data-label="Description">
-                            {% if entry.description %}
-                                <span class="text-truncate d-inline-block" style="max-width: 150px;" title="{{ entry.description }}">
-                                    {{ entry.description }}
-                                </span>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
-                        <td class="text-center" data-label="Actions">
-                            <a href="{% url 'dashboard:edit_job_entry' entry.pk %}" class="btn btn-sm btn-outline-secondary">
-                                <i class="fas fa-edit"></i>
-                            </a>
-                        </td>
-                    </tr>
+                <div class="entry-row" data-entry-type="{% if entry.employee %}labor{% elif entry.asset %}equipment{% elif entry.material_description %}materials{% else %}other{% endif %}">
+                    <div class="d-flex align-items-center">
+                        <div class="entry-type-icon {% if entry.employee %}entry-type-labor{% elif entry.asset %}entry-type-equipment{% elif entry.material_description %}entry-type-material{% else %}entry-type-equipment{% endif %}">
+                            <i class="fas {% if entry.employee %}fa-hard-hat{% elif entry.asset %}fa-tools{% elif entry.material_description %}fa-boxes{% else %}fa-clipboard{% endif %}"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <h6 class="mb-1">
+                                        {% if entry.description %}
+                                            {{ entry.description }}
+                                        {% elif entry.material_description %}
+                                            {{ entry.material_description }}
+                                        {% else %}
+                                            {% if entry.asset %}{{ entry.asset.name }} Usage{% endif %}
+                                            {% if entry.employee %}{{ entry.employee.name }} Work{% endif %}
+                                        {% endif %}
+                                    </h6>
+                                    <small class="text-muted">
+                                        {{ entry.date|date:"M d, Y" }} • {{ entry.hours|floatformat:2 }} hours
+                                        {% if entry.asset %} • {{ entry.asset.name }}{% endif %}
+                                        {% if entry.employee %} • {{ entry.employee.name }}{% endif %}
+                                    </small>
+                                </div>
+                                <div class="text-end">
+                                    <div class="fs-5 fw-bold text-success">${{ entry.billable_amount|floatformat:2|intcomma }}</div>
+                                    <small class="text-muted">Billable</small>
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex gap-2">
+                                    {% if entry.asset %}
+                                        <span class="badge bg-primary">{{ entry.asset.name }}</span>
+                                    {% endif %}
+                                    {% if entry.employee %}
+                                        <span class="badge bg-info">{{ entry.employee.name }}</span>
+                                    {% endif %}
+                                    {% if entry.material_description %}
+                                        <span class="badge bg-secondary">Material</span>
+                                    {% endif %}
+                                    {% if entry.material_cost %}
+                                        <span class="badge bg-warning text-dark">${{ entry.material_cost|floatformat:2 }} cost</span>
+                                    {% endif %}
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="{% url 'dashboard:edit_job_entry' entry.pk %}" class="btn btn-outline-secondary" title="Edit Entry">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-outline-secondary" title="Duplicate Entry" onclick="duplicateEntry({{ entry.pk }})">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                    <button class="btn btn-outline-danger" title="Delete Entry" onclick="deleteEntry({{ entry.pk }})">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% empty %}
+                <div class="text-center py-5">
+                    <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Job Entries</h5>
+                    <p class="text-muted mb-3">No job entries have been recorded for this project yet.</p>
+                    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Add First Entry
+                    </a>
+                </div>
                 {% endfor %}
-                </tbody>
-            </table>
+
+                {% if job_entries|length > 10 %}
+                <div class="text-center mt-4">
+                    <button class="btn btn-outline-primary" onclick="loadMoreEntries()">
+                        <i class="fas fa-chevron-down me-2"></i>Load More Entries
+                    </button>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-clipboard-list fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">No Job Entries</h5>
-            <p class="text-muted mb-3">No job entries have been recorded for this project yet.</p>
-            <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-success">
-                <i class="fas fa-plus me-2"></i>Add First Entry
-            </a>
+
+        <!-- Payments Tab -->
+        <div class="tab-pane fade" id="payments-tab">
+            <div class="tab-content-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h5 class="mb-0">Payment History</h5>
+                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Record Payment
+                    </a>
+                </div>
+
+                {% if payments %}
+                <div class="table-responsive">
+                    <table class="table materials-table">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Amount</th>
+                                <th>Notes</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for payment in payments %}
+                            <tr>
+                                <td>
+                                    <strong>{{ payment.date|date:"M d, Y" }}</strong>
+                                    <br><small class="text-muted">{{ payment.date|naturalday }}</small>
+                                </td>
+                                <td>
+                                    <span class="fs-5 fw-bold text-success">${{ payment.amount|floatformat:2|intcomma }}</span>
+                                </td>
+                                <td>
+                                    {% if payment.notes %}
+                                        <span title="{{ payment.notes }}">
+                                            {{ payment.notes|truncatechars:50 }}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-muted">—</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <button class="btn btn-outline-secondary" title="Edit Payment" onclick="editPayment({{ payment.pk }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-outline-secondary" title="Generate Receipt" onclick="generateReceipt({{ payment.pk }})">
+                                            <i class="fas fa-receipt"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+                        <tfoot>
+                            <tr class="table-light">
+                                <td><strong>Total Payments</strong></td>
+                                <td><strong class="fs-5 text-success">${{ total_payments|floatformat:2|intcomma }}</strong></td>
+                                <td colspan="2"></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+                {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">No Payments</h5>
+                    <p class="text-muted mb-3">No payments have been recorded for this project yet.</p>
+                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Record First Payment
+                    </a>
+                </div>
+                {% endif %}
+            </div>
         </div>
-        {% endif %}
+
+        <!-- Timeline Tab -->
+        <div class="tab-pane fade" id="timeline-tab">
+            <div class="timeline-card">
+                <h5 class="mb-4">Project Timeline</h5>
+                
+                <!-- Combine entries and payments into timeline -->
+                {% regroup job_entries|slice:":10" by date as entries_by_date %}
+                {% regroup payments by date as payments_by_date %}
+                
+                {% for entry_group in entries_by_date %}
+                <div class="timeline-item">
+                    <div class="timeline-date">
+                        <div class="fw-bold">{{ entry_group.grouper|date:"M d" }}</div>
+                        <div class="small">{{ entry_group.grouper|date:"Y" }}</div>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Job Entries Added ({{ entry_group.list|length }})</h6>
+                        <p class="mb-2">
+                            {% for entry in entry_group.list|slice:":3" %}
+                                {{ entry.description|default:"Work entry" }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                            {% if entry_group.list|length > 3 %}
+                                and {{ entry_group.list|length|add:"-3" }} more...
+                            {% endif %}
+                        </p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-success">Work Completed</span>
+                            {% if entry_group.list.0.asset %}<span class="badge bg-primary">Equipment</span>{% endif %}
+                            {% if entry_group.list.0.employee %}<span class="badge bg-info">Labor</span>{% endif %}
+                            {% if entry_group.list.0.material_description %}<span class="badge bg-secondary">Materials</span>{% endif %}
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% for payment_group in payments_by_date %}
+                <div class="timeline-item">
+                    <div class="timeline-date">
+                        <div class="fw-bold">{{ payment_group.grouper|date:"M d" }}</div>
+                        <div class="small">{{ payment_group.grouper|date:"Y" }}</div>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Payment Received</h6>
+                        <p class="mb-2">
+                            Received ${{ payment_group.list.0.amount|floatformat:2|intcomma }}
+                            {% if payment_group.list.0.notes %} - {{ payment_group.list.0.notes }}{% endif %}
+                        </p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-success">Payment</span>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Project start -->
+                <div class="timeline-item">
+                    <div class="timeline-date">
+                        <div class="fw-bold">{{ project.start_date|date:"M d" }}</div>
+                        <div class="small">{{ project.start_date|date:"Y" }}</div>
+                    </div>
+                    <div class="timeline-content">
+                        <h6>Project Started</h6>
+                        <p class="mb-2">{{ project.name }} project was created and work began.</p>
+                        <div class="d-flex gap-2">
+                            <span class="badge bg-primary">Project Start</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div class="tab-pane fade" id="analytics-tab">
+            <div class="tab-content-card">
+                <h5 class="mb-4">Project Analytics</h5>
+                
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">Cost Breakdown</h6>
+                                {% with labor_entries=job_entries|length equipment_entries=job_entries|length material_entries=job_entries|length %}
+                                <div class="progress mb-2" style="height: 25px;">
+                                    <div class="progress-bar bg-primary" style="width: 40%;" title="Labor">
+                                        Labor 40%
+                                    </div>
+                                    <div class="progress-bar bg-warning" style="width: 35%;" title="Equipment">
+                                        Equipment 35%
+                                    </div>
+                                    <div class="progress-bar bg-secondary" style="width: 25%;" title="Materials">
+                                        Materials 25%
+                                    </div>
+                                </div>
+                                <div class="small text-muted">
+                                    <div>Labor: {{ job_entries|length }} entries</div>
+                                    <div>Equipment: Available in admin</div>
+                                    <div>Materials: Track via entries</div>
+                                </div>
+                                {% endwith %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">Profitability</h6>
+                                <div class="metric-number text-success mb-2">
+                                    ${{ profit|floatformat:2|intcomma }}
+                                </div>
+                                <div class="mb-2">
+                                    <strong>Profit Margin:</strong> {{ margin|floatformat:1 }}%
+                                </div>
+                                <div class="text-muted small">
+                                    <div>Revenue: ${{ total_billable|floatformat:2|intcomma }}</div>
+                                    <div>Costs: ${{ total_cost|floatformat:2|intcomma }}</div>
+                                    <div>Profit: ${{ profit|floatformat:2|intcomma }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <h6 class="card-title">Entry Activity</h6>
+                                <p class="text-muted">Recent job entry activity</p>
+                                
+                                <div class="table-responsive">
+                                    <table class="table table-sm">
+                                        <thead>
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Entries</th>
+                                                <th>Hours</th>
+                                                <th>Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% regroup job_entries|slice:":10" by date as entries_by_date %}
+                                        {% for date_group in entries_by_date %}
+                                            <tr>
+                                                <td>{{ date_group.grouper|date:"M d, Y" }}</td>
+                                                <td>{{ date_group.list|length }}</td>
+                                                <td>
+                                                    {% for entry in date_group.list %}
+                                                        {{ entry.hours|add:0 }}{% if not forloop.last %} + {% endif %}
+                                                    {% endfor %}
+                                                </td>
+                                                <td class="fw-bold">
+                                                    ${% for entry in date_group.list %}{{ entry.billable_amount|add:0 }}{% if not forloop.last %} + {% endif %}{% endfor %}
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 
-<!-- Payments Section -->
-<div class="card">
-    <div class="card-header bg-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
-                <i class="fas fa-credit-card me-2"></i>Payments
-            </h5>
-            <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-sm btn-warning">
-                <i class="fas fa-plus me-1"></i>Add Payment
-            </a>
-        </div>
-    </div>
-    <div class="card-body p-0">
-        {% if payments %}
-        <div class="table-responsive">
-            <table class="table mb-0">
-                <thead>
-                    <tr>
-                        <th><i class="fas fa-calendar me-1"></i>Date</th>
-                        <th class="text-end"><i class="fas fa-dollar-sign me-1"></i>Amount</th>
-                        <th><i class="fas fa-sticky-note me-1"></i>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                {% for payment in payments %}
-                    <tr>
-                        <td data-label="Date">
-                            <span class="badge bg-light text-dark">{{ payment.date|date:"M d, Y" }}</span>
-                        </td>
-                        <td class="text-end" data-label="Amount">
-                            <span class="text-success fw-bold fs-5">${{ payment.amount|floatformat:2|intcomma }}</span>
-                        </td>
-                        <td data-label="Notes">
-                            {% if payment.notes %}
-                                <span class="text-truncate d-inline-block" style="max-width: 200px;" title="{{ payment.notes }}">
-                                    {{ payment.notes }}
-                                </span>
-                            {% else %}
-                                <span class="text-muted">—</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% else %}
-        <div class="text-center py-5">
-            <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
-            <h5 class="text-muted">No Payments</h5>
-            <p class="text-muted mb-3">No payments have been recorded for this project yet.</p>
-            <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-warning">
-                <i class="fas fa-plus me-2"></i>Record First Payment
-            </a>
-        </div>
-        {% endif %}
-    </div>
+<!-- Floating Action Buttons -->
+<div class="floating-actions">
+    <a href="{% url 'dashboard:add_payment' project.pk %}" class="floating-btn success" title="Record Payment">
+        <i class="fas fa-money-bill-wave"></i>
+    </a>
+    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="floating-btn primary" title="Add Job Entry">
+        <i class="fas fa-plus"></i>
+    </a>
+    <a href="{% url 'dashboard:customer_report' project.pk %}" class="floating-btn warning" title="Generate Report">
+        <i class="fas fa-file-pdf"></i>
+    </a>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize tooltips
+    var tooltipTriggerList = [].slice.call(document.querySelectorAll('[title]'));
+    tooltipTriggerList.map(function(tooltipTriggerEl) {
+        return new bootstrap.Tooltip(tooltipTriggerEl);
+    });
+
+    // Entry filtering
+    document.querySelectorAll('input[name="entry-filter"]').forEach(radio => {
+        radio.addEventListener('change', function() {
+            const filterType = this.id.replace('filter-', '');
+            const entries = document.querySelectorAll('.entry-row');
+            
+            entries.forEach(entry => {
+                if (filterType === 'all') {
+                    entry.style.display = 'block';
+                } else {
+                    const entryType = entry.getAttribute('data-entry-type');
+                    entry.style.display = entryType === filterType ? 'block' : 'none';
+                }
+            });
+        });
+    });
+
+    // Search functionality
+    document.getElementById('search-entries').addEventListener('input', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        const entries = document.querySelectorAll('.entry-row');
+        
+        entries.forEach(entry => {
+            const text = entry.textContent.toLowerCase();
+            entry.style.display = text.includes(searchTerm) ? 'block' : 'none';
+        });
+    });
+
+    // Progress bar animation
+    function animateProgressBar() {
+        const progressBar = document.querySelector('.progress-fill');
+        if (progressBar) {
+            const targetWidth = progressBar.style.width;
+            progressBar.style.width = '0%';
+            
+            setTimeout(() => {
+                progressBar.style.width = targetWidth;
+            }, 500);
+        }
+    }
+
+    // Animate on page load
+    animateProgressBar();
+
+    // Tab switching with URL hash
+    document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
+        tab.addEventListener('shown.bs.tab', function(e) {
+            const tabId = e.target.getAttribute('data-bs-target').substring(1);
+            window.location.hash = tabId;
+        });
+    });
+
+    // Load tab from URL hash
+    if (window.location.hash) {
+        const tab = document.querySelector(`[data-bs-target="${window.location.hash}"]`);
+        if (tab) {
+            new bootstrap.Tab(tab).show();
+        }
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        if (e.ctrlKey || e.metaKey) {
+            switch(e.key) {
+                case 'n':
+                    e.preventDefault();
+                    window.location.href = '{% url "dashboard:add_job_entry" project.pk %}';
+                    break;
+                case 'p':
+                    e.preventDefault();
+                    window.location.href = '{% url "dashboard:add_payment" project.pk %}';
+                    break;
+                case 'r':
+                    e.preventDefault();
+                    window.location.href = '{% url "dashboard:customer_report" project.pk %}';
+                    break;
+            }
+        }
+    });
+});
+
+// Entry management functions
+function duplicateEntry(entryId) {
+    if (confirm('Create a duplicate of this entry?')) {
+        // Would implement AJAX call to duplicate entry
+        console.log('Duplicating entry:', entryId);
+        // Reload page for now
+        location.reload();
+    }
+}
+
+function deleteEntry(entryId) {
+    if (confirm('Are you sure you want to delete this entry? This action cannot be undone.')) {
+        // Would implement AJAX call to delete entry
+        console.log('Deleting entry:', entryId);
+        // Reload page for now
+        location.reload();
+    }
+}
+
+function editPayment(paymentId) {
+    console.log('Editing payment:', paymentId);
+    // Would open modal or navigate to edit page
+}
+
+function generateReceipt(paymentId) {
+    console.log('Generating receipt for payment:', paymentId);
+    // Would generate and download receipt
+}
+
+function loadMoreEntries() {
+    // Would implement AJAX loading of more entries
+    console.log('Loading more entries...');
+}
+</script>
 
 {% endblock %}
