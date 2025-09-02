@@ -21,7 +21,9 @@
     {% endif %}
     
     <!-- Custom CSS -->
+    {% if not report %}
     <link href="{% static 'css/squire.css' %}" rel="stylesheet">
+    {% endif %}
     
     <!-- Additional CSS -->
     {% block extra_css %}{% endblock %}
