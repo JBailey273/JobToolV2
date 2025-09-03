@@ -1866,3 +1866,31 @@ textarea.form-control {
         transform: none;
     }
 }
+
+/* Mobile responsiveness */
+@media (max-width: 576px) {
+    .navbar-nav .nav-link {
+        padding: 0.5rem 1rem;
+    }
+
+    .btn-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .btn-group .btn {
+        width: 100%;
+        margin-bottom: 0.25rem;
+    }
+
+    .btn-group .btn:last-child {
+        margin-bottom: 0;
+    }
+
+    .table {
+        display: block;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+}
