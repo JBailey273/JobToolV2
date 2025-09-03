@@ -10,8 +10,8 @@
         </h1>
         <p class="text-muted mb-0">Add job entries for <strong>{{ project.name }}</strong></p>
     </div>
-    <div>
-        <button class="btn btn-outline-secondary" type="button" onclick="loadRecentEntry()">
+    <div class="d-none">
+        <button class="btn btn-outline-secondary" type="button">
             <i class="fas fa-history me-2"></i>Load Recent Entry
         </button>
     </div>
@@ -517,10 +517,6 @@ function clearAll() {
         clearAllMaterials();
         updateTotals();
     }
-}
-
-function loadRecentEntry() {
-    alert('Loading most recent entry...');
 }
 
 // Form submission
