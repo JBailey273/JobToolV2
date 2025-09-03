@@ -184,6 +184,9 @@ def reports(request):
     )
 
 
+# Add this updated project_detail function to your existing views.py file
+# Replace the existing project_detail function with this enhanced version
+
 @login_required
 def project_detail(request, pk):
     contractor = getattr(request.user, "contractor", None)
@@ -250,10 +253,11 @@ def project_detail(request, pk):
     total_payments = sum(((p.amount or Decimal("0")) for p in payments), Decimal("0"))
     outstanding = total_billable - total_payments
 
-    # Cost and billable breakdowns
+    # Enhanced cost and billable breakdowns for analytics
     labor_cost = equipment_cost = material_cost = Decimal("0")
     billable_labor = billable_equipment = billable_material = Decimal("0")
 
+    # Get contractor's material margin
     raw_margin = getattr(project.contractor, "material_margin", 0)
     contractor_margin = safe_decimal(raw_margin)
     material_margin = contractor_margin / Decimal("100") if contractor_margin else Decimal("0")
@@ -262,64 +266,97 @@ def project_detail(request, pk):
     try:
         for je in job_entries:
             hours = safe_decimal(getattr(je, "hours", 0))
+            
+            # Labor calculations
             if je.employee:
-                labor_cost += safe_decimal(getattr(je.employee, "cost_rate", 0)) * hours
-                billable_labor += safe_decimal(getattr(je.employee, "billable_rate", 0)) * hours
+                emp_cost_rate = safe_decimal(getattr(je.employee, "cost_rate", 0))
+                emp_billable_rate = safe_decimal(getattr(je.employee, "billable_rate", 0))
+                labor_cost += emp_cost_rate * hours
+                billable_labor += emp_billable_rate * hours
+            
+            # Equipment calculations
             if je.asset:
-                equipment_cost += safe_decimal(getattr(je.asset, "cost_rate", 0)) * hours
-                billable_equipment += safe_decimal(getattr(je.asset, "billable_rate", 0)) * hours
+                asset_cost_rate = safe_decimal(getattr(je.asset, "cost_rate", 0))
+                asset_billable_rate = safe_decimal(getattr(je.asset, "billable_rate", 0))
+                equipment_cost += asset_cost_rate * hours
+                billable_equipment += asset_billable_rate * hours
+            
+            # Material calculations
             if je.material_cost:
-                cost = safe_decimal(je.material_cost) * hours
-                material_cost += cost
+                mat_cost = safe_decimal(je.material_cost) * hours
+                material_cost += mat_cost
                 if margin_multiplier > 0:
-                    billable_material += cost / margin_multiplier
+                    billable_material += mat_cost / margin_multiplier
+                else:
+                    # If no margin multiplier, use the billable amount directly
+                    billable_material += safe_decimal(getattr(je, "billable_amount", 0))
     except Exception:
+        # Fallback to zero values if calculation fails
         labor_cost = equipment_cost = material_cost = Decimal("0")
         billable_labor = billable_equipment = billable_material = Decimal("0")
 
+    # Calculate totals and percentages
     total_cost = labor_cost + equipment_cost + material_cost
     profit = total_billable - total_cost
     margin = (profit / total_billable * 100) if total_billable else 0
 
-    breakdown_total = total_cost
-    if breakdown_total:
-        labor_percent = (labor_cost / breakdown_total) * 100
-        equipment_percent = (equipment_cost / breakdown_total) * 100
-        material_percent = (material_cost / breakdown_total) * 100
+    # Cost breakdown percentages
+    if total_cost > 0:
+        labor_percent = float(labor_cost / total_cost * 100)
+        equipment_percent = float(equipment_cost / total_cost * 100)
+        material_percent = float(material_cost / total_cost * 100)
     else:
         labor_percent = equipment_percent = material_percent = 0
 
-    if total_billable:
-        billable_labor_percent = (billable_labor / total_billable) * 100
-        billable_equipment_percent = (billable_equipment / total_billable) * 100
-        billable_material_percent = (billable_material / total_billable) * 100
+    # Billable breakdown percentages
+    if total_billable > 0:
+        billable_labor_percent = float(billable_labor / total_billable * 100)
+        billable_equipment_percent = float(billable_equipment / total_billable * 100)
+        billable_material_percent = float(billable_material / total_billable * 100)
     else:
         billable_labor_percent = billable_equipment_percent = billable_material_percent = 0
 
-    # Weekly breakdown for analytics
+    # Weekly breakdown for trends - Enhanced for analytics
     weekly_data = []
+    current_date = timezone.now().date()
 
     for week in range(4):  # Last 4 completed weeks
-        start_date = timezone.now().date() - timedelta(weeks=week + 1)
+        start_date = current_date - timedelta(weeks=week + 1)
         end_date = start_date + timedelta(days=6)
 
+        # Filter entries for this week
         week_entries = [
-            je for je in job_entries if start_date <= je.date <= end_date
+            je for je in job_entries 
+            if hasattr(je, 'date') and je.date and start_date <= je.date <= end_date
         ]
+        
+        # Calculate totals for the week
         week_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in week_entries), Decimal("0"))
         week_billable = sum((safe_decimal(getattr(je, "billable_amount", 0)) for je in week_entries), Decimal("0"))
-        week_cost = sum((safe_decimal(getattr(je, "cost_amount", 0)) for je in week_entries), Decimal("0"))
+        
+        # Calculate week costs more accurately
+        week_cost = Decimal("0")
+        for je in week_entries:
+            hours = safe_decimal(getattr(je, "hours", 0))
+            if je.employee:
+                week_cost += safe_decimal(getattr(je.employee, "cost_rate", 0)) * hours
+            if je.asset:
+                week_cost += safe_decimal(getattr(je.asset, "cost_rate", 0)) * hours
+            if je.material_cost:
+                week_cost += safe_decimal(je.material_cost) * hours
 
-        weekly_data.append(
-            {
-                "week": f"{start_date.strftime('%b %d')}-{end_date.strftime('%d')}",
-                "hours": week_hours,
-                "billable": week_billable,
-                "cost": week_cost,
-            }
-        )
+        weekly_data.append({
+            "week": f"{start_date.strftime('%b %d')}",
+            "hours": float(week_hours),
+            "billable": float(week_billable),
+            "cost": float(week_cost),
+        })
 
     weekly_data.reverse()  # Show oldest to newest
+
+    # Additional analytics calculations
+    total_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in job_entries), Decimal("0"))
+    avg_hourly_rate = (total_billable / total_hours) if total_hours > 0 else Decimal("0")
 
     return render(
         request,
@@ -327,7 +364,7 @@ def project_detail(request, pk):
         {
             "project": project,
             "job_entries": job_entries,
-            "payments": payments[:10],
+            "payments": payments[:10],  # Limit payments displayed
             "timeline_items": timeline_items,
             "total_billable": total_billable,
             "total_payments": total_payments,
@@ -335,24 +372,33 @@ def project_detail(request, pk):
             "total_cost": total_cost,
             "profit": profit,
             "margin": margin,
+            
+            # Enhanced category breakdowns
             "labor_cost": labor_cost,
             "equipment_cost": equipment_cost,
             "material_cost": material_cost,
             "labor_percent": labor_percent,
             "equipment_percent": equipment_percent,
             "material_percent": material_percent,
+            
+            # Billable breakdowns
             "billable_labor": billable_labor,
             "billable_equipment": billable_equipment,
             "billable_material": billable_material,
             "billable_labor_percent": billable_labor_percent,
             "billable_equipment_percent": billable_equipment_percent,
             "billable_material_percent": billable_material_percent,
+            
+            # Enhanced analytics data
             "weekly_data": weekly_data,
+            "total_hours": total_hours,
+            "avg_hourly_rate": avg_hourly_rate,
+            
+            # Filter and search parameters
             "entry_filter": entry_filter,
             "search_query": search_query,
         },
     )
-
 
 @login_required
 def select_job_entry_project(request):
