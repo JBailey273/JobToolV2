@@ -1167,13 +1167,13 @@
                                                 </div>
                                                 <div class="col-sm-3">
                                                     <div class="metric-box">
-                                                        {% with labor_profit=billable_labor|add:-labor_cost %}
                                                         <div class="metric-value text-primary">${{ labor_profit|floatformat:0|intcomma }}</div>
+                                                        <div class="metric-label">Profit</div>
                                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                     
                     <div class="col-md-6">
                         <div class="recommendations-card">
@@ -1450,15 +1450,12 @@ function loadMoreEntries() {
                                                 </div>
                                             </div>
                                             <div class="progress-comparison mt-2">
-                                                <div class="progress" style="height: 8px;">
-                                                    {% if billable_labor > 0 %}
-                                                        {% widthratio labor_cost billable_labor 100 as labor_cost_percent %}
-                                                        <div class="progress-bar bg-danger" style="width: {{ labor_cost_percent|floatformat:0 }}%" title="Cost: {{ labor_cost_percent|floatformat:0 }}%"></div>
-                                                        {% with labor_profit_percent=100|add:-labor_cost_percent %}
-                                                        <div class="progress-bar bg-success" style="width: {{ labor_profit_percent|floatformat:0 }}%" title="Profit: {{ labor_profit_percent|floatformat:0 }}%"></div>
-                                                        {% endwith %}
-                                                    {% endif %}
-                                                </div>
+                                            <div class="progress" style="height: 8px;">
+                                                {% if billable_labor > 0 %}
+                                                    <div class="progress-bar bg-danger" style="width: {{ labor_cost_percent|floatformat:0 }}%" title="Cost: {{ labor_cost_percent|floatformat:0 }}%"></div>
+                                                    <div class="progress-bar bg-success" style="width: {{ labor_profit_percent|floatformat:0 }}%" title="Profit: {{ labor_profit_percent|floatformat:0 }}%"></div>
+                                                {% endif %}
+                                            </div>
                                                 <div class="progress-labels d-flex justify-content-between mt-1">
                                                     <small class="text-muted">Cost vs Revenue comparison</small>
                                                     <small class="{% if labor_cost < billable_labor %}text-success{% else %}text-danger{% endif %}">
@@ -1502,9 +1499,7 @@ function loadMoreEntries() {
                                                 </div>
                                                 <div class="col-sm-3">
                                                     <div class="metric-box">
-                                                        {% with equipment_profit=billable_equipment|add:-equipment_cost %}
                                                         <div class="metric-value text-primary">${{ equipment_profit|floatformat:0|intcomma }}</div>
-                                                        {% endwith %}
                                                         <div class="metric-label">Profit</div>
                                                     </div>
                                                 </div>
@@ -1523,15 +1518,12 @@ function loadMoreEntries() {
                                                 </div>
                                             </div>
                                             <div class="progress-comparison mt-2">
-                                                <div class="progress" style="height: 8px;">
-                                                    {% if billable_equipment > 0 %}
-                                                        {% widthratio equipment_cost billable_equipment 100 as equip_cost_percent %}
-                                                        <div class="progress-bar bg-danger" style="width: {{ equip_cost_percent|floatformat:0 }}%" title="Cost: {{ equip_cost_percent|floatformat:0 }}%"></div>
-                                                        {% with equip_profit_percent=100|add:-equip_cost_percent %}
-                                                        <div class="progress-bar bg-success" style="width: {{ equip_profit_percent|floatformat:0 }}%" title="Profit: {{ equip_profit_percent|floatformat:0 }}%"></div>
-                                                        {% endwith %}
-                                                    {% endif %}
-                                                </div>
+                                            <div class="progress" style="height: 8px;">
+                                                {% if billable_equipment > 0 %}
+                                                    <div class="progress-bar bg-danger" style="width: {{ equip_cost_percent|floatformat:0 }}%" title="Cost: {{ equip_cost_percent|floatformat:0 }}%"></div>
+                                                    <div class="progress-bar bg-success" style="width: {{ equip_profit_percent|floatformat:0 }}%" title="Profit: {{ equip_profit_percent|floatformat:0 }}%"></div>
+                                                {% endif %}
+                                            </div>
                                                 <div class="progress-labels d-flex justify-content-between mt-1">
                                                     <small class="text-muted">Cost vs Revenue comparison</small>
                                                     <small class="{% if equipment_cost < billable_equipment %}text-success{% else %}text-danger{% endif %}">
@@ -1575,9 +1567,7 @@ function loadMoreEntries() {
                                                 </div>
                                                 <div class="col-sm-3">
                                                     <div class="metric-box">
-                                                        {% with material_profit=billable_material|add:-material_cost %}
                                                         <div class="metric-value text-primary">${{ material_profit|floatformat:0|intcomma }}</div>
-                                                        {% endwith %}
                                                         <div class="metric-label">Profit</div>
                                                     </div>
                                                 </div>
@@ -1596,15 +1586,12 @@ function loadMoreEntries() {
                                                 </div>
                                             </div>
                                             <div class="progress-comparison mt-2">
-                                                <div class="progress" style="height: 8px;">
-                                                    {% if billable_material > 0 %}
-                                                        {% widthratio material_cost billable_material 100 as mat_cost_percent %}
-                                                        <div class="progress-bar bg-danger" style="width: {{ mat_cost_percent|floatformat:0 }}%" title="Cost: {{ mat_cost_percent|floatformat:0 }}%"></div>
-                                                        {% with mat_profit_percent=100|add:-mat_cost_percent %}
-                                                        <div class="progress-bar bg-success" style="width: {{ mat_profit_percent|floatformat:0 }}%" title="Profit: {{ mat_profit_percent|floatformat:0 }}%"></div>
-                                                        {% endwith %}
-                                                    {% endif %}
-                                                </div>
+                                            <div class="progress" style="height: 8px;">
+                                                {% if billable_material > 0 %}
+                                                    <div class="progress-bar bg-danger" style="width: {{ mat_cost_percent|floatformat:0 }}%" title="Cost: {{ mat_cost_percent|floatformat:0 }}%"></div>
+                                                    <div class="progress-bar bg-success" style="width: {{ mat_profit_percent|floatformat:0 }}%" title="Profit: {{ mat_profit_percent|floatformat:0 }}%"></div>
+                                                {% endif %}
+                                            </div>
                                                 <div class="progress-labels d-flex justify-content-between mt-1">
                                                     <small class="text-muted">Cost vs Revenue comparison</small>
                                                     <small class="{% if material_cost < billable_material %}text-success{% else %}text-danger{% endif %}">

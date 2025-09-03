@@ -316,6 +316,30 @@ def project_detail(request, pk):
     else:
         billable_labor_percent = billable_equipment_percent = billable_material_percent = 0
 
+    # Profit metrics for each category
+    labor_profit = billable_labor - labor_cost
+    equipment_profit = billable_equipment - equipment_cost
+    material_profit = billable_material - material_cost
+
+    # Cost vs revenue percentages for progress bars
+    if billable_labor > 0:
+        labor_cost_percent = float(labor_cost / billable_labor * 100)
+        labor_profit_percent = 100 - labor_cost_percent
+    else:
+        labor_cost_percent = labor_profit_percent = 0
+
+    if billable_equipment > 0:
+        equip_cost_percent = float(equipment_cost / billable_equipment * 100)
+        equip_profit_percent = 100 - equip_cost_percent
+    else:
+        equip_cost_percent = equip_profit_percent = 0
+
+    if billable_material > 0:
+        mat_cost_percent = float(material_cost / billable_material * 100)
+        mat_profit_percent = 100 - mat_cost_percent
+    else:
+        mat_cost_percent = mat_profit_percent = 0
+
     # Weekly breakdown for trends - Enhanced for analytics
     weekly_data = []
     current_date = timezone.now().date()
@@ -388,7 +412,18 @@ def project_detail(request, pk):
             "billable_labor_percent": billable_labor_percent,
             "billable_equipment_percent": billable_equipment_percent,
             "billable_material_percent": billable_material_percent,
-            
+
+            # Category profit and cost percentages
+            "labor_profit": labor_profit,
+            "equipment_profit": equipment_profit,
+            "material_profit": material_profit,
+            "labor_cost_percent": labor_cost_percent,
+            "labor_profit_percent": labor_profit_percent,
+            "equip_cost_percent": equip_cost_percent,
+            "equip_profit_percent": equip_profit_percent,
+            "mat_cost_percent": mat_cost_percent,
+            "mat_profit_percent": mat_profit_percent,
+
             # Enhanced analytics data
             "weekly_data": weekly_data,
             "total_hours": total_hours,
