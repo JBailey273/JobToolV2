@@ -529,6 +529,28 @@ class ReportsPageTests(TestCase):
         self.assertNotContains(response, '<nav aria-label="breadcrumb"')
 
 
+class ProjectDetailPageTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.project = self.contractor.projects.create(
+            name="Proj", start_date="2024-01-01"
+        )
+
+    def test_project_detail_has_no_breadcrumb(self):
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+        response = self.client.get(
+            reverse("dashboard:project_detail", args=[self.project.pk])
+        )
+        self.assertNotContains(response, '<nav aria-label="breadcrumb"')
+
+
 class ProjectDetailRobustnessTests(TestCase):
     def test_project_detail_handles_bad_numeric_data(self):
         contractor = Contractor.objects.create(
