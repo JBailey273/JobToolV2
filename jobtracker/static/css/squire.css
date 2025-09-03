@@ -996,6 +996,26 @@ textarea:focus {
     background: var(--primary-color);
 }
 
+@media (max-width: 576px) {
+    .timeline-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .timeline-date {
+        width: 100%;
+        text-align: left;
+        margin-bottom: 10px;
+    }
+    .timeline-content {
+        border-left: none;
+        margin-left: 0;
+        padding-left: 0;
+    }
+    .timeline-content::before {
+        display: none;
+    }
+}
+
 /* Entry and Form Styles */
 .entry-row {
     background: white;
