@@ -330,6 +330,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize progress tracker
     setActiveStep(1);
 
+    // Add initial equipment/labor entry
+    addLaborEntry();
+
     document.getElementById('labor-tab').addEventListener('shown.bs.tab', () => setActiveStep(2));
     document.getElementById('materials-tab').addEventListener('shown.bs.tab', () => setActiveStep(3));
     document.getElementById('date').addEventListener('focus', () => setActiveStep(1));
