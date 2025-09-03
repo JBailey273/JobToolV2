@@ -1681,11 +1681,6 @@ textarea.form-control {
     .job-entry-actions .btn:last-child {
         margin-right: 0;
     }
-
-    .entry-row .job-entry-tags {
-        flex-direction: row;
-        flex-wrap: wrap;
-    }
 }
 
 /* Fix for dark mode - override if needed */
