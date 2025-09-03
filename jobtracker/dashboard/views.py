@@ -252,6 +252,7 @@ def project_detail(request, pk):
     total_billable = sum(((je.billable_amount or Decimal("0")) for je in job_entries), Decimal("0"))
     total_payments = sum(((p.amount or Decimal("0")) for p in payments), Decimal("0"))
     outstanding = total_billable - total_payments
+    collection_rate = float(total_payments / total_billable * 100) if total_billable else 0
 
     # Enhanced cost and billable breakdowns for analytics
     labor_cost = equipment_cost = material_cost = Decimal("0")
@@ -413,6 +414,7 @@ def project_detail(request, pk):
             "total_billable": total_billable,
             "total_payments": total_payments,
             "outstanding": outstanding,
+            "collection_rate": collection_rate,
             "total_cost": total_cost,
             "profit": profit,
             "margin": margin,
