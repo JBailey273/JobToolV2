@@ -1544,8 +1544,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Tab switching with URL hash
     document.querySelectorAll('[data-bs-toggle="tab"]').forEach(tab => {
         tab.addEventListener('shown.bs.tab', function(e) {
-            const tabId = e.target.getAttribute('data-bs-target').substring(1);
-            window.location.hash = tabId;
+            const targetSelector = e.target.getAttribute('data-bs-target');
+            const tabId = targetSelector.substring(1);
+            history.replaceState(null, '', `#${tabId}`);
+            const target = document.querySelector(targetSelector);
+            const yOffset = -80;
+            const y = target.getBoundingClientRect().top + window.pageYOffset + yOffset;
+            window.scrollTo({ top: y, behavior: 'smooth' });
         });
     });
 
