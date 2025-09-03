@@ -1662,10 +1662,29 @@ textarea.form-control {
     .btn-group {
         flex-direction: column;
     }
-    
+
     .btn-group .btn {
         margin-bottom: 5px;
         border-radius: var(--radius-md) !important;
+    }
+
+    /* Override for job entry action buttons to stay horizontal on small screens */
+    .job-entry-actions {
+        flex-direction: row;
+    }
+
+    .job-entry-actions .btn {
+        margin-bottom: 0;
+        margin-right: 5px;
+    }
+
+    .job-entry-actions .btn:last-child {
+        margin-right: 0;
+    }
+
+    .entry-row .job-entry-tags {
+        flex-direction: row;
+        flex-wrap: wrap;
     }
 }
 
