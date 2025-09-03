@@ -1374,7 +1374,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Business Insights & Recommendations -->
+                <!-- Business Insights & Resource Utilization -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="insights-card h-100">
@@ -1434,6 +1434,28 @@
                                         {% else %}
                                             No hours logged yet for efficiency calculation.
                                         {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="insights-card h-100">
+                            <div class="insights-header">
+                                <h6 class="insights-title">
+                                    <i class="fas fa-user-clock me-2 text-info"></i>
+                                    Resource Utilization
+                                </h6>
+                            </div>
+                            <div class="insights-content">
+                                <div class="insight-item">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-tachometer-alt text-info"></i>
+                                    </div>
+                                    <div class="insight-text">
+                                        <strong>Utilization Rate:</strong>
+                                        {{ resource_utilization|floatformat:0 }}% of capacity used
                                     </div>
                                 </div>
                             </div>
