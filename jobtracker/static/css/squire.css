@@ -392,6 +392,16 @@ textarea:focus {
     background-clip: text;
 }
 
+.contractor-name {
+    font-weight: 700;
+    background: var(--primary-gradient);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+    display: inline-block;
+}
+
 .nav-link {
     color: var(--text-primary) !important;
     font-weight: 500;
