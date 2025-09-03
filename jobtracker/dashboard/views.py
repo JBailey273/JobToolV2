@@ -378,6 +378,12 @@ def project_detail(request, pk):
 
     weekly_data.reverse()  # Show oldest to newest
 
+    # Determine maximum value for scaling trend bars
+    max_weekly_value = max(
+        (max(d["billable"], d["cost"]) for d in weekly_data),
+        default=0,
+    ) or 1
+
     # Additional analytics calculations
     total_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in job_entries), Decimal("0"))
     avg_hourly_rate = (total_billable / total_hours) if total_hours > 0 else Decimal("0")
@@ -426,6 +432,7 @@ def project_detail(request, pk):
 
             # Enhanced analytics data
             "weekly_data": weekly_data,
+            "max_weekly_value": max_weekly_value,
             "total_hours": total_hours,
             "avg_hourly_rate": avg_hourly_rate,
             

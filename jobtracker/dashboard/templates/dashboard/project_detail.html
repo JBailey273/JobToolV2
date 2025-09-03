@@ -380,8 +380,9 @@
 .week-bars {
     height: 120px;
     display: flex;
-    align-items: end;
+    align-items: flex-end;
     margin-bottom: 15px;
+    overflow: hidden;
 }
 
 .bar-container {
@@ -1054,7 +1055,7 @@
                 <!-- Key Performance Indicators -->
                 <div class="row mb-4">
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="kpi-card">
+                        <div class="kpi-card h-100">
                             <div class="kpi-icon bg-primary">
                                 <i class="fas fa-dollar-sign"></i>
                             </div>
@@ -1069,7 +1070,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="kpi-card">
+                        <div class="kpi-card h-100">
                             <div class="kpi-icon bg-warning">
                                 <i class="fas fa-receipt"></i>
                             </div>
@@ -1084,7 +1085,7 @@
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="kpi-card">
+                        <div class="kpi-card h-100">
                             <div class="kpi-icon bg-success">
                                 <i class="fas fa-chart-line"></i>
                             </div>
@@ -1099,28 +1100,16 @@
                         </div>
                     </div>
                     <div class="col-md-3 col-sm-6 mb-3">
-                        <div class="kpi-card">
+                        <div class="kpi-card h-100">
                             <div class="kpi-icon bg-info">
                                 <i class="fas fa-clock"></i>
                             </div>
                             <div class="kpi-content">
-                                <div class="kpi-value">
-                                    {% with total_hours=0 %}
-                                        {% for entry in job_entries %}
-                                            {% with total_hours=total_hours|add:entry.hours %}{% endwith %}
-                                        {% endfor %}
-                                        {{ total_hours|floatformat:0 }}
-                                    {% endwith %}hrs
-                                </div>
+                                <div class="kpi-value">{{ total_hours|floatformat:0 }}hrs</div>
                                 <div class="kpi-label">Total Hours</div>
                                 <div class="kpi-change text-primary">
                                     <i class="fas fa-calculator me-1"></i>
-                                    {% with total_hours=0 %}
-                                        {% for entry in job_entries %}
-                                            {% with total_hours=total_hours|add:entry.hours %}{% endwith %}
-                                        {% endfor %}
-                                        {% if total_hours > 0 %}${{ total_billable|floatformat:0 }}/hr avg{% else %}No hours logged{% endif %}
-                                    {% endwith %}
+                                    {% if total_hours > 0 %}${{ avg_hourly_rate|floatformat:0 }}/hr avg{% else %}No hours logged{% endif %}
                                 </div>
                             </div>
                         </div>
@@ -1176,7 +1165,7 @@
                                     </div>
                     
                     <div class="col-md-6">
-                        <div class="recommendations-card">
+                        <div class="recommendations-card h-100">
                             <div class="recommendations-header">
                                 <h6 class="recommendations-title">
                                     <i class="fas fa-rocket me-2 text-primary"></i>
@@ -1245,12 +1234,12 @@
                                             <div class="week-bars">
                                                 <div class="bar-container">
                                                     {% if week_data.billable > 0 %}
-                                                        {% widthratio week_data.billable 1000 100 as bar_height %}
-                                                        <div class="revenue-bar" style="height: {{ bar_height|floatformat:0 }}px;" title="Revenue: ${{ week_data.billable|floatformat:0 }}"></div>
+                                                        {% widthratio week_data.billable max_weekly_value 100 as bar_height %}
+                                                        <div class="revenue-bar" style="height: {{ bar_height|floatformat:0 }}%;" title="Revenue: ${{ week_data.billable|floatformat:0 }}"></div>
                                                     {% endif %}
                                                     {% if week_data.cost > 0 %}
-                                                        {% widthratio week_data.cost 1000 100 as cost_bar_height %}
-                                                        <div class="cost-bar" style="height: {{ cost_bar_height|floatformat:0 }}px;" title="Cost: ${{ week_data.cost|floatformat:0 }}"></div>
+                                                        {% widthratio week_data.cost max_weekly_value 100 as cost_bar_height %}
+                                                        <div class="cost-bar" style="height: {{ cost_bar_height|floatformat:0 }}%;" title="Cost: ${{ week_data.cost|floatformat:0 }}"></div>
                                                     {% endif %}
                                                 </div>
                                             </div>
@@ -1610,7 +1599,7 @@ function loadMoreEntries() {
                 <!-- Business Insights & Recommendations -->
                 <div class="row mb-4">
                     <div class="col-md-6">
-                        <div class="insights-card">
+                        <div class="insights-card h-100">
                             <div class="insights-header">
                                 <h6 class="insights-title">
                                     <i class="fas fa-lightbulb me-2 text-warning"></i>
@@ -1662,13 +1651,8 @@ function loadMoreEntries() {
                                     </div>
                                     <div class="insight-text">
                                         <strong>Efficiency:</strong>
-                                        {% with total_hours=0 %}
-                                            {% for entry in job_entries %}
-                                                {% with total_hours=total_hours|add:entry.hours %}{% endwith %}
-                                            {% endfor %}
-                                            {% if total_hours > 0 %}
-                                                Your average billing rate is ${{ total_billable|floatformat:0 }}/hour across all categories.
-                                            {% else %}
-                                                No hours logged yet for efficiency calculation.
-                                            {% endif %}
-                                        {% endwith %}
+                                        {% if total_hours > 0 %}
+                                            Your average billing rate is ${{ avg_hourly_rate|floatformat:0 }}/hour across all categories.
+                                        {% else %}
+                                            No hours logged yet for efficiency calculation.
+                                        {% endif %}
