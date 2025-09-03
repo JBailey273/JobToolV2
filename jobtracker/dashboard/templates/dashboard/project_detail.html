@@ -923,9 +923,10 @@
                         </tbody>
                         <tfoot>
                             <tr class="table-light">
-                                <td><strong>Total Payments</strong></td>
-                                <td><strong class="fs-5 text-success">${{ total_payments|floatformat:2|intcomma }}</strong></td>
-                                <td colspan="2"></td>
+                                <td colspan="4" class="text-end">
+                                    <strong>Total Payments:</strong>
+                                    <span class="fs-5 text-success">${{ total_payments|floatformat:2|intcomma }}</span>
+                                </td>
                             </tr>
                         </tfoot>
                     </table>

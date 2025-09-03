@@ -1311,6 +1311,24 @@ textarea:focus {
     padding: 25px;
 }
 
+@media (max-width: 576px) {
+    .tab-content-card {
+        background: transparent;
+        box-shadow: none;
+        padding: 10px 0;
+    }
+
+    .materials-table {
+        background: transparent;
+        border-radius: 0;
+    }
+
+    .materials-table th,
+    .materials-table td {
+        padding: 8px 6px;
+    }
+}
+
 .entry-tabs {
     border: none;
     margin-bottom: 20px;
