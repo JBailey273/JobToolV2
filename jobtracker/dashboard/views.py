@@ -343,21 +343,27 @@ def project_detail(request, pk):
     # Weekly breakdown for trends - Enhanced for analytics
     weekly_data = []
     current_date = timezone.now().date()
+    start_date = project.start_date
 
-    for week in range(4):  # Last 4 completed weeks
-        start_date = current_date - timedelta(weeks=week + 1)
+    while start_date <= current_date:
         end_date = start_date + timedelta(days=6)
 
         # Filter entries for this week
         week_entries = [
-            je for je in job_entries 
-            if hasattr(je, 'date') and je.date and start_date <= je.date <= end_date
+            je for je in job_entries
+            if hasattr(je, "date") and je.date and start_date <= je.date <= end_date
         ]
-        
+
         # Calculate totals for the week
-        week_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in week_entries), Decimal("0"))
-        week_billable = sum((safe_decimal(getattr(je, "billable_amount", 0)) for je in week_entries), Decimal("0"))
-        
+        week_hours = sum(
+            (safe_decimal(getattr(je, "hours", 0)) for je in week_entries),
+            Decimal("0"),
+        )
+        week_billable = sum(
+            (safe_decimal(getattr(je, "billable_amount", 0)) for je in week_entries),
+            Decimal("0"),
+        )
+
         # Calculate week costs more accurately
         week_cost = Decimal("0")
         for je in week_entries:
@@ -369,14 +375,16 @@ def project_detail(request, pk):
             if je.material_cost:
                 week_cost += safe_decimal(je.material_cost) * hours
 
-        weekly_data.append({
-            "week": f"{start_date.strftime('%b %d')}",
-            "hours": float(week_hours),
-            "billable": float(week_billable),
-            "cost": float(week_cost),
-        })
+        weekly_data.append(
+            {
+                "week": f"{start_date.strftime('%b %d')}",
+                "hours": float(week_hours),
+                "billable": float(week_billable),
+                "cost": float(week_cost),
+            }
+        )
 
-    weekly_data.reverse()  # Show oldest to newest
+        start_date += timedelta(weeks=1)
 
     # Determine maximum value for scaling trend bars
     max_weekly_value = max(
@@ -387,6 +395,12 @@ def project_detail(request, pk):
     # Additional analytics calculations
     total_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in job_entries), Decimal("0"))
     avg_hourly_rate = (total_billable / total_hours) if total_hours > 0 else Decimal("0")
+
+    project_duration_weeks = max(1, ((current_date - project.start_date).days // 7) + 1)
+    potential_hours = Decimal(project_duration_weeks * 40)
+    resource_utilization = (
+        float(total_hours / potential_hours * 100) if potential_hours > 0 else 0
+    )
 
     return render(
         request,
@@ -435,6 +449,7 @@ def project_detail(request, pk):
             "max_weekly_value": max_weekly_value,
             "total_hours": total_hours,
             "avg_hourly_rate": avg_hourly_rate,
+            "resource_utilization": resource_utilization,
             
             # Filter and search parameters
             "entry_filter": entry_filter,
@@ -974,8 +989,10 @@ def project_analytics_data(request, pk):
 
     # Weekly breakdown
     weekly_data = []
-    for week in range(8):  # Last 8 weeks
-        start_date = timezone.now().date() - timedelta(weeks=week + 1)
+    current_date = timezone.now().date()
+    start_date = project.start_date
+
+    while start_date <= current_date:
         end_date = start_date + timedelta(days=6)
 
         week_entries = project.job_entries.filter(date__range=[start_date, end_date])
@@ -994,7 +1011,7 @@ def project_analytics_data(request, pk):
             }
         )
 
-    weekly_data.reverse()
+        start_date += timedelta(weeks=1)
 
     # Category breakdown
     labor_total = (
