@@ -1374,7 +1374,7 @@
                         </div>
                     </div>
                 </div>
-                <!-- Business Insights & Resource Utilization -->
+                <!-- Business Insights & Payment Collection -->
                 <div class="row mb-4">
                     <div class="col-md-6">
                         <div class="insights-card h-100">
@@ -1444,18 +1444,27 @@
                         <div class="insights-card h-100">
                             <div class="insights-header">
                                 <h6 class="insights-title">
-                                    <i class="fas fa-user-clock me-2 text-info"></i>
-                                    Resource Utilization
+                                    <i class="fas fa-money-check-alt me-2 text-success"></i>
+                                    Payment Collection
                                 </h6>
                             </div>
                             <div class="insights-content">
                                 <div class="insight-item">
                                     <div class="insight-icon">
-                                        <i class="fas fa-tachometer-alt text-info"></i>
+                                        <i class="fas fa-percentage text-success"></i>
                                     </div>
                                     <div class="insight-text">
-                                        <strong>Utilization Rate:</strong>
-                                        {{ resource_utilization|floatformat:0 }}% of capacity used
+                                        <strong>Collection Rate:</strong>
+                                        {{ collection_rate|floatformat:0 }}% collected
+                                    </div>
+                                </div>
+                                <div class="insight-item">
+                                    <div class="insight-icon">
+                                        <i class="fas fa-wallet text-warning"></i>
+                                    </div>
+                                    <div class="insight-text">
+                                        <strong>Outstanding Balance:</strong>
+                                        ${{ outstanding|floatformat:2|intcomma }}
                                     </div>
                                 </div>
                             </div>
