@@ -1058,6 +1058,22 @@ textarea:focus {
     color: #f57c00;
 }
 
+@media (max-width: 576px) {
+    .entry-row .d-flex {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .entry-row .entry-type-icon {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+    .entry-row .text-end {
+        width: 100%;
+        text-align: left !important;
+        margin-top: 10px;
+    }
+}
+
 /* Enhanced Job Entry Form Styles */
 .quick-add-card {
     cursor: pointer;
