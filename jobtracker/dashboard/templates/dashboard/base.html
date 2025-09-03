@@ -172,7 +172,7 @@
 
 {% if not report %}
 <!-- Navigation Bar -->
-<nav class="navbar navbar-expand-lg mb-4">
+<nav class="navbar navbar-expand-lg navbar-light mb-4">
     <div class="container-fluid">
         <div class="d-flex align-items-center">
             <!-- Site Logo -->
@@ -181,7 +181,7 @@
             {% else %}
                 <img src="{% static 'img/logo.png' %}" alt="Squire Enterprises Logo" class="me-3 img-fluid" style="max-height:45px;">
             {% endif %}
-            
+
             <!-- Contractor Name or Site Name -->
             {% if contractor %}
                 <span class="navbar-brand contractor-name mb-0">{{ contractor.name|default:contractor.email }}</span>
@@ -189,37 +189,43 @@
                 <span class="navbar-brand mb-0 fw-bold">Squire Enterprises</span>
             {% endif %}
         </div>
-        
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
         <!-- Navigation Menu -->
-        <div class="navbar-nav ms-auto flex-row align-items-center">
-            <a class="nav-link fw-semibold" href="{% url 'dashboard:contractor_summary' %}">
-                <i class="fas fa-tachometer-alt me-2"></i>Dashboard
-            </a>
-            <a class="nav-link fw-semibold" href="{% url 'dashboard:project_list' %}">
-                <i class="fas fa-project-diagram me-2"></i>Projects
-            </a>
-            <a class="nav-link fw-semibold" href="{% url 'dashboard:reports' %}">
-                <i class="fas fa-file-alt me-2"></i>Reports
-            </a>
-            {% if user.is_staff %}
-                <a class="nav-link fw-semibold" href="{% url 'admin:index' %}">
-                    <i class="fas fa-cog me-2"></i>Admin
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <div class="navbar-nav ms-auto align-items-center">
+                <a class="nav-link fw-semibold" href="{% url 'dashboard:contractor_summary' %}">
+                    <i class="fas fa-tachometer-alt me-2"></i>Dashboard
                 </a>
-            {% endif %}
-            
-            {% if user.is_authenticated %}
-                <form class="d-inline" method="post" action="{% url 'logout' %}">
-                    {% csrf_token %}
-                    <input type="hidden" name="next" value="{% url 'login' %}">
-                    <button type="submit" class="nav-link btn btn-link fw-semibold">
-                        <i class="fas fa-sign-out-alt me-2"></i>Logout
-                    </button>
-                </form>
-            {% else %}
-                <a class="nav-link fw-semibold" href="{% url 'login' %}">
-                    <i class="fas fa-sign-in-alt me-2"></i>Login
+                <a class="nav-link fw-semibold" href="{% url 'dashboard:project_list' %}">
+                    <i class="fas fa-project-diagram me-2"></i>Projects
                 </a>
-            {% endif %}
+                <a class="nav-link fw-semibold" href="{% url 'dashboard:reports' %}">
+                    <i class="fas fa-file-alt me-2"></i>Reports
+                </a>
+                {% if user.is_staff %}
+                    <a class="nav-link fw-semibold" href="{% url 'admin:index' %}">
+                        <i class="fas fa-cog me-2"></i>Admin
+                    </a>
+                {% endif %}
+
+                {% if user.is_authenticated %}
+                    <form class="d-inline" method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="next" value="{% url 'login' %}">
+                        <button type="submit" class="nav-link btn btn-link fw-semibold">
+                            <i class="fas fa-sign-out-alt me-2"></i>Logout
+                        </button>
+                    </form>
+                {% else %}
+                    <a class="nav-link fw-semibold" href="{% url 'login' %}">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                {% endif %}
+            </div>
         </div>
     </div>
 </nav>
