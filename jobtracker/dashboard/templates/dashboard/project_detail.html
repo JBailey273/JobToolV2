@@ -832,14 +832,14 @@
                                         <span class="badge bg-warning text-dark">${{ entry.material_cost|floatformat:2 }} cost</span>
                                     {% endif %}
                                 </div>
-                                <div class="btn-group btn-group-sm job-entry-actions">
-                                    <a href="{% url 'dashboard:edit_job_entry' entry.pk %}" class="btn btn-outline-secondary" title="Edit Entry">
+                                <div class="d-flex flex-row flex-nowrap gap-2 job-entry-actions">
+                                    <a href="{% url 'dashboard:edit_job_entry' entry.pk %}" class="btn btn-sm btn-outline-secondary" title="Edit Entry">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <button class="btn btn-outline-secondary" title="Duplicate Entry" onclick="duplicateEntry({{ entry.pk }})">
+                                    <button class="btn btn-sm btn-outline-secondary" title="Duplicate Entry" onclick="duplicateEntry({{ entry.pk }})">
                                         <i class="fas fa-copy"></i>
                                     </button>
-                                    <button class="btn btn-outline-danger" title="Delete Entry" onclick="deleteEntry({{ entry.pk }})">
+                                    <button class="btn btn-sm btn-outline-danger" title="Delete Entry" onclick="deleteEntry({{ entry.pk }})">
                                         <i class="fas fa-trash"></i>
                                     </button>
                                 </div>

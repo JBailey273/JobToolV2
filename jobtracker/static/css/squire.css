@@ -768,6 +768,16 @@ textarea:focus {
     color: var(--text-primary) !important;
 }
 
+/* Job entry tag spacing */
+.job-entry-tags .badge {
+    margin-right: 0.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.job-entry-tags .badge:last-child {
+    margin-right: 0;
+}
+
 /* Floating Action Buttons */
 
 .floating-add {
@@ -830,6 +840,15 @@ textarea:focus {
 
 .floating-btn.warning {
     background: var(--warning-gradient);
+}
+
+/* Job entry action buttons spacing */
+.job-entry-actions .btn {
+    margin-right: 5px;
+}
+
+.job-entry-actions .btn:last-child {
+    margin-right: 0;
 }
 
 /* Stats and Metrics */
@@ -1658,7 +1677,7 @@ textarea.form-control {
     .card-body {
         padding: 15px;
     }
-    
+
     .btn-group {
         flex-direction: column;
     }
@@ -1668,18 +1687,8 @@ textarea.form-control {
         border-radius: var(--radius-md) !important;
     }
 
-    /* Override for job entry action buttons to stay horizontal on small screens */
-    .job-entry-actions {
-        flex-direction: row;
-    }
-
-    .job-entry-actions .btn {
-        margin-bottom: 0;
-        margin-right: 5px;
-    }
-
-    .job-entry-actions .btn:last-child {
-        margin-right: 0;
+    .floating-actions {
+        display: none;
     }
 }
 
