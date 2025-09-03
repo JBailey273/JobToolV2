@@ -182,7 +182,7 @@
             
             <!-- Contractor Name or Site Name -->
             {% if contractor %}
-                <span class="navbar-brand mb-0 fw-bold">{{ contractor.name|default:contractor.email }}</span>
+                <span class="navbar-brand contractor-name mb-0">{{ contractor.name|default:contractor.email }}</span>
             {% else %}
                 <span class="navbar-brand mb-0 fw-bold">Squire Enterprises</span>
             {% endif %}
