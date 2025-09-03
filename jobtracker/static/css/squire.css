@@ -1230,6 +1230,10 @@ textarea:focus {
     font-weight: 600;
 }
 
+.nav-tabs-custom .nav-link:hover {
+    color: var(--primary-color) !important;
+}
+
 .nav-tabs-custom .nav-link.active {
     background: var(--primary-gradient);
     color: white;
