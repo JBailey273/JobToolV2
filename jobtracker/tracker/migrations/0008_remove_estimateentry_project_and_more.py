@@ -34,7 +34,26 @@ def forward_migrate_estimates(apps, schema_editor):
 def create_estimate_table(apps, schema_editor):
     if "tracker_estimate" in schema_editor.connection.introspection.table_names():
         return
-    Estimate = apps.get_model("tracker", "Estimate")
+    Estimate = type(
+        "Estimate",
+        (models.Model,),
+        {
+            "__module__": __name__,
+            "id": models.BigAutoField(primary_key=True, auto_created=True),
+            "name": models.CharField(max_length=255),
+            "created_date": models.DateField(default=django.utils.timezone.now),
+            "contractor": models.ForeignKey(
+                "tracker.Contractor",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="estimates",
+            ),
+            "Meta": type(
+                "Meta",
+                (),
+                {"app_label": "migrations", "db_table": "tracker_estimate"},
+            ),
+        },
+    )
 
     schema_editor.create_model(Estimate)
 
