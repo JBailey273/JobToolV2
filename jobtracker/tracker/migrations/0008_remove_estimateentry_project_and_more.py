@@ -99,6 +99,7 @@ class Migration(migrations.Migration):
             database_operations=[
                 migrations.RunPython(create_estimate_table, migrations.RunPython.noop)
             ],
+            if_not_exists=True,
         ),
         migrations.AddField(
             model_name="estimateentry",
