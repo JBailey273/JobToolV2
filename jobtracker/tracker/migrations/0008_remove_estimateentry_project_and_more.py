@@ -17,7 +17,8 @@ def forward_migrate_estimates(apps, schema_editor):
             created_date=project.start_date or django.utils.timezone.now().date(),
         )
         EstimateEntry.objects.filter(project=project).update(estimate=estimate)
-        project.delete()
+        project.end_date = project.end_date or django.utils.timezone.now().date()
+        project.save(update_fields=["end_date"])
 
 
 class Migration(migrations.Migration):
