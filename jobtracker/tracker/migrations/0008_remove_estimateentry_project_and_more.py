@@ -5,33 +5,93 @@ import django.utils.timezone
 from django.db import migrations, models
 
 
-def forward_migrate_estimates(apps, schema_editor):
-    Estimate = apps.get_model("tracker", "Estimate")
-    EstimateEntry = apps.get_model("tracker", "EstimateEntry")
-    Project = apps.get_model("tracker", "Project")
+ADD_FK_SQL = """
+DO $$
+BEGIN
+    -- add the column if it does not exist
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name='tracker_estimateentry' AND column_name='estimate_id'
+    ) THEN
+        ALTER TABLE tracker_estimateentry
+            ADD COLUMN estimate_id bigint;
+    END IF;
 
-    # Some existing EstimateEntry rows may be associated with projects that were
-    # not flagged as estimates prior to this migration. Filtering on
-    # ``is_estimate`` would miss those entries and leave ``estimate`` as NULL,
-    # which causes the later ``AlterField`` operation to fail. Instead, create
-    # an Estimate for every project that actually has estimate entries.
-    projects = Project.objects.filter(estimate_entries__isnull=False).distinct()
+    -- add the FK if it does not exist
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint c
+        JOIN pg_class t ON c.conrelid = t.oid
+        WHERE t.relname='tracker_estimateentry'
+          AND c.conname='tracker_estimateentry_estimate_id_fkey'
+    ) THEN
+        ALTER TABLE tracker_estimateentry
+            ADD CONSTRAINT tracker_estimateentry_estimate_id_fkey
+            FOREIGN KEY (estimate_id) REFERENCES tracker_estimate(id) ON DELETE CASCADE;
+    END IF;
 
-    for project in projects:
-        estimate, _ = Estimate.objects.get_or_create(
-            contractor=project.contractor,
-            name=project.name,
-            defaults={
-                "created_date": project.start_date
-                or django.utils.timezone.now().date(),
-            },
+    -- add an index to help joins (idempotent)
+    CREATE INDEX IF NOT EXISTS tracker_estimateentry_estimate_id_idx
+        ON tracker_estimateentry(estimate_id);
+END$$;
+"""
+
+DROP_FK_SQL = """
+ALTER TABLE tracker_estimateentry
+    DROP CONSTRAINT IF EXISTS tracker_estimateentry_estimate_id_fkey;
+DROP INDEX IF EXISTS tracker_estimateentry_estimate_id_idx;
+ALTER TABLE tracker_estimateentry
+    DROP COLUMN IF EXISTS estimate_id;
+"""
+
+
+def _column_exists(conn, table, column):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = %s AND column_name = %s
+            """,
+            [table, column],
         )
-        EstimateEntry.objects.filter(project=project).update(estimate=estimate)
-        project.end_date = project.end_date or django.utils.timezone.now().date()
-        project.save(update_fields=["end_date"])
+        return cur.fetchone() is not None
+
+
+def forward_migrate_estimates(apps, schema_editor):
+    conn = schema_editor.connection
+
+    has_estimate = _column_exists(conn, "tracker_estimateentry", "estimate_id")
+    has_project = _column_exists(conn, "tracker_estimateentry", "project_id")
+    if not has_estimate or not has_project:
+        return
+
+    has_estimate_project = _column_exists(conn, "tracker_estimate", "project_id")
+    if not has_estimate_project:
+        return
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            UPDATE tracker_estimateentry AS ee
+            SET estimate_id = e.id
+            FROM tracker_estimate AS e
+            WHERE ee.project_id = e.project_id
+              AND (ee.estimate_id IS NULL)
+            """
+        )
+
+
+def reverse_migrate_estimates(apps, schema_editor):
+    pass
 
 
 class CreateModelIfNotExists(migrations.CreateModel):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("if_not_exists", None)
+        super().__init__(*args, **kwargs)
+
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.name)
         if model._meta.db_table in schema_editor.connection.introspection.table_names():
@@ -81,25 +141,55 @@ class Migration(migrations.Migration):
             ],
             if_not_exists=True,
         ),
-        migrations.AddField(
-            model_name="estimateentry",
-            name="estimate",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="entries",
-                to="tracker.estimate",
-            ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    ADD_FK_SQL,
+                    reverse_sql=DROP_FK_SQL,
+                )
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name="estimateentry",
+                    name="estimate",
+                    field=models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="entries",
+                        to="tracker.estimate",
+                    ),
+                )
+            ],
         ),
-        migrations.RunPython(forward_migrate_estimates, migrations.RunPython.noop),
-        migrations.RemoveField(
-            model_name="estimateentry",
-            name="project",
+        migrations.RunPython(forward_migrate_estimates, reverse_migrate_estimates),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    "ALTER TABLE tracker_estimateentry DROP COLUMN IF EXISTS project_id CASCADE",
+                    reverse_sql="ALTER TABLE tracker_estimateentry ADD COLUMN project_id bigint",
+                )
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name="estimateentry",
+                    name="project",
+                )
+            ],
         ),
-        migrations.RemoveField(
-            model_name="project",
-            name="is_estimate",
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    "ALTER TABLE tracker_project DROP COLUMN IF EXISTS is_estimate",
+                    reverse_sql="ALTER TABLE tracker_project ADD COLUMN is_estimate boolean NOT NULL DEFAULT FALSE",
+                )
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name="project",
+                    name="is_estimate",
+                )
+            ],
         ),
         migrations.AlterField(
             model_name="estimateentry",
