@@ -31,6 +31,14 @@ def forward_migrate_estimates(apps, schema_editor):
         project.save(update_fields=["end_date"])
 
 
+def create_estimate_table(apps, schema_editor):
+    if "tracker_estimate" in schema_editor.connection.introspection.table_names():
+        return
+    from tracker.models import Estimate
+
+    schema_editor.create_model(Estimate)
+
+
 class Migration(migrations.Migration):
     atomic = False
 
@@ -39,31 +47,38 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name="Estimate",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("name", models.CharField(max_length=255)),
-                (
-                    "created_date",
-                    models.DateField(default=django.utils.timezone.now),
-                ),
-                (
-                    "contractor",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="estimates",
-                        to="tracker.contractor",
-                    ),
-                ),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.CreateModel(
+                    name="Estimate",
+                    fields=[
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        ),
+                        ("name", models.CharField(max_length=255)),
+                        (
+                            "created_date",
+                            models.DateField(default=django.utils.timezone.now),
+                        ),
+                        (
+                            "contractor",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="estimates",
+                                to="tracker.contractor",
+                            ),
+                        ),
+                    ],
+                )
+            ],
+            database_operations=[
+                migrations.RunPython(create_estimate_table, migrations.RunPython.noop)
             ],
             if_not_exists=True,
         ),
