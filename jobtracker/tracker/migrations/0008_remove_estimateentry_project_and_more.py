@@ -80,6 +80,16 @@ def forward_migrate_estimates(apps, schema_editor):
               AND (ee.estimate_id IS NULL)
             """
         )
+        # Since estimate data is non-critical, drop any lingering
+        # estimate entries that could not be associated with an
+        # Estimate. This prevents the subsequent NOT NULL constraint
+        # from failing during migration.
+        cur.execute(
+            """
+            DELETE FROM tracker_estimateentry
+            WHERE estimate_id IS NULL
+            """
+        )
 
 
 def reverse_migrate_estimates(apps, schema_editor):
