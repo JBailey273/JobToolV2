@@ -50,9 +50,9 @@ def contractor_summary(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
         p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
@@ -124,9 +124,9 @@ def project_list(request):
 
     # Search functionality
     search_query = request.GET.get("search", "")
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     if search_query:
         projects = projects.filter(
@@ -160,15 +160,71 @@ def project_list(request):
 
 
 @login_required
+def estimate_list(request):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            Project.objects.create(
+                contractor=contractor,
+                name=name,
+                start_date=timezone.now().date(),
+                is_estimate=True,
+            )
+            messages.success(request, f"Estimate '{name}' created.")
+        return redirect("dashboard:estimate_list")
+
+    estimates = (
+        contractor.projects.filter(is_estimate=True)
+        .prefetch_related("estimate_entries")
+    )
+    for p in estimates:
+        p.billable_total = sum((e.billable_amount or 0) for e in p.estimate_entries.all())
+        p.cost_total = sum((e.cost_amount or 0) for e in p.estimate_entries.all())
+        p.profit = p.billable_total - p.cost_total
+        p.margin = (
+            (p.profit / p.billable_total) * 100 if p.billable_total else Decimal("0")
+        )
+
+    return render(
+        request,
+        "dashboard/estimate_list.html",
+        {"estimates": estimates},
+    )
+
+
+@login_required
+def accept_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    project = get_object_or_404(
+        Project, pk=pk, contractor=contractor, is_estimate=True
+    )
+
+    if request.method == "POST":
+        project.is_estimate = False
+        project.save()
+        messages.success(request, "Estimate accepted and converted to project.")
+        return redirect("dashboard:project_detail", pk=project.pk)
+
+    return redirect("dashboard:estimate_list")
+
+
+@login_required
 def reports(request):
     """Display available report links."""
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
@@ -465,9 +521,9 @@ def select_job_entry_project(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
@@ -495,9 +551,9 @@ def select_payment_project(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
@@ -807,7 +863,7 @@ def contractor_report(request):
     if contractor is None:
         return redirect("login")
 
-    projects_qs = contractor.projects.all().annotate(
+    projects_qs = contractor.projects.filter(is_estimate=False).annotate(
         total_cost=Sum("job_entries__cost_amount"),
         total_billable=Sum("job_entries__billable_amount"),
     )
@@ -998,15 +1054,35 @@ def job_estimate_report(request, pk):
         ]
         or Decimal("0")
     )
-    grand_total = labor_total + material_total
+    billable_total = labor_total + material_total
+    cost_total = (
+        entries.aggregate(total=Sum("cost_amount"))["total"] or Decimal("0")
+    )
+    profit = billable_total - cost_total
+    margin = (profit / billable_total * 100) if billable_total else Decimal("0")
+
+    export_pdf = request.GET.get("export") == "pdf"
 
     context = {
         "contractor": contractor,
         "project": project,
         "labor_total": labor_total,
         "material_total": material_total,
-        "grand_total": grand_total,
+        "grand_total": billable_total,
+        "cost_total": cost_total,
+        "profit": profit,
+        "margin": margin,
+        "report": export_pdf,
     }
+
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/job_estimate_report.html",
+            context,
+            "job_estimate_report.pdf",
+        )
+        if pdf:
+            return pdf
 
     return render(request, "dashboard/job_estimate_report.html", context)
 

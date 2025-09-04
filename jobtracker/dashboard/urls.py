@@ -6,6 +6,8 @@ app_name = "dashboard"
 urlpatterns = [
     path("", views.contractor_summary, name="contractor_summary"),
     path("projects/", views.project_list, name="project_list"),
+    path("estimates/", views.estimate_list, name="estimate_list"),
+    path("estimates/<int:pk>/accept/", views.accept_estimate, name="accept_estimate"),
     path("projects/<int:pk>/", views.project_detail, name="project_detail"),
     path(
         "projects/add-entry/select/",

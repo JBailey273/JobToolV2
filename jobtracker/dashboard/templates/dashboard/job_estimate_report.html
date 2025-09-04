@@ -5,6 +5,11 @@
 <div class="container mt-4">
     <h1 class="mb-3"><i class="fas fa-file-invoice-dollar me-2"></i>Job Estimate</h1>
     <h4 class="mb-4">{{ project.name }}</h4>
+    {% if not report %}
+    <a href="?export=pdf" class="btn btn-secondary mb-3">
+        <i class="fas fa-file-pdf me-2"></i>Download PDF
+    </a>
+    {% endif %}
     <div class="table-responsive">
         <table class="table table-bordered w-auto">
             <thead class="table-light">
@@ -21,6 +26,18 @@
                 <tr>
                     <td>Materials</td>
                     <td class="text-end">${{ material_total|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Estimated Cost</td>
+                    <td class="text-end">${{ cost_total|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Estimated Profit</td>
+                    <td class="text-end">${{ profit|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Profit Margin</td>
+                    <td class="text-end">{{ margin|floatformat:2 }}%</td>
                 </tr>
                 <tr class="fw-bold">
                     <td>Total Estimate</td>
