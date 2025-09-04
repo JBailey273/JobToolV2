@@ -34,7 +34,7 @@ def forward_migrate_estimates(apps, schema_editor):
 def create_estimate_table(apps, schema_editor):
     if "tracker_estimate" in schema_editor.connection.introspection.table_names():
         return
-    from tracker.models import Estimate
+    Estimate = apps.get_model("tracker", "Estimate")
 
     schema_editor.create_model(Estimate)
 
