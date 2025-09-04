@@ -140,6 +140,7 @@ class Project(models.Model):
     name = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
+    is_estimate = models.BooleanField(default=False)
 
     def __str__(self) -> str:
         return self.name
