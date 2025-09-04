@@ -58,7 +58,6 @@ def _column_exists(conn, table, column):
         )
         return cur.fetchone() is not None
 
-
 def forward_migrate_estimates(apps, schema_editor):
     conn = schema_editor.connection
 
