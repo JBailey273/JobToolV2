@@ -5,6 +5,47 @@ import django.utils.timezone
 from django.db import migrations, models
 
 
+ADD_FK_SQL = """
+DO $$
+BEGIN
+    -- add the column if it does not exist
+    IF NOT EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_name='tracker_estimateentry' AND column_name='estimate_id'
+    ) THEN
+        ALTER TABLE tracker_estimateentry
+            ADD COLUMN estimate_id bigint;
+    END IF;
+
+    -- add the FK if it does not exist
+    IF NOT EXISTS (
+        SELECT 1
+        FROM pg_constraint c
+        JOIN pg_class t ON c.conrelid = t.oid
+        WHERE t.relname='tracker_estimateentry'
+          AND c.conname='tracker_estimateentry_estimate_id_fkey'
+    ) THEN
+        ALTER TABLE tracker_estimateentry
+            ADD CONSTRAINT tracker_estimateentry_estimate_id_fkey
+            FOREIGN KEY (estimate_id) REFERENCES tracker_estimate(id) ON DELETE CASCADE;
+    END IF;
+
+    -- add an index to help joins (idempotent)
+    CREATE INDEX IF NOT EXISTS tracker_estimateentry_estimate_id_idx
+        ON tracker_estimateentry(estimate_id);
+END$$;
+"""
+
+DROP_FK_SQL = """
+ALTER TABLE tracker_estimateentry
+    DROP CONSTRAINT IF EXISTS tracker_estimateentry_estimate_id_fkey;
+DROP INDEX IF EXISTS tracker_estimateentry_estimate_id_idx;
+ALTER TABLE tracker_estimateentry
+    DROP COLUMN IF EXISTS estimate_id;
+"""
+
+
 def forward_migrate_estimates(apps, schema_editor):
     Estimate = apps.get_model("tracker", "Estimate")
     EstimateEntry = apps.get_model("tracker", "EstimateEntry")
@@ -32,6 +73,10 @@ def forward_migrate_estimates(apps, schema_editor):
 
 
 class CreateModelIfNotExists(migrations.CreateModel):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("if_not_exists", None)
+        super().__init__(*args, **kwargs)
+
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.name)
         if model._meta.db_table in schema_editor.connection.introspection.table_names():
@@ -81,16 +126,26 @@ class Migration(migrations.Migration):
             ],
             if_not_exists=True,
         ),
-        migrations.AddField(
-            model_name="estimateentry",
-            name="estimate",
-            field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="entries",
-                to="tracker.estimate",
-            ),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    ADD_FK_SQL,
+                    reverse_sql=DROP_FK_SQL,
+                )
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name="estimateentry",
+                    name="estimate",
+                    field=models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="entries",
+                        to="tracker.estimate",
+                    ),
+                )
+            ],
         ),
         migrations.RunPython(forward_migrate_estimates, migrations.RunPython.noop),
         migrations.RemoveField(
