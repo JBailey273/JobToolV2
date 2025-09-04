@@ -10,6 +10,7 @@ from .models import (
     Employee,
     Material,
     Project,
+    Estimate,
     JobEntry,
     EstimateEntry,
     Payment,
@@ -42,6 +43,11 @@ class ProjectInline(admin.TabularInline):
     extra = 0
 
 
+class EstimateInline(admin.TabularInline):
+    model = Estimate
+    extra = 0
+
+
 @admin.register(ContractorUser)
 class ContractorUserAdmin(UserAdmin):
     fieldsets = UserAdmin.fieldsets + (
@@ -63,7 +69,7 @@ class ContractorAdmin(admin.ModelAdmin):
     fieldsets = (
         (None, {'fields': ('name', 'email', 'phone', 'logo', 'material_margin', 'password')}),
     )
-    inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline]
+    inlines = [AssetInline, EmployeeInline, MaterialInline, ProjectInline, EstimateInline]
 
     def save_model(self, request, obj, form, change):
         super().save_model(request, obj, form, change)
@@ -96,7 +102,14 @@ class PaymentInline(admin.TabularInline):
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'contractor', 'start_date', 'end_date')
     search_fields = ('name',)
-    inlines = [JobEntryInline, EstimateEntryInline, PaymentInline]
+    inlines = [JobEntryInline, PaymentInline]
+
+
+@admin.register(Estimate)
+class EstimateAdmin(admin.ModelAdmin):
+    list_display = ('name', 'contractor', 'created_date')
+    search_fields = ('name',)
+    inlines = [EstimateEntryInline]
 
 
 @admin.register(Asset)
@@ -138,10 +151,16 @@ class JobEntryAdmin(admin.ModelAdmin):
 
 @admin.register(EstimateEntry)
 class EstimateEntryAdmin(admin.ModelAdmin):
-    list_display = ('project', 'date', 'hours', 'cost_amount', 'billable_amount')
-    list_filter = ('project',)
+    list_display = (
+        'estimate',
+        'date',
+        'hours',
+        'cost_amount',
+        'billable_amount',
+    )
+    list_filter = ('estimate',)
     fields = (
-        'project',
+        'estimate',
         'date',
         'hours',
         'asset',

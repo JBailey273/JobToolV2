@@ -25,15 +25,16 @@
                 </tr>
             </thead>
             <tbody>
-            {% for project in estimates %}
+            {% for estimate in estimates %}
                 <tr>
-                    <td>{{ project.name }}</td>
-                    <td class="text-end">${{ project.billable_total|floatformat:2|intcomma }}</td>
-                    <td class="text-end">${{ project.profit|floatformat:2|intcomma }}</td>
-                    <td class="text-end">{{ project.margin|floatformat:2 }}%</td>
+                    <td>{{ estimate.name }}</td>
+                    <td class="text-end">${{ estimate.billable_total|floatformat:2|intcomma }}</td>
+                    <td class="text-end">${{ estimate.profit|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ estimate.margin|floatformat:2 }}%</td>
                     <td class="text-end">
-                        <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-sm btn-outline-secondary">View</a>
-                        <form method="post" action="{% url 'dashboard:accept_estimate' project.pk %}" class="d-inline">
+                        <a href="{% url 'dashboard:add_estimate_entry' estimate.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a href="{% url 'dashboard:job_estimate_report' estimate.pk %}" class="btn btn-sm btn-secondary">Report</a>
+                        <form method="post" action="{% url 'dashboard:accept_estimate' estimate.pk %}" class="d-inline">
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-success">Accept</button>
                         </form>

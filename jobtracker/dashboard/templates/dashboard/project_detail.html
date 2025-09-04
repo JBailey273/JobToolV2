@@ -642,9 +642,6 @@
                     <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Quick Entry
                     </a>
-                    <a href="{% url 'dashboard:add_job_estimate' project.pk %}" class="btn btn-outline-primary">
-                        <i class="fas fa-calculator me-2"></i>Add Estimate
-                    </a>
                     <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
                         <i class="fas fa-money-bill-wave me-2"></i>Record Payment
                     </a>
@@ -653,9 +650,6 @@
                     </a>
                     <a href="{% url 'dashboard:contractor_job_report' project.pk %}" class="btn btn-info text-white">
                         <i class="fas fa-hard-hat me-2"></i>Job Report
-                    </a>
-                    <a href="{% url 'dashboard:job_estimate_report' project.pk %}" class="btn btn-secondary">
-                        <i class="fas fa-file-invoice-dollar me-2"></i>Job Estimate
                     </a>
                 </div>
             </div>
@@ -1478,9 +1472,6 @@
     </a>
     <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="floating-btn primary" title="Add Job Entry">
         <i class="fas fa-plus"></i>
-    </a>
-    <a href="{% url 'dashboard:add_job_estimate' project.pk %}" class="floating-btn info" title="Add Job Estimate">
-        <i class="fas fa-calculator"></i>
     </a>
     <a href="{% url 'dashboard:customer_report' project.pk %}" class="floating-btn warning" title="Generate Report">
         <i class="fas fa-file-pdf"></i>

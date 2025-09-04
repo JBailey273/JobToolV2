@@ -8,6 +8,16 @@ urlpatterns = [
     path("projects/", views.project_list, name="project_list"),
     path("estimates/", views.estimate_list, name="estimate_list"),
     path("estimates/<int:pk>/accept/", views.accept_estimate, name="accept_estimate"),
+    path(
+        "estimates/<int:pk>/add-entry/",
+        views.add_estimate_entry,
+        name="add_estimate_entry",
+    ),
+    path(
+        "estimates/<int:pk>/report/",
+        views.job_estimate_report,
+        name="job_estimate_report",
+    ),
     path("projects/<int:pk>/", views.project_detail, name="project_detail"),
     path(
         "projects/add-entry/select/",
@@ -20,7 +30,6 @@ urlpatterns = [
         name="select_payment_project",
     ),
     path("projects/<int:pk>/add-entry/", views.add_job_entry, name="add_job_entry"),
-    path("projects/<int:pk>/add-estimate/", views.add_job_estimate, name="add_job_estimate"),
     path("entries/<int:pk>/edit/", views.edit_job_entry, name="edit_job_entry"),
     path("projects/<int:pk>/add-payment/", views.add_payment, name="add_payment"),
     path("reports/", views.reports, name="reports"),
@@ -34,11 +43,6 @@ urlpatterns = [
         "projects/<int:pk>/contractor-report/",
         views.contractor_job_report,
         name="contractor_job_report",
-    ),
-    path(
-        "projects/<int:pk>/estimate-report/",
-        views.job_estimate_report,
-        name="job_estimate_report",
     ),
     # New API endpoints
     path("api/search-entries/", views.search_entries, name="search_entries"),

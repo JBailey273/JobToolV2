@@ -5,6 +5,7 @@ from django.core.files.base import ContentFile
 from io import BytesIO
 from PIL import Image
 import os
+from django.utils import timezone
 
 
 class GlobalSettings(models.Model):
@@ -133,13 +134,26 @@ class Material(models.Model):
 
 
 class Project(models.Model):
-    contractor = models.ForeignKey(Contractor, related_name='projects', on_delete=models.CASCADE)
+    contractor = models.ForeignKey(
+        Contractor, related_name="projects", on_delete=models.CASCADE
+    )
     name = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
     is_estimate = models.BooleanField(default=False)
 
     def __str__(self) -> str:
+        return self.name
+
+
+class Estimate(models.Model):
+    contractor = models.ForeignKey(
+        Contractor, related_name="estimates", on_delete=models.CASCADE
+    )
+    name = models.CharField(max_length=255)
+    created_date = models.DateField(default=timezone.now)
+
+    def __str__(self) -> str:  # pragma: no cover - simple representation
         return self.name
 
 
@@ -179,8 +193,8 @@ class JobEntry(models.Model):
 
 
 class EstimateEntry(models.Model):
-    project = models.ForeignKey(
-        Project, related_name="estimate_entries", on_delete=models.CASCADE
+    estimate = models.ForeignKey(
+        Estimate, related_name="entries", on_delete=models.CASCADE
     )
     date = models.DateField()
     hours = models.DecimalField(max_digits=5, decimal_places=2)
@@ -207,10 +221,10 @@ class EstimateEntry(models.Model):
     description = models.TextField(blank=True)
 
     def __str__(self) -> str:  # pragma: no cover - simple representation
-        return f"Estimate: {self.project.name} - {self.date}"
+        return f"Estimate: {self.estimate.name} - {self.date}"
 
     def save(self, *args, **kwargs):
-        contractor = self.project.contractor
+        contractor = self.estimate.contractor
         self.cost_amount = Decimal("0")
         self.billable_amount = Decimal("0")
         if self.asset:
