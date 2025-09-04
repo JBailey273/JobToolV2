@@ -32,6 +32,10 @@ def forward_migrate_estimates(apps, schema_editor):
 
 
 class CreateModelIfNotExists(migrations.CreateModel):
+    def __init__(self, *args, **kwargs):
+        kwargs.pop("if_not_exists", None)
+        super().__init__(*args, **kwargs)
+
     def database_forwards(self, app_label, schema_editor, from_state, to_state):
         model = to_state.apps.get_model(app_label, self.name)
         if model._meta.db_table in schema_editor.connection.introspection.table_names():
