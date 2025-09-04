@@ -79,6 +79,7 @@ class Migration(migrations.Migration):
                     ),
                 ),
             ],
+            if_not_exists=True,
         ),
         migrations.AddField(
             model_name="estimateentry",
