@@ -10,7 +10,14 @@ def forward_migrate_estimates(apps, schema_editor):
     EstimateEntry = apps.get_model("tracker", "EstimateEntry")
     Project = apps.get_model("tracker", "Project")
 
-    for project in Project.objects.filter(is_estimate=True):
+    # Some existing EstimateEntry rows may be associated with projects that were
+    # not flagged as estimates prior to this migration. Filtering on
+    # ``is_estimate`` would miss those entries and leave ``estimate`` as NULL,
+    # which causes the later ``AlterField`` operation to fail. Instead, create
+    # an Estimate for every project that actually has estimate entries.
+    projects = Project.objects.filter(estimate_entries__isnull=False).distinct()
+
+    for project in projects:
         estimate = Estimate.objects.create(
             contractor=project.contractor,
             name=project.name,
