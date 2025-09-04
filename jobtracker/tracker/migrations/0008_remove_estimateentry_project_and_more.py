@@ -33,7 +33,6 @@ def forward_migrate_estimates(apps, schema_editor):
 
 def create_estimate_table_if_missing(apps, schema_editor):
     """Create ``tracker_estimate`` table when it doesn't already exist."""
-
     if "tracker_estimate" in schema_editor.connection.introspection.table_names():
         return
     Estimate = type(
@@ -103,6 +102,7 @@ class Migration(migrations.Migration):
                     create_estimate_table_if_missing, migrations.RunPython.noop
                 )
             ],
+            if_not_exists=True,
         ),
         migrations.AddField(
             model_name="estimateentry",
