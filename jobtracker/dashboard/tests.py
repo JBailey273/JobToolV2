@@ -13,6 +13,7 @@ from tracker.models import (
     Asset,
     JobEntry,
     Payment,
+    Estimate,
     EstimateEntry,
 )
 from dashboard.views import _render_pdf
@@ -598,8 +599,8 @@ class JobEstimateReportTests(TestCase):
         self.user = ContractorUser.objects.create_user(
             email="user@example.com", password="secret", contractor=self.contractor
         )
-        self.project = self.contractor.projects.create(
-            name="Proj", start_date="2024-01-01"
+        self.estimate = self.contractor.estimates.create(
+            name="Proj", created_date="2024-01-01"
         )
         self.asset = self.contractor.assets.create(
             name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
@@ -607,7 +608,7 @@ class JobEstimateReportTests(TestCase):
 
     def test_job_estimate_report_totals(self):
         EstimateEntry.objects.create(
-            project=self.project,
+            estimate=self.estimate,
             date="2024-01-02",
             hours=Decimal("2"),
             asset=self.asset,
@@ -615,7 +616,7 @@ class JobEstimateReportTests(TestCase):
             billable_amount=Decimal("40"),
         )
         EstimateEntry.objects.create(
-            project=self.project,
+            estimate=self.estimate,
             date="2024-01-02",
             hours=Decimal("1"),
             material_description="Pipe",
@@ -625,8 +626,52 @@ class JobEstimateReportTests(TestCase):
         )
 
         self.client.force_login(self.user)
-        url = reverse("dashboard:job_estimate_report", args=[self.project.pk])
+        url = reverse("dashboard:job_estimate_report", args=[self.estimate.pk])
         response = self.client.get(url)
         self.assertContains(response, "$40.00")
         self.assertContains(response, "$5.00")
         self.assertContains(response, "$45.00")
+        self.assertContains(response, "$25.00")
+        self.assertContains(response, "$20.00")
+        self.assertContains(response, "44.44%")
+
+
+class EstimateListTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        self.user = ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.estimate = self.contractor.estimates.create(
+            name="Estimate", created_date="2024-01-01"
+        )
+        self.asset = self.contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        EstimateEntry.objects.create(
+            estimate=self.estimate,
+            date="2024-01-02",
+            hours=Decimal("2"),
+            asset=self.asset,
+            cost_amount=Decimal("20"),
+            billable_amount=Decimal("40"),
+        )
+
+    def test_estimate_list_shows_profit_and_margin(self):
+        self.client.force_login(self.user)
+        url = reverse("dashboard:estimate_list")
+        response = self.client.get(url)
+        self.assertContains(response, "$40.00")
+        self.assertContains(response, "$20.00")
+        self.assertContains(response, "50.00%")
+
+    def test_accept_estimate_converts_to_project(self):
+        self.client.force_login(self.user)
+        url = reverse("dashboard:accept_estimate", args=[self.estimate.pk])
+        self.client.post(url)
+        self.assertFalse(Estimate.objects.filter(pk=self.estimate.pk).exists())
+        self.assertTrue(
+            self.contractor.projects.filter(name="Estimate").exists()
+        )

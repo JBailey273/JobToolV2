@@ -1,0 +1,52 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% block title %}Estimator{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-4"><i class="fas fa-calculator me-2"></i>Estimator</h1>
+    <form method="post" class="row g-3 mb-4">
+        {% csrf_token %}
+        <div class="col-auto">
+            <input type="text" name="name" class="form-control" placeholder="New estimate name">
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Add Estimate</button>
+        </div>
+    </form>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th class="text-end">Billable</th>
+                    <th class="text-end">Profit</th>
+                    <th class="text-end">Margin</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for estimate in estimates %}
+                <tr>
+                    <td>{{ estimate.name }}</td>
+                    <td class="text-end">${{ estimate.billable_total|floatformat:2|intcomma }}</td>
+                    <td class="text-end">${{ estimate.profit|floatformat:2|intcomma }}</td>
+                    <td class="text-end">{{ estimate.margin|floatformat:2 }}%</td>
+                    <td class="text-end">
+                        <a href="{% url 'dashboard:add_estimate_entry' estimate.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                        <a href="{% url 'dashboard:job_estimate_report' estimate.pk %}" class="btn btn-sm btn-secondary">Report</a>
+                        <form method="post" action="{% url 'dashboard:accept_estimate' estimate.pk %}" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-success">Accept</button>
+                        </form>
+                    </td>
+                </tr>
+            {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">No estimates yet.</td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

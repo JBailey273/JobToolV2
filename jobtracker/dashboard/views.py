@@ -16,7 +16,15 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     HTML = None
 
-from tracker.models import Asset, Employee, JobEntry, Payment, Project, EstimateEntry
+from tracker.models import (
+    Asset,
+    Employee,
+    JobEntry,
+    Payment,
+    Project,
+    Estimate,
+    EstimateEntry,
+)
 
 
 def safe_decimal(value, default=Decimal("0")):
@@ -157,6 +165,69 @@ def project_list(request):
             "search_query": search_query,
         },
     )
+
+
+@login_required
+def estimate_list(request):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    if request.method == "POST":
+        name = request.POST.get("name")
+        if name:
+            Estimate.objects.create(
+                contractor=contractor,
+                name=name,
+                created_date=timezone.now().date(),
+            )
+            messages.success(request, f"Estimate '{name}' created.")
+        return redirect("dashboard:estimate_list")
+
+    estimates = contractor.estimates.prefetch_related("entries")
+    for est in estimates:
+        est.billable_total = sum(
+            (e.billable_amount or 0) for e in est.entries.all()
+        )
+        est.cost_total = sum((e.cost_amount or 0) for e in est.entries.all())
+        est.profit = est.billable_total - est.cost_total
+        est.margin = (
+            (est.profit / est.billable_total) * 100 if est.billable_total else Decimal("0")
+        )
+
+    return render(request, "dashboard/estimate_list.html", {"estimates": estimates})
+
+
+@login_required
+def accept_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+
+    if request.method == "POST":
+        project = Project.objects.create(
+            contractor=contractor,
+            name=estimate.name,
+            start_date=timezone.now().date(),
+        )
+        for entry in estimate.entries.all():
+            JobEntry.objects.create(
+                project=project,
+                date=entry.date,
+                hours=entry.hours,
+                asset=entry.asset,
+                employee=entry.employee,
+                material_description=entry.material_description,
+                material_cost=entry.material_cost,
+                description=entry.description,
+            )
+        estimate.delete()
+        messages.success(request, "Estimate accepted and converted to project.")
+        return redirect("dashboard:project_detail", pk=project.pk)
+
+    return redirect("dashboard:estimate_list")
 
 
 @login_required
@@ -627,12 +698,12 @@ def add_job_entry(request, pk):
 
 
 @login_required
-def add_job_estimate(request, pk):
+def add_estimate_entry(request, pk):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
 
-    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     assets = contractor.assets.all()
     employees = contractor.employees.all()
 
@@ -656,7 +727,7 @@ def add_job_estimate(request, pk):
 
             if hours_dec > 0 or asset or employee:
                 EstimateEntry.objects.create(
-                    project=project,
+                    estimate=estimate,
                     date=date,
                     hours=hours_dec,
                     asset=asset,
@@ -690,7 +761,7 @@ def add_job_estimate(request, pk):
                     full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
 
                     EstimateEntry.objects.create(
-                        project=project,
+                        estimate=estimate,
                         date=date,
                         hours=qty_dec,
                         asset=None,
@@ -711,13 +782,13 @@ def add_job_estimate(request, pk):
                 "No entries were created. Please fill in at least one complete entry.",
             )
 
-        return redirect("dashboard:project_detail", pk=project.pk)
+        return redirect("dashboard:estimate_list")
 
     return render(
         request,
         "dashboard/estimate_form.html",
         {
-            "project": project,
+            "estimate": estimate,
             "assets": assets,
             "employees": employees,
             "margin": contractor.material_margin,
@@ -807,7 +878,7 @@ def contractor_report(request):
     if contractor is None:
         return redirect("login")
 
-    projects_qs = contractor.projects.all().annotate(
+    projects_qs = contractor.projects.annotate(
         total_cost=Sum("job_entries__cost_amount"),
         total_billable=Sum("job_entries__billable_amount"),
     )
@@ -983,8 +1054,8 @@ def job_estimate_report(request, pk):
     if contractor is None:
         return redirect("login")
 
-    project = get_object_or_404(Project, pk=pk, contractor=contractor)
-    entries = project.estimate_entries.all()
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    entries = estimate.entries.all()
 
     labor_total = (
         entries.filter(material_cost__isnull=True).aggregate(total=Sum("billable_amount"))[
@@ -998,15 +1069,35 @@ def job_estimate_report(request, pk):
         ]
         or Decimal("0")
     )
-    grand_total = labor_total + material_total
+    billable_total = labor_total + material_total
+    cost_total = (
+        entries.aggregate(total=Sum("cost_amount"))["total"] or Decimal("0")
+    )
+    profit = billable_total - cost_total
+    margin = (profit / billable_total * 100) if billable_total else Decimal("0")
+
+    export_pdf = request.GET.get("export") == "pdf"
 
     context = {
         "contractor": contractor,
-        "project": project,
+        "estimate": estimate,
         "labor_total": labor_total,
         "material_total": material_total,
-        "grand_total": grand_total,
+        "grand_total": billable_total,
+        "cost_total": cost_total,
+        "profit": profit,
+        "margin": margin,
+        "report": export_pdf,
     }
+
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/job_estimate_report.html",
+            context,
+            "job_estimate_report.pdf",
+        )
+        if pdf:
+            return pdf
 
     return render(request, "dashboard/job_estimate_report.html", context)
 
