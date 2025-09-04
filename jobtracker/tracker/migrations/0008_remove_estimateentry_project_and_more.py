@@ -46,30 +46,44 @@ ALTER TABLE tracker_estimateentry
 """
 
 
-def forward_migrate_estimates(apps, schema_editor):
-    Estimate = apps.get_model("tracker", "Estimate")
-    EstimateEntry = apps.get_model("tracker", "EstimateEntry")
-    Project = apps.get_model("tracker", "Project")
-
-    # Some existing EstimateEntry rows may be associated with projects that were
-    # not flagged as estimates prior to this migration. Filtering on
-    # ``is_estimate`` would miss those entries and leave ``estimate`` as NULL,
-    # which causes the later ``AlterField`` operation to fail. Instead, create
-    # an Estimate for every project that actually has estimate entries.
-    projects = Project.objects.filter(estimate_entries__isnull=False).distinct()
-
-    for project in projects:
-        estimate, _ = Estimate.objects.get_or_create(
-            contractor=project.contractor,
-            name=project.name,
-            defaults={
-                "created_date": project.start_date
-                or django.utils.timezone.now().date(),
-            },
+def _column_exists(conn, table, column):
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            SELECT 1
+            FROM information_schema.columns
+            WHERE table_name = %s AND column_name = %s
+            """,
+            [table, column],
         )
-        EstimateEntry.objects.filter(project=project).update(estimate=estimate)
-        project.end_date = project.end_date or django.utils.timezone.now().date()
-        project.save(update_fields=["end_date"])
+        return cur.fetchone() is not None
+
+def forward_migrate_estimates(apps, schema_editor):
+    conn = schema_editor.connection
+
+    has_estimate = _column_exists(conn, "tracker_estimateentry", "estimate_id")
+    has_project = _column_exists(conn, "tracker_estimateentry", "project_id")
+    if not has_estimate or not has_project:
+        return
+
+    has_estimate_project = _column_exists(conn, "tracker_estimate", "project_id")
+    if not has_estimate_project:
+        return
+
+    with conn.cursor() as cur:
+        cur.execute(
+            """
+            UPDATE tracker_estimateentry AS ee
+            SET estimate_id = e.id
+            FROM tracker_estimate AS e
+            WHERE ee.project_id = e.project_id
+              AND (ee.estimate_id IS NULL)
+            """
+        )
+
+
+def reverse_migrate_estimates(apps, schema_editor):
+    pass
 
 
 class CreateModelIfNotExists(migrations.CreateModel):
@@ -147,7 +161,7 @@ class Migration(migrations.Migration):
                 )
             ],
         ),
-        migrations.RunPython(forward_migrate_estimates, migrations.RunPython.noop),
+        migrations.RunPython(forward_migrate_estimates, reverse_migrate_estimates),
         migrations.RemoveField(
             model_name="estimateentry",
             name="project",
