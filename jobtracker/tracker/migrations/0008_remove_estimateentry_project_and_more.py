@@ -21,6 +21,7 @@ def forward_migrate_estimates(apps, schema_editor):
 
 
 class Migration(migrations.Migration):
+    atomic = False
 
     dependencies = [
         ("tracker", "0007_project_is_estimate"),
