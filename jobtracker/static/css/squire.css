@@ -1304,6 +1304,19 @@ textarea:focus {
     color: white;
 }
 
+@media (max-width: 576px) {
+    .nav-tabs-custom {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .nav-tabs-custom .nav-link {
+        white-space: nowrap;
+        flex: 0 0 auto;
+    }
+}
+
 .tab-content-card {
     background: var(--card-background);
     border-radius: var(--radius-lg);
