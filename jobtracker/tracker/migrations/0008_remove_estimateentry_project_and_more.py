@@ -162,13 +162,33 @@ class Migration(migrations.Migration):
             ],
         ),
         migrations.RunPython(forward_migrate_estimates, reverse_migrate_estimates),
-        migrations.RemoveField(
-            model_name="estimateentry",
-            name="project",
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    "ALTER TABLE tracker_estimateentry DROP COLUMN IF EXISTS project_id CASCADE",
+                    reverse_sql="ALTER TABLE tracker_estimateentry ADD COLUMN project_id bigint",
+                )
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name="estimateentry",
+                    name="project",
+                )
+            ],
         ),
-        migrations.RemoveField(
-            model_name="project",
-            name="is_estimate",
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    "ALTER TABLE tracker_project DROP COLUMN IF EXISTS is_estimate",
+                    reverse_sql="ALTER TABLE tracker_project ADD COLUMN is_estimate boolean NOT NULL DEFAULT FALSE",
+                )
+            ],
+            state_operations=[
+                migrations.RemoveField(
+                    model_name="project",
+                    name="is_estimate",
+                )
+            ],
         ),
         migrations.AlterField(
             model_name="estimateentry",
