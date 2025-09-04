@@ -59,7 +59,7 @@ def contractor_summary(request):
         return redirect("login")
 
     projects = contractor.projects.filter(
-        end_date__isnull=True, is_estimate=False
+        end_date__isnull=True
     ).prefetch_related("job_entries", "payments")
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
@@ -133,7 +133,7 @@ def project_list(request):
     # Search functionality
     search_query = request.GET.get("search", "")
     projects = contractor.projects.filter(
-        end_date__isnull=True, is_estimate=False
+        end_date__isnull=True
     ).prefetch_related("job_entries", "payments")
 
     if search_query:
@@ -238,7 +238,7 @@ def reports(request):
         return redirect("login")
 
     projects = contractor.projects.filter(
-        end_date__isnull=True, is_estimate=False
+        end_date__isnull=True
     ).prefetch_related("job_entries", "payments")
 
     for p in projects:
@@ -537,7 +537,7 @@ def select_job_entry_project(request):
         return redirect("login")
 
     projects = contractor.projects.filter(
-        end_date__isnull=True, is_estimate=False
+        end_date__isnull=True
     ).prefetch_related("job_entries", "payments")
 
     for p in projects:
@@ -567,7 +567,7 @@ def select_payment_project(request):
         return redirect("login")
 
     projects = contractor.projects.filter(
-        end_date__isnull=True, is_estimate=False
+        end_date__isnull=True
     ).prefetch_related("job_entries", "payments")
 
     for p in projects:
