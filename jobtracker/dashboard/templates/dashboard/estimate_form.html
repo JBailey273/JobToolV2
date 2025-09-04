@@ -1,0 +1,538 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% block title %}Add Job Estimate{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-calendar-plus me-3"></i>Job Estimate Entry
+        </h1>
+        <p class="text-muted mb-0">Add estimate entries for <strong>{{ project.name }}</strong></p>
+    </div>
+    <div class="d-none">
+        <button class="btn btn-outline-secondary" type="button">
+            <i class="fas fa-history me-2"></i>Load Recent Entry
+        </button>
+    </div>
+</div>
+
+<!-- Time Tracker -->
+<div class="alert alert-info text-center">
+    <i class="fas fa-clock me-2"></i>Entry Time: <span id="entry-timer">00:00:00</span>
+</div>
+
+<!-- Progress Indicator -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div id="progress-steps" class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="step-indicator active me-3">1</div>
+                <span>Date & Basic Info</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">2</div>
+                <span>Equipment & Labor</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">3</div>
+                <span>Materials</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">4</div>
+                <span>Review & Save</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <form method="post" id="entry-form">
+            {% csrf_token %}
+            
+            <!-- Date Selection -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-calendar me-2"></i>Entry Date
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <label for="date" class="form-label">Date</label>
+                            <input type="date" class="form-control" id="date" name="date" required>
+                            <div class="form-text">All entries will be recorded for this date</div>
+                        </div>
+                        <div class="col-md-8 d-flex align-items-end">
+                            <div class="alert alert-info w-100 mb-0">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Tip:</strong> You can add multiple estimate entries at once using the tabs below. Equipment/Labor entries are tracked separately from Materials for easier estimating.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Entry Type Tabs -->
+            <ul class="nav nav-tabs" id="entryTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="labor-tab" data-bs-toggle="tab" data-bs-target="#labor" type="button">
+                        <i class="fas fa-cogs me-2"></i>Equipment & Labor
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button">
+                        <i class="fas fa-boxes me-2"></i>Materials & Supplies
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content border border-top-0 rounded-bottom p-3">
+                <!-- Equipment & Labor Tab -->
+                <div class="tab-pane fade show active" id="labor">
+                    <div id="laborEntries">
+                        <!-- Labor entries will be added here dynamically -->
+                    </div>
+
+                    <button type="button" class="btn btn-outline-primary w-100" onclick="addLaborEntry()">
+                        <i class="fas fa-plus me-2"></i>Add Equipment / Labor Entry
+                    </button>
+                </div>
+
+                <!-- Materials Tab -->
+                <div class="tab-pane fade" id="materials">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <div class="card h-100 text-center quick-add-card" onclick="bulkAddMaterials()">
+                                <div class="card-body">
+                                    <i class="fas fa-list fa-3x text-secondary mb-2"></i>
+                                    <h6>Bulk Add</h6>
+                                    <small class="text-muted">Add 5 empty material rows</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Materials Table -->
+                    <div class="table-responsive">
+                        <table class="table table-bordered" id="materialsTable">
+                            <thead class="table-light">
+                                <tr>
+                                    <th width="40%">Description</th>
+                                    <th width="15%">Quantity</th>
+                                    <th width="15%">Unit</th>
+                                    <th width="15%">Unit Cost</th>
+                                    <th width="15%">Total</th>
+                                    <th width="5%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><input type="text" class="form-control" name="material_description[]" placeholder="e.g., Pipe, Fill Materials, Pumps etc."></td>
+                                    <td><input type="number" class="form-control" name="material_quantity[]" step="0.01" placeholder="1" onchange="calculateRowTotal(this)"></td>
+                                    <td>
+                                        <select class="form-select" name="material_unit[]">
+                                            <option value="Each">Each</option>
+                                            <option value="Hours">Hours</option>
+                                            <option value="Days">Days</option>
+                                            <option value="Boxes">Boxes</option>
+                                            <option value="Bags">Bags</option>
+                                            <option value="Tons">Tons</option>
+                                            <option value="Yards">Yards</option>
+                                            <option value="Linear Ft">Linear Ft</option>
+                                            <option value="Square Ft">Square Ft</option>
+                                        </select>
+                                    </td>
+                                    <td><input type="number" class="form-control" name="material_cost[]" step="0.01" placeholder="0.00" onchange="calculateRowTotal(this)"></td>
+                                    <td><span class="material-total fw-bold">$0.00</span></td>
+                                    <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMaterialRow(this)"><i class="fas fa-trash"></i></button></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex gap-2 mb-3">
+                        <button type="button" class="btn btn-outline-success" onclick="addMaterialRow()">
+                            <i class="fas fa-plus me-2"></i>Add Material
+                        </button>
+                        <button type="button" class="btn btn-outline-info" onclick="bulkAddMaterials()">
+                            <i class="fas fa-list me-2"></i>Bulk Add (5 rows)
+                        </button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="clearAllMaterials()">
+                            <i class="fas fa-eraser me-2"></i>Clear All
+                        </button>
+                    </div>
+
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Material Markup:</strong> Materials are automatically marked up to achieve a {{ margin|default:25 }}% margin for billing. Enter your actual purchase costs here.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="card mt-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Cancel
+                        </a>
+                        
+                        <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-outline-info" onclick="saveDraft()">
+                                <i class="fas fa-save me-2"></i>Save Draft
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                                <i class="fas fa-check me-2"></i>Save All Entries
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Summary Sidebar -->
+    <div class="col-lg-3">
+        <div class="sticky-top" style="top: 100px; z-index: 900;">
+            <!-- Daily Summary -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white text-center">
+                    <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Today's Total</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold" id="total-billable">$0.00</div>
+                    <small class="text-muted">Estimated Billable</small>
+                </div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Breakdown</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Equipment/Labor:</span>
+                        <span id="labor-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Materials:</span>
+                        <span id="materials-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="grand-total">$0.00</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions temporarily disabled
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-history me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-outline-primary btn-sm" onclick="loadYesterday()">
+                            <i class="fas fa-calendar-minus me-1"></i>Yesterday's Entry
+                        </button>
+                        <button type="button" class="btn btn-outline-info btn-sm" onclick="clearAll()">
+                            <i class="fas fa-eraser me-1"></i>Clear All
+                        </button>
+                    </div>
+                </div>
+            </div>
+            -->
+        </div>
+    </div>
+</div>
+
+<style>
+.quick-add-card {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid #e9ecef;
+}
+
+.quick-add-card:hover {
+    border-color: var(--bs-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.step-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.step-indicator.active {
+    background: var(--bs-primary);
+    color: white;
+}
+
+.step-indicator.completed {
+    background: var(--bs-success);
+    color: white;
+}
+
+.entry-row {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f8f9fa;
+}
+
+.material-total {
+    color: var(--bs-success);
+    font-size: 1.1rem;
+}
+
+#entry-timer {
+    font-family: monospace;
+    font-weight: bold;
+    color: var(--bs-primary);
+}
+</style>
+
+<script>
+function setActiveStep(step) {
+    const indicators = document.querySelectorAll('#progress-steps .step-indicator');
+    indicators.forEach((indicator, index) => {
+        indicator.classList.remove('active', 'completed');
+        if (index + 1 < step) {
+            indicator.classList.add('completed');
+        } else if (index + 1 === step) {
+            indicator.classList.add('active');
+        }
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('date').value = today;
+
+    // Start timer
+    startEntryTimer();
+
+    // Initialize totals
+    updateTotals();
+
+    // Initialize progress tracker
+    setActiveStep(1);
+
+    // Add initial equipment/labor entry
+    addLaborEntry();
+
+    document.getElementById('labor-tab').addEventListener('shown.bs.tab', () => setActiveStep(2));
+    document.getElementById('materials-tab').addEventListener('shown.bs.tab', () => setActiveStep(3));
+    document.getElementById('date').addEventListener('focus', () => setActiveStep(1));
+});
+
+let startTime = Date.now();
+
+function startEntryTimer() {
+    setInterval(function() {
+        const elapsed = Date.now() - startTime;
+        const seconds = Math.floor(elapsed / 1000) % 60;
+        const minutes = Math.floor(elapsed / 60000) % 60;
+        const hours = Math.floor(elapsed / 3600000);
+        
+        document.getElementById('entry-timer').textContent = 
+            String(hours).padStart(2, '0') + ':' + 
+            String(minutes).padStart(2, '0') + ':' + 
+            String(seconds).padStart(2, '0');
+    }, 1000);
+}
+
+function addLaborEntry() {
+    const container = document.getElementById('laborEntries');
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'entry-row';
+
+    entryDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Equipment / Labor Entry</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEntry(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Hours/Quantity</label>
+                <input type="number" class="form-control" name="hours[]" step="0.25" placeholder="0.00" onchange="updateTotals()">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Equipment or Asset</label>
+                <select class="form-select" name="asset[]" onchange="updateTotals()">
+                    <option value="">Select Equipment or Asset...</option>
+                    {% for asset in assets %}
+                    <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                        {{ asset.name }} (${{ asset.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Employee</label>
+                <select class="form-select" name="employee[]" onchange="updateTotals()">
+                    <option value="">Select Employee...</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                        {{ emp.name }} (${{ emp.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <div class="text-success fw-bold entry-total">$0.00</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Work Description</label>
+                <textarea class="form-control" name="description[]" rows="2" placeholder="Description of work performed"></textarea>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(entryDiv);
+    updateTotals();
+}
+
+function removeEntry(button) {
+    button.closest('.entry-row').remove();
+    updateTotals();
+}
+
+function addMaterialRow() {
+    const tbody = document.querySelector('#materialsTable tbody');
+    const newRow = tbody.rows[0].cloneNode(true);
+    
+    // Clear the inputs
+    newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelector('.material-total').textContent = '$0.00';
+    
+    tbody.appendChild(newRow);
+}
+
+function bulkAddMaterials() {
+    for (let i = 0; i < 5; i++) {
+        addMaterialRow();
+    }
+}
+
+function removeMaterialRow(button) {
+    const tbody = document.querySelector('#materialsTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        updateTotals();
+    }
+}
+
+function calculateRowTotal(element) {
+    const row = element.closest('tr');
+    const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
+    const cost = parseFloat(row.querySelector('input[name="material_cost[]"]').value) || 0;
+    const total = qty * cost;
+    row.querySelector('.material-total').textContent = '$' + total.toFixed(2);
+    updateTotals();
+}
+
+function updateTotals() {
+    let laborTotal = 0;
+    let materialsTotal = 0;
+    
+    // Calculate labor/equipment totals
+    document.querySelectorAll('.entry-row').forEach(row => {
+        const hours = parseFloat(row.querySelector('input[name="hours[]"]').value) || 0;
+        const assetSelect = row.querySelector('select[name="asset[]"]');
+        const employeeSelect = row.querySelector('select[name="employee[]"]');
+        
+        let rowTotal = 0;
+        
+        if (assetSelect.value) {
+            const assetRate = parseFloat(assetSelect.selectedOptions[0].dataset.billable) || 0;
+            rowTotal += assetRate * hours;
+        }
+        
+        if (employeeSelect.value) {
+            const empRate = parseFloat(employeeSelect.selectedOptions[0].dataset.billable) || 0;
+            rowTotal += empRate * hours;
+        }
+        
+        laborTotal += rowTotal;
+        row.querySelector('.entry-total').textContent = '$' + rowTotal.toFixed(2);
+    });
+    
+    // Calculate materials total
+    document.querySelectorAll('#materialsTable tbody tr').forEach(row => {
+        const totalText = row.querySelector('.material-total').textContent;
+        const total = parseFloat(totalText.replace('$', '')) || 0;
+        materialsTotal += total;
+    });
+    
+    // Apply material margin
+    const margin = {{ margin|default:25 }} / 100;
+    materialsTotal = materialsTotal / (1 - margin);
+    
+    const grandTotal = laborTotal + materialsTotal;
+    
+    // Update display
+    document.getElementById('labor-total').textContent = '$' + laborTotal.toFixed(2);
+    document.getElementById('materials-total').textContent = '$' + materialsTotal.toFixed(2);
+    document.getElementById('grand-total').textContent = '$' + grandTotal.toFixed(2);
+    document.getElementById('total-billable').textContent = '$' + grandTotal.toFixed(2);
+}
+
+function clearAllMaterials() {
+    const tbody = document.querySelector('#materialsTable tbody');
+    tbody.innerHTML = tbody.rows[0].outerHTML;
+    tbody.rows[0].querySelectorAll('input').forEach(input => input.value = '');
+    tbody.rows[0].querySelector('.material-total').textContent = '$0.00';
+    updateTotals();
+}
+
+function saveDraft() {
+    // Implement draft saving
+    alert('Draft saved locally');
+}
+
+
+function loadYesterday() {
+    // Load yesterday's entry
+    alert('Loading yesterday\'s entry...');
+}
+
+function clearAll() {
+    if (confirm('Clear all entries?')) {
+        document.getElementById('laborEntries').innerHTML = '';
+        clearAllMaterials();
+        updateTotals();
+    }
+}
+
+// Form submission
+document.getElementById('entry-form').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+    setActiveStep(4);
+});
+
+// Auto-save draft every 2 minutes
+setInterval(function() {
+    // Auto-save logic here
+    console.log('Auto-saving draft...');
+}, 120000);
+</script>
+
+{% endblock %}

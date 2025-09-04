@@ -16,7 +16,7 @@ try:
 except Exception:  # pragma: no cover - optional dependency
     HTML = None
 
-from tracker.models import Asset, Employee, JobEntry, Payment, Project
+from tracker.models import Asset, Employee, JobEntry, Payment, Project, EstimateEntry
 
 
 def safe_decimal(value, default=Decimal("0")):
@@ -627,6 +627,105 @@ def add_job_entry(request, pk):
 
 
 @login_required
+def add_job_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    assets = contractor.assets.all()
+    employees = contractor.employees.all()
+
+    if request.method == "POST":
+        date = request.POST.get("date")
+        entries_created = 0
+
+        hours_list = request.POST.getlist("hours[]") or request.POST.getlist("hours")
+        asset_ids = request.POST.getlist("asset[]") or request.POST.getlist("asset")
+        employee_ids = request.POST.getlist("employee[]") or request.POST.getlist("employee")
+        descriptions = request.POST.getlist("description[]") or request.POST.getlist("description")
+
+        labor_entries = zip(hours_list, asset_ids, employee_ids, descriptions)
+        for hours, asset_id, employee_id, desc in labor_entries:
+            if not any([hours, asset_id, employee_id, desc]):
+                continue
+
+            asset = assets.filter(pk=asset_id).first() if asset_id else None
+            employee = employees.filter(pk=employee_id).first() if employee_id else None
+            hours_dec = Decimal(hours or 0)
+
+            if hours_dec > 0 or asset or employee:
+                EstimateEntry.objects.create(
+                    project=project,
+                    date=date,
+                    hours=hours_dec,
+                    asset=asset,
+                    employee=employee,
+                    material_description="",
+                    material_cost=None,
+                    description=desc or "",
+                )
+                entries_created += 1
+
+        material_descriptions = request.POST.getlist("material_description[]")
+        material_quantities = request.POST.getlist("material_quantity[]")
+        material_units = request.POST.getlist("material_unit[]")
+        material_costs = request.POST.getlist("material_cost[]")
+
+        if material_descriptions:
+            materials = zip(
+                material_descriptions,
+                material_quantities,
+                material_units,
+                material_costs,
+            )
+            for desc, qty, unit, cost in materials:
+                if not any([desc, qty, cost]):
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    EstimateEntry.objects.create(
+                        project=project,
+                        date=date,
+                        hours=qty_dec,
+                        asset=None,
+                        employee=None,
+                        material_description=full_desc,
+                        material_cost=cost_dec,
+                        description=f"Material: {full_desc}",
+                    )
+                    entries_created += 1
+
+        if entries_created > 0:
+            messages.success(
+                request, f"Successfully created {entries_created} estimate entries."
+            )
+        else:
+            messages.warning(
+                request,
+                "No entries were created. Please fill in at least one complete entry.",
+            )
+
+        return redirect("dashboard:project_detail", pk=project.pk)
+
+    return render(
+        request,
+        "dashboard/estimate_form.html",
+        {
+            "project": project,
+            "assets": assets,
+            "employees": employees,
+            "margin": contractor.material_margin,
+        },
+    )
+
+
+@login_required
 def edit_job_entry(request, pk):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
@@ -876,6 +975,40 @@ def contractor_job_report(request, pk):
             return pdf
 
     return render(request, "dashboard/contractor_job_report.html", context)
+
+
+@login_required
+def job_estimate_report(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    entries = project.estimate_entries.all()
+
+    labor_total = (
+        entries.filter(material_cost__isnull=True).aggregate(total=Sum("billable_amount"))[
+            "total"
+        ]
+        or Decimal("0")
+    )
+    material_total = (
+        entries.filter(material_cost__isnull=False).aggregate(total=Sum("billable_amount"))[
+            "total"
+        ]
+        or Decimal("0")
+    )
+    grand_total = labor_total + material_total
+
+    context = {
+        "contractor": contractor,
+        "project": project,
+        "labor_total": labor_total,
+        "material_total": material_total,
+        "grand_total": grand_total,
+    }
+
+    return render(request, "dashboard/job_estimate_report.html", context)
 
 
 # API endpoints for enhanced functionality

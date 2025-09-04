@@ -842,6 +842,10 @@ textarea:focus {
     background: var(--warning-gradient);
 }
 
+.floating-btn.info {
+    background: var(--info-gradient);
+}
+
 /* Job entry action buttons spacing */
 .job-entry-actions .btn {
     margin-right: 5px;

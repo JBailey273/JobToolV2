@@ -177,6 +177,57 @@ class JobEntry(models.Model):
         super().save(*args, **kwargs)
 
 
+class EstimateEntry(models.Model):
+    project = models.ForeignKey(
+        Project, related_name="estimate_entries", on_delete=models.CASCADE
+    )
+    date = models.DateField()
+    hours = models.DecimalField(max_digits=5, decimal_places=2)
+    asset = models.ForeignKey(
+        Asset,
+        related_name="estimate_entries",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    employee = models.ForeignKey(
+        Employee,
+        related_name="estimate_entries",
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True,
+    )
+    material_description = models.CharField(max_length=255, blank=True)
+    material_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, blank=True, null=True
+    )
+    cost_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    billable_amount = models.DecimalField(max_digits=10, decimal_places=2)
+    description = models.TextField(blank=True)
+
+    def __str__(self) -> str:  # pragma: no cover - simple representation
+        return f"Estimate: {self.project.name} - {self.date}"
+
+    def save(self, *args, **kwargs):
+        contractor = self.project.contractor
+        self.cost_amount = Decimal("0")
+        self.billable_amount = Decimal("0")
+        if self.asset:
+            self.cost_amount += self.asset.cost_rate * self.hours
+            self.billable_amount += self.asset.billable_rate * self.hours
+        if self.employee:
+            self.cost_amount += self.employee.cost_rate * self.hours
+            self.billable_amount += self.employee.billable_rate * self.hours
+        if self.material_cost:
+            material_total = self.material_cost * self.hours
+            self.cost_amount += material_total
+            margin = contractor.material_margin / Decimal("100")
+            self.billable_amount += material_total / (Decimal("1") - margin)
+        self.cost_amount = self.cost_amount.quantize(Decimal("0.01"))
+        self.billable_amount = self.billable_amount.quantize(Decimal("0.01"))
+        super().save(*args, **kwargs)
+
+
 class Payment(models.Model):
     project = models.ForeignKey(Project, related_name='payments', on_delete=models.CASCADE)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
