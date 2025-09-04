@@ -18,14 +18,44 @@ def forward_migrate_estimates(apps, schema_editor):
     projects = Project.objects.filter(estimate_entries__isnull=False).distinct()
 
     for project in projects:
-        estimate = Estimate.objects.create(
+        estimate, _ = Estimate.objects.get_or_create(
             contractor=project.contractor,
             name=project.name,
-            created_date=project.start_date or django.utils.timezone.now().date(),
+            defaults={
+                "created_date": project.start_date
+                or django.utils.timezone.now().date(),
+            },
         )
         EstimateEntry.objects.filter(project=project).update(estimate=estimate)
         project.end_date = project.end_date or django.utils.timezone.now().date()
         project.save(update_fields=["end_date"])
+
+
+def create_estimate_table(apps, schema_editor):
+    if "tracker_estimate" in schema_editor.connection.introspection.table_names():
+        return
+    Estimate = type(
+        "Estimate",
+        (models.Model,),
+        {
+            "__module__": __name__,
+            "id": models.BigAutoField(primary_key=True, auto_created=True),
+            "name": models.CharField(max_length=255),
+            "created_date": models.DateField(default=django.utils.timezone.now),
+            "contractor": models.ForeignKey(
+                "tracker.Contractor",
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="estimates",
+            ),
+            "Meta": type(
+                "Meta",
+                (),
+                {"app_label": "migrations", "db_table": "tracker_estimate"},
+            ),
+        },
+    )
+
+    schema_editor.create_model(Estimate)
 
 
 class Migration(migrations.Migration):
@@ -36,31 +66,38 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.CreateModel(
-            name="Estimate",
-            fields=[
-                (
-                    "id",
-                    models.BigAutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                ("name", models.CharField(max_length=255)),
-                (
-                    "created_date",
-                    models.DateField(default=django.utils.timezone.now),
-                ),
-                (
-                    "contractor",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="estimates",
-                        to="tracker.contractor",
-                    ),
-                ),
+        migrations.SeparateDatabaseAndState(
+            state_operations=[
+                migrations.CreateModel(
+                    name="Estimate",
+                    fields=[
+                        (
+                            "id",
+                            models.BigAutoField(
+                                auto_created=True,
+                                primary_key=True,
+                                serialize=False,
+                                verbose_name="ID",
+                            ),
+                        ),
+                        ("name", models.CharField(max_length=255)),
+                        (
+                            "created_date",
+                            models.DateField(default=django.utils.timezone.now),
+                        ),
+                        (
+                            "contractor",
+                            models.ForeignKey(
+                                on_delete=django.db.models.deletion.CASCADE,
+                                related_name="estimates",
+                                to="tracker.contractor",
+                            ),
+                        ),
+                    ],
+                )
+            ],
+            database_operations=[
+                migrations.RunPython(create_estimate_table, migrations.RunPython.noop)
             ],
         ),
         migrations.AddField(
