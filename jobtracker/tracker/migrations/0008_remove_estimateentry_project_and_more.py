@@ -31,32 +31,18 @@ def forward_migrate_estimates(apps, schema_editor):
         project.save(update_fields=["end_date"])
 
 
-def create_estimate_table_if_missing(apps, schema_editor):
-    """Create ``tracker_estimate`` table when it doesn't already exist."""
-    if "tracker_estimate" in schema_editor.connection.introspection.table_names():
-        return
-    Estimate = type(
-        "Estimate",
-        (models.Model,),
-        {
-            "__module__": __name__,
-            "id": models.BigAutoField(primary_key=True, auto_created=True),
-            "name": models.CharField(max_length=255),
-            "created_date": models.DateField(default=django.utils.timezone.now),
-            "contractor": models.ForeignKey(
-                "tracker.Contractor",
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="estimates",
-            ),
-            "Meta": type(
-                "Meta",
-                (),
-                {"app_label": "migrations", "db_table": "tracker_estimate"},
-            ),
-        },
-    )
+class CreateModelIfNotExists(migrations.CreateModel):
+    def database_forwards(self, app_label, schema_editor, from_state, to_state):
+        model = to_state.apps.get_model(app_label, self.name)
+        if model._meta.db_table in schema_editor.connection.introspection.table_names():
+            return
+        super().database_forwards(app_label, schema_editor, from_state, to_state)
 
-    schema_editor.create_model(Estimate)
+    def database_backwards(self, app_label, schema_editor, from_state, to_state):
+        model = from_state.apps.get_model(app_label, self.name)
+        if model._meta.db_table not in schema_editor.connection.introspection.table_names():
+            return
+        super().database_backwards(app_label, schema_editor, from_state, to_state)
 
 
 class Migration(migrations.Migration):
@@ -67,40 +53,31 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.SeparateDatabaseAndState(
-            state_operations=[
-                migrations.CreateModel(
-                    name="Estimate",
-                    fields=[
-                        (
-                            "id",
-                            models.BigAutoField(
-                                auto_created=True,
-                                primary_key=True,
-                                serialize=False,
-                                verbose_name="ID",
-                            ),
-                        ),
-                        ("name", models.CharField(max_length=255)),
-                        (
-                            "created_date",
-                            models.DateField(default=django.utils.timezone.now),
-                        ),
-                        (
-                            "contractor",
-                            models.ForeignKey(
-                                on_delete=django.db.models.deletion.CASCADE,
-                                related_name="estimates",
-                                to="tracker.contractor",
-                            ),
-                        ),
-                    ],
-                )
-            ],
-            database_operations=[
-                migrations.RunPython(
-                    create_estimate_table_if_missing, migrations.RunPython.noop
-                )
+        CreateModelIfNotExists(
+            name="Estimate",
+            fields=[
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=255)),
+                (
+                    "created_date",
+                    models.DateField(default=django.utils.timezone.now),
+                ),
+                (
+                    "contractor",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="estimates",
+                        to="tracker.contractor",
+                    ),
+                ),
             ],
             if_not_exists=True,
         ),
