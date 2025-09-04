@@ -58,9 +58,9 @@ def contractor_summary(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
         p.total_payments = sum((pay.amount or 0) for pay in p.payments.all())
@@ -132,9 +132,9 @@ def project_list(request):
 
     # Search functionality
     search_query = request.GET.get("search", "")
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     if search_query:
         projects = projects.filter(
@@ -237,9 +237,9 @@ def reports(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
@@ -536,9 +536,9 @@ def select_job_entry_project(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
@@ -566,9 +566,9 @@ def select_payment_project(request):
     if contractor is None:
         return redirect("login")
 
-    projects = contractor.projects.filter(end_date__isnull=True).prefetch_related(
-        "job_entries", "payments"
-    )
+    projects = contractor.projects.filter(
+        end_date__isnull=True, is_estimate=False
+    ).prefetch_related("job_entries", "payments")
 
     for p in projects:
         p.total_billable = sum((je.billable_amount or 0) for je in p.job_entries.all())
