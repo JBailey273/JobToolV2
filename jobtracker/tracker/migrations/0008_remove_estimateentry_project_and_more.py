@@ -5,6 +5,21 @@ import django.utils.timezone
 from django.db import migrations, models
 
 
+def forward_migrate_estimates(apps, schema_editor):
+    Estimate = apps.get_model("tracker", "Estimate")
+    EstimateEntry = apps.get_model("tracker", "EstimateEntry")
+    Project = apps.get_model("tracker", "Project")
+
+    for project in Project.objects.filter(is_estimate=True):
+        estimate = Estimate.objects.create(
+            contractor=project.contractor,
+            name=project.name,
+            created_date=project.start_date or django.utils.timezone.now().date(),
+        )
+        EstimateEntry.objects.filter(project=project).update(estimate=estimate)
+        project.delete()
+
+
 class Migration(migrations.Migration):
 
     dependencies = [
@@ -12,14 +27,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RemoveField(
-            model_name="estimateentry",
-            name="project",
-        ),
-        migrations.RemoveField(
-            model_name="project",
-            name="is_estimate",
-        ),
         migrations.CreateModel(
             name="Estimate",
             fields=[
@@ -33,7 +40,10 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("name", models.CharField(max_length=255)),
-                ("created_date", models.DateField(default=django.utils.timezone.now)),
+                (
+                    "created_date",
+                    models.DateField(default=django.utils.timezone.now),
+                ),
                 (
                     "contractor",
                     models.ForeignKey(
@@ -48,11 +58,31 @@ class Migration(migrations.Migration):
             model_name="estimateentry",
             name="estimate",
             field=models.ForeignKey(
-                default=1,
+                blank=True,
+                null=True,
                 on_delete=django.db.models.deletion.CASCADE,
                 related_name="entries",
                 to="tracker.estimate",
             ),
-            preserve_default=False,
+        ),
+        migrations.RunPython(forward_migrate_estimates, migrations.RunPython.noop),
+        migrations.RemoveField(
+            model_name="estimateentry",
+            name="project",
+        ),
+        migrations.RemoveField(
+            model_name="project",
+            name="is_estimate",
+        ),
+        migrations.AlterField(
+            model_name="estimateentry",
+            name="estimate",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.CASCADE,
+                related_name="entries",
+                to="tracker.estimate",
+            ),
         ),
     ]
+
+
