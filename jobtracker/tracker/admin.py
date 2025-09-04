@@ -11,6 +11,7 @@ from .models import (
     Material,
     Project,
     JobEntry,
+    EstimateEntry,
     Payment,
 )
 from .forms import ContractorForm
@@ -28,6 +29,11 @@ class EmployeeInline(admin.TabularInline):
 
 class MaterialInline(admin.TabularInline):
     model = Material
+    extra = 0
+
+
+class EstimateEntryInline(admin.TabularInline):
+    model = EstimateEntry
     extra = 0
 
 
@@ -90,7 +96,7 @@ class PaymentInline(admin.TabularInline):
 class ProjectAdmin(admin.ModelAdmin):
     list_display = ('name', 'contractor', 'start_date', 'end_date')
     search_fields = ('name',)
-    inlines = [JobEntryInline, PaymentInline]
+    inlines = [JobEntryInline, EstimateEntryInline, PaymentInline]
 
 
 @admin.register(Asset)
@@ -113,6 +119,25 @@ class MaterialAdmin(admin.ModelAdmin):
 
 @admin.register(JobEntry)
 class JobEntryAdmin(admin.ModelAdmin):
+    list_display = ('project', 'date', 'hours', 'cost_amount', 'billable_amount')
+    list_filter = ('project',)
+    fields = (
+        'project',
+        'date',
+        'hours',
+        'asset',
+        'employee',
+        'material_description',
+        'material_cost',
+        'description',
+        'cost_amount',
+        'billable_amount',
+    )
+    readonly_fields = ('cost_amount', 'billable_amount')
+
+
+@admin.register(EstimateEntry)
+class EstimateEntryAdmin(admin.ModelAdmin):
     list_display = ('project', 'date', 'hours', 'cost_amount', 'billable_amount')
     list_filter = ('project',)
     fields = (

@@ -1,0 +1,33 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% block title %}Job Estimate{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <h1 class="mb-3"><i class="fas fa-file-invoice-dollar me-2"></i>Job Estimate</h1>
+    <h4 class="mb-4">{{ project.name }}</h4>
+    <div class="table-responsive">
+        <table class="table table-bordered w-auto">
+            <thead class="table-light">
+                <tr>
+                    <th>Item</th>
+                    <th class="text-end">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Labor &amp; Equipment</td>
+                    <td class="text-end">${{ labor_total|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr>
+                    <td>Materials</td>
+                    <td class="text-end">${{ material_total|floatformat:2|intcomma }}</td>
+                </tr>
+                <tr class="fw-bold">
+                    <td>Total Estimate</td>
+                    <td class="text-end">${{ grand_total|floatformat:2|intcomma }}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

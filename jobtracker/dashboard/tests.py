@@ -7,7 +7,14 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.templatetags.static import static
 
-from tracker.models import Contractor, ContractorUser, Asset, JobEntry, Payment
+from tracker.models import (
+    Contractor,
+    ContractorUser,
+    Asset,
+    JobEntry,
+    Payment,
+    EstimateEntry,
+)
 from dashboard.views import _render_pdf
 
 
@@ -581,3 +588,45 @@ class ProjectDetailRobustnessTests(TestCase):
         url = reverse("dashboard:project_detail", args=[project.pk])
         response = self.client.get(url, HTTP_HOST="localhost")
         self.assertEqual(response.status_code, 200)
+
+
+class JobEstimateReportTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        self.user = ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.project = self.contractor.projects.create(
+            name="Proj", start_date="2024-01-01"
+        )
+        self.asset = self.contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+
+    def test_job_estimate_report_totals(self):
+        EstimateEntry.objects.create(
+            project=self.project,
+            date="2024-01-02",
+            hours=Decimal("2"),
+            asset=self.asset,
+            cost_amount=Decimal("20"),
+            billable_amount=Decimal("40"),
+        )
+        EstimateEntry.objects.create(
+            project=self.project,
+            date="2024-01-02",
+            hours=Decimal("1"),
+            material_description="Pipe",
+            material_cost=Decimal("5"),
+            cost_amount=Decimal("5"),
+            billable_amount=Decimal("5"),
+        )
+
+        self.client.force_login(self.user)
+        url = reverse("dashboard:job_estimate_report", args=[self.project.pk])
+        response = self.client.get(url)
+        self.assertContains(response, "$40.00")
+        self.assertContains(response, "$5.00")
+        self.assertContains(response, "$45.00")
