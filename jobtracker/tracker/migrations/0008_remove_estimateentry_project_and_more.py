@@ -62,24 +62,24 @@ def forward_migrate_estimates(apps, schema_editor):
     conn = schema_editor.connection
 
     has_estimate = _column_exists(conn, "tracker_estimateentry", "estimate_id")
-    has_project = _column_exists(conn, "tracker_estimateentry", "project_id")
-    if not has_estimate or not has_project:
+    if not has_estimate:
         return
 
+    has_project = _column_exists(conn, "tracker_estimateentry", "project_id")
     has_estimate_project = _column_exists(conn, "tracker_estimate", "project_id")
-    if not has_estimate_project:
-        return
 
     with conn.cursor() as cur:
-        cur.execute(
-            """
-            UPDATE tracker_estimateentry AS ee
-            SET estimate_id = e.id
-            FROM tracker_estimate AS e
-            WHERE ee.project_id = e.project_id
-              AND (ee.estimate_id IS NULL)
-            """
-        )
+        if has_project and has_estimate_project:
+            cur.execute(
+                """
+                UPDATE tracker_estimateentry AS ee
+                SET estimate_id = e.id
+                FROM tracker_estimate AS e
+                WHERE ee.project_id = e.project_id
+                  AND (ee.estimate_id IS NULL)
+                """
+            )
+
         # Since estimate data is non-critical, drop any lingering
         # estimate entries that could not be associated with an
         # Estimate. This prevents the subsequent NOT NULL constraint
