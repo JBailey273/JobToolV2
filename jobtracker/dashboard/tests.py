@@ -591,6 +591,43 @@ class ProjectDetailRobustnessTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
 
+class ProjectAnalyticsHoursTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.project = self.contractor.projects.create(
+            name="Proj", start_date="2024-01-01"
+        )
+        self.asset = self.contractor.assets.create(
+            name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def test_total_hours_excludes_material_entries(self):
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-02",
+            hours=Decimal("2"),
+            asset=self.asset,
+        )
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-03",
+            hours=Decimal("5"),
+            material_description="Pipe",
+            material_cost=Decimal("5"),
+        )
+        url = reverse("dashboard:project_detail", args=[self.project.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.context["total_hours"], Decimal("2"))
+
+
 class JobEstimateReportTests(TestCase):
     def setUp(self):
         self.contractor = Contractor.objects.create(
