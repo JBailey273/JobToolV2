@@ -7,6 +7,7 @@ urlpatterns = [
     path("", views.contractor_summary, name="contractor_summary"),
     path("projects/", views.project_list, name="project_list"),
     path("estimates/", views.estimate_list, name="estimate_list"),
+    path("estimates/<int:pk>/delete/", views.delete_estimate, name="delete_estimate"),
     path("estimates/<int:pk>/accept/", views.accept_estimate, name="accept_estimate"),
     path(
         "estimates/<int:pk>/add-entry/",
@@ -19,6 +20,7 @@ urlpatterns = [
         name="job_estimate_report",
     ),
     path("projects/<int:pk>/", views.project_detail, name="project_detail"),
+    path("projects/<int:pk>/delete/", views.delete_project, name="delete_project"),
     path(
         "projects/add-entry/select/",
         views.select_job_entry_project,

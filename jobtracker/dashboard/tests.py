@@ -739,3 +739,40 @@ class EstimateListTests(TestCase):
         self.assertTrue(
             self.contractor.projects.filter(name="Estimate").exists()
         )
+
+
+class ProjectEstimateCRUDTests(TestCase):
+    def setUp(self):
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com"
+        )
+        ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def test_add_project_via_post(self):
+        response = self.client.post(
+            reverse("dashboard:project_list"),
+            {"name": "NewProj", "start_date": "2024-01-01"},
+        )
+        self.assertRedirects(response, reverse("dashboard:project_list"))
+        self.assertTrue(self.contractor.projects.filter(name="NewProj").exists())
+
+    def test_delete_project(self):
+        project = self.contractor.projects.create(name="Proj", start_date="2024-01-01")
+        response = self.client.post(
+            reverse("dashboard:delete_project", args=[project.pk])
+        )
+        self.assertRedirects(response, reverse("dashboard:project_list"))
+        self.assertFalse(self.contractor.projects.filter(pk=project.pk).exists())
+
+    def test_delete_estimate(self):
+        estimate = self.contractor.estimates.create(name="Est", created_date="2024-01-01")
+        response = self.client.post(
+            reverse("dashboard:delete_estimate", args=[estimate.pk])
+        )
+        self.assertRedirects(response, reverse("dashboard:estimate_list"))
+        self.assertFalse(self.contractor.estimates.filter(pk=estimate.pk).exists())
