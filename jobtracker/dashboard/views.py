@@ -772,6 +772,40 @@ def add_estimate_entry(request, pk):
                     )
                     entries_created += 1
 
+        service_descriptions = request.POST.getlist("service_description[]")
+        service_quantities = request.POST.getlist("service_quantity[]")
+        service_units = request.POST.getlist("service_unit[]")
+        service_costs = request.POST.getlist("service_cost[]")
+
+        if service_descriptions:
+            services = zip(
+                service_descriptions,
+                service_quantities,
+                service_units,
+                service_costs,
+            )
+            for desc, qty, unit, cost in services:
+                if not any([desc, qty, cost]):
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    EstimateEntry.objects.create(
+                        estimate=estimate,
+                        date=date,
+                        hours=qty_dec,
+                        asset=None,
+                        employee=None,
+                        material_description=full_desc,
+                        material_cost=cost_dec,
+                        description=f"Outside Service: {full_desc}",
+                    )
+                    entries_created += 1
+
         if entries_created > 0:
             messages.success(
                 request, f"Successfully created {entries_created} estimate entries."
@@ -1063,13 +1097,20 @@ def job_estimate_report(request, pk):
         ]
         or Decimal("0")
     )
+    material_entries = entries.filter(material_cost__isnull=False)
     material_total = (
-        entries.filter(material_cost__isnull=False).aggregate(total=Sum("billable_amount"))[
-            "total"
-        ]
+        material_entries.filter(description__startswith="Material:").aggregate(
+            total=Sum("billable_amount")
+        )["total"]
         or Decimal("0")
     )
-    billable_total = labor_total + material_total
+    service_total = (
+        material_entries.filter(description__startswith="Outside Service:").aggregate(
+            total=Sum("billable_amount")
+        )["total"]
+        or Decimal("0")
+    )
+    billable_total = labor_total + material_total + service_total
     cost_total = (
         entries.aggregate(total=Sum("cost_amount"))["total"] or Decimal("0")
     )
@@ -1083,6 +1124,7 @@ def job_estimate_report(request, pk):
         "estimate": estimate,
         "labor_total": labor_total,
         "material_total": material_total,
+        "service_total": service_total,
         "grand_total": billable_total,
         "cost_total": cost_total,
         "profit": profit,
