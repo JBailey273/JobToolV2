@@ -473,7 +473,8 @@ def project_detail(request, pk):
         (
             safe_decimal(getattr(je, "hours", 0))
             for je in job_entries
-            if not getattr(je, "material_description", "")
+            if getattr(je, "employee", None)
+            and not getattr(je, "material_description", "")
         ),
         Decimal("0"),
     )
