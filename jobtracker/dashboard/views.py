@@ -188,12 +188,13 @@ def estimate_list(request):
     if request.method == "POST":
         name = request.POST.get("name")
         if name:
-            Estimate.objects.create(
+            estimate = Estimate.objects.create(
                 contractor=contractor,
                 name=name,
                 created_date=timezone.now().date(),
             )
             messages.success(request, f"Estimate '{name}' created.")
+            return redirect("dashboard:add_estimate_entry", estimate.pk)
         return redirect("dashboard:estimate_list")
 
     estimates = contractor.estimates.prefetch_related("entries")
