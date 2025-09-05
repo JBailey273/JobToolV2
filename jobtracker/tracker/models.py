@@ -215,6 +215,9 @@ class EstimateEntry(models.Model):
     material_cost = models.DecimalField(
         max_digits=10, decimal_places=2, blank=True, null=True
     )
+    service_markup = models.DecimalField(
+        max_digits=5, decimal_places=2, default=Decimal("0"), help_text="Percentage markup for outside services"
+    )
     cost_amount = models.DecimalField(max_digits=10, decimal_places=2)
     billable_amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
@@ -235,8 +238,13 @@ class EstimateEntry(models.Model):
         if self.material_cost:
             material_total = self.material_cost * self.hours
             self.cost_amount += material_total
-            margin = contractor.material_margin / Decimal("100")
-            self.billable_amount += material_total / (Decimal("1") - margin)
+            if self.service_markup:
+                self.billable_amount += material_total * (
+                    Decimal("1") + self.service_markup / Decimal("100")
+                )
+            else:
+                margin = contractor.material_margin / Decimal("100")
+                self.billable_amount += material_total / (Decimal("1") - margin)
         self.cost_amount = self.cost_amount.quantize(Decimal("0.01"))
         self.billable_amount = self.billable_amount.quantize(Decimal("0.01"))
         super().save(*args, **kwargs)

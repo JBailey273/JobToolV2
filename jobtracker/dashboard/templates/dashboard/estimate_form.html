@@ -199,10 +199,11 @@
                         <table class="table table-bordered" id="servicesTable">
                             <thead class="table-light">
                                 <tr>
-                                    <th width="40%">Description</th>
+                                    <th width="35%">Description</th>
                                     <th width="15%">Quantity</th>
-                                    <th width="15%">Unit</th>
+                                    <th width="10%">Unit</th>
                                     <th width="15%">Unit Cost</th>
+                                    <th width="10%">Markup %</th>
                                     <th width="15%">Total</th>
                                     <th width="5%">Actions</th>
                                 </tr>
@@ -219,6 +220,7 @@
                                         </select>
                                     </td>
                                     <td><input type="number" class="form-control" name="service_cost[]" step="0.01" placeholder="0.00" onchange="calculateServiceRowTotal(this)"></td>
+                                    <td><input type="number" class="form-control" name="service_markup[]" step="0.01" value="20" onchange="calculateServiceRowTotal(this)"></td>
                                     <td><span class="service-total fw-bold">$0.00</span></td>
                                     <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeServiceRow(this)"><i class="fas fa-trash"></i></button></td>
                                 </tr>
@@ -240,7 +242,7 @@
 
                     <div class="alert alert-info">
                         <i class="fas fa-info-circle me-2"></i>
-                        <strong>Service Markup:</strong> Outside services are automatically marked up to achieve a {{ margin|default:25 }}% margin for billing. Enter your actual subcontractor costs here.
+                        <strong>Service Markup:</strong> Each service line can have its own markup (default 20%). Enter actual subcontractor costs and adjust markup as needed.
                     </div>
                 </div>
             </div>
@@ -530,6 +532,7 @@ function addServiceRow() {
     const tbody = document.querySelector('#servicesTable tbody');
     const newRow = tbody.rows[0].cloneNode(true);
     newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelector('input[name="service_markup[]"]').value = 20;
     newRow.querySelector('.service-total').textContent = '$0.00';
     tbody.appendChild(newRow);
 }
@@ -552,7 +555,8 @@ function calculateServiceRowTotal(element) {
     const row = element.closest('tr');
     const qty = parseFloat(row.querySelector('input[name="service_quantity[]"]').value) || 0;
     const cost = parseFloat(row.querySelector('input[name="service_cost[]"]').value) || 0;
-    const total = qty * cost;
+    const markup = parseFloat(row.querySelector('input[name="service_markup[]"]').value) || 0;
+    const total = qty * cost * (1 + markup / 100);
     row.querySelector('.service-total').textContent = '$' + total.toFixed(2);
     updateTotals();
 }
@@ -598,10 +602,9 @@ function updateTotals() {
         servicesTotal += total;
     });
 
-    // Apply material/service margin
+    // Apply material margin
     const margin = {{ margin|default:25 }} / 100;
     materialsTotal = materialsTotal / (1 - margin);
-    servicesTotal = servicesTotal / (1 - margin);
 
     const grandTotal = laborTotal + materialsTotal + servicesTotal;
 
@@ -625,6 +628,7 @@ function clearAllServices() {
     const tbody = document.querySelector('#servicesTable tbody');
     tbody.innerHTML = tbody.rows[0].outerHTML;
     tbody.rows[0].querySelectorAll('input').forEach(input => input.value = '');
+    tbody.rows[0].querySelector('input[name="service_markup[]"]').value = 20;
     tbody.rows[0].querySelector('.service-total').textContent = '$0.00';
     updateTotals();
 }

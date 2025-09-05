@@ -827,6 +827,7 @@ def add_estimate_entry(request, pk):
         service_quantities = request.POST.getlist("service_quantity[]")
         service_units = request.POST.getlist("service_unit[]")
         service_costs = request.POST.getlist("service_cost[]")
+        service_markups = request.POST.getlist("service_markup[]")
 
         if service_descriptions:
             services = zip(
@@ -834,13 +835,15 @@ def add_estimate_entry(request, pk):
                 service_quantities,
                 service_units,
                 service_costs,
+                service_markups,
             )
-            for desc, qty, unit, cost in services:
+            for desc, qty, unit, cost, markup in services:
                 if not any([desc, qty, cost]):
                     continue
 
                 qty_dec = Decimal(qty or 0)
                 cost_dec = Decimal(cost or 0)
+                markup_dec = Decimal(markup or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
                     full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
@@ -853,6 +856,7 @@ def add_estimate_entry(request, pk):
                         employee=None,
                         material_description=full_desc,
                         material_cost=cost_dec,
+                        service_markup=markup_dec,
                         description=f"Outside Service: {full_desc}",
                     )
                     entries_created += 1
