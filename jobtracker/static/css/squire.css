@@ -1968,3 +1968,17 @@ textarea.form-control {
         -webkit-overflow-scrolling: touch;
     }
 }
+
+/* Weekly schedule layout */
+.weekly-schedule {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+}
+.weekly-schedule > * {
+    scroll-snap-align: center;
+}
+.weekly-schedule .active {
+    background: var(--success-color);
+    color: var(--text-on-primary);
+}
