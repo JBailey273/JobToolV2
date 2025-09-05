@@ -605,6 +605,9 @@ class ProjectAnalyticsHoursTests(TestCase):
         self.asset = self.contractor.assets.create(
             name="Excavator", cost_rate=Decimal("10"), billable_rate=Decimal("20")
         )
+        self.employee = self.contractor.employees.create(
+            name="Gary", cost_rate=Decimal("15"), billable_rate=Decimal("30")
+        )
         self.client.post(
             reverse("login"), {"username": "user@example.com", "password": "secret"}
         )
@@ -626,6 +629,30 @@ class ProjectAnalyticsHoursTests(TestCase):
         url = reverse("dashboard:project_detail", args=[self.project.pk])
         response = self.client.get(url)
         self.assertEqual(response.context["total_hours"], Decimal("2"))
+
+    def test_total_hours_excludes_equipment_only_entries(self):
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-02",
+            hours=Decimal("2"),
+            asset=self.asset,
+        )
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-03",
+            hours=Decimal("3"),
+            employee=self.employee,
+        )
+        JobEntry.objects.create(
+            project=self.project,
+            date="2024-01-04",
+            hours=Decimal("4"),
+            asset=self.asset,
+            employee=self.employee,
+        )
+        url = reverse("dashboard:project_detail", args=[self.project.pk])
+        response = self.client.get(url)
+        self.assertEqual(response.context["total_hours"], Decimal("7"))
 
 
 class JobEstimateReportTests(TestCase):
