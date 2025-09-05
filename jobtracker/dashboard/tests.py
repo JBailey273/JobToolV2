@@ -735,10 +735,11 @@ class EstimateListTests(TestCase):
         self.client.force_login(self.user)
         url = reverse("dashboard:estimate_list")
         response = self.client.post(url, {"name": "New Est"})
-        self.assertRedirects(response, url)
-        self.assertTrue(
-            self.contractor.estimates.filter(name="New Est").exists()
+        new_est = self.contractor.estimates.get(name="New Est")
+        self.assertRedirects(
+            response, reverse("dashboard:add_estimate_entry", args=[new_est.pk])
         )
+        self.assertTrue(self.contractor.estimates.filter(name="New Est").exists())
 
     def test_accept_estimate_converts_to_project(self):
         self.client.force_login(self.user)
