@@ -428,7 +428,11 @@ def project_detail(request, pk):
 
         # Calculate totals for the week
         week_hours = sum(
-            (safe_decimal(getattr(je, "hours", 0)) for je in week_entries),
+            (
+                safe_decimal(getattr(je, "hours", 0))
+                for je in week_entries
+                if not getattr(je, "material_description", "")
+            ),
             Decimal("0"),
         )
         week_billable = sum(
@@ -465,7 +469,14 @@ def project_detail(request, pk):
     ) or 1
 
     # Additional analytics calculations
-    total_hours = sum((safe_decimal(getattr(je, "hours", 0)) for je in job_entries), Decimal("0"))
+    total_hours = sum(
+        (
+            safe_decimal(getattr(je, "hours", 0))
+            for je in job_entries
+            if not getattr(je, "material_description", "")
+        ),
+        Decimal("0"),
+    )
     avg_hourly_rate = (total_billable / total_hours) if total_hours > 0 else Decimal("0")
 
     project_duration_weeks = max(1, ((current_date - project.start_date).days // 7) + 1)
@@ -1221,7 +1232,9 @@ def project_analytics_data(request, pk):
     while start_date <= current_date:
         end_date = start_date + timedelta(days=6)
 
-        week_entries = project.job_entries.filter(date__range=[start_date, end_date])
+        week_entries = project.job_entries.filter(
+            date__range=[start_date, end_date], material_description=""
+        )
         week_hours = week_entries.aggregate(hours=Sum("hours"))["hours"] or 0
         week_billable = (
             week_entries.aggregate(total=Sum("billable_amount"))["total"] or 0
