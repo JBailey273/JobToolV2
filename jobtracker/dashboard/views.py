@@ -129,6 +129,15 @@ def project_list(request):
     contractor = getattr(request.user, "contractor", None)
     if contractor is None:
         return redirect("login")
+    if request.method == "POST":
+        name = request.POST.get("name")
+        start_date = request.POST.get("start_date") or timezone.now().date()
+        if name:
+            Project.objects.create(
+                contractor=contractor, name=name, start_date=start_date
+            )
+            messages.success(request, f"Project '{name}' created.")
+        return redirect("dashboard:project_list")
 
     # Search functionality
     search_query = request.GET.get("search", "")
@@ -154,6 +163,8 @@ def project_list(request):
 
     total_outstanding = total_billable - total_payments
 
+    today = timezone.now().date()
+
     return render(
         request,
         "dashboard/project_list.html",
@@ -163,6 +174,7 @@ def project_list(request):
             "total_payments": total_payments,
             "total_outstanding": total_outstanding,
             "search_query": search_query,
+            "today": today,
         },
     )
 
@@ -228,6 +240,32 @@ def accept_estimate(request, pk):
         return redirect("dashboard:project_detail", pk=project.pk)
 
     return redirect("dashboard:estimate_list")
+
+
+@login_required
+def delete_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    if request.method == "POST":
+        estimate.delete()
+        messages.success(request, "Estimate deleted.")
+        return redirect("dashboard:estimate_list")
+    return redirect("dashboard:estimate_list")
+
+
+@login_required
+def delete_project(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+    if request.method == "POST":
+        project.delete()
+        messages.success(request, "Project deleted.")
+        return redirect("dashboard:project_list")
+    return redirect("dashboard:project_detail", pk=pk)
 
 
 @login_required

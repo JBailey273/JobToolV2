@@ -17,6 +17,19 @@
     </div>
 </div>
 
+<form method="post" class="row g-3 mb-4">
+    {% csrf_token %}
+    <div class="col-auto">
+        <input type="text" name="name" id="add-project-name" class="form-control" placeholder="New project name">
+    </div>
+    <div class="col-auto">
+        <input type="date" name="start_date" class="form-control" value="{{ today|date:'Y-m-d' }}">
+    </div>
+    <div class="col-auto">
+        <button type="submit" class="btn btn-primary">Add Project</button>
+    </div>
+</form>
+
 {% if projects %}
 <div class="row">
     {% for project in projects %}
@@ -101,6 +114,12 @@
                         <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-outline-info btn-sm" title="Add Payment">
                             <i class="fas fa-money-bill-wave"></i>
                         </a>
+                        <form method="post" action="{% url 'dashboard:delete_project' project.pk %}" onsubmit="return confirm('Delete this project?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-outline-danger btn-sm" title="Delete Project">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -154,15 +173,9 @@
             <p class="text-muted mb-4">
                 You don't have any active projects yet. Get started by creating your first project.
             </p>
-            {% if user.is_staff %}
-            <a href="{% url 'admin:tracker_project_add' %}" class="btn btn-primary btn-lg">
+            <a href="#" class="btn btn-primary btn-lg" onclick="document.getElementById('add-project-name').focus(); return false;">
                 <i class="fas fa-plus me-2"></i>Create Your First Project
             </a>
-            {% else %}
-            <p class="text-muted">
-                Contact your administrator to create projects.
-            </p>
-            {% endif %}
         </div>
     </div>
 </div>

@@ -38,6 +38,10 @@
                             {% csrf_token %}
                             <button type="submit" class="btn btn-sm btn-success">Accept</button>
                         </form>
+                        <form method="post" action="{% url 'dashboard:delete_estimate' estimate.pk %}" class="d-inline" onsubmit="return confirm('Delete this estimate?');">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
                     </td>
                 </tr>
             {% empty %}
