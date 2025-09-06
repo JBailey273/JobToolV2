@@ -7,12 +7,26 @@ urlpatterns = [
     path("", views.contractor_summary, name="contractor_summary"),
     path("projects/", views.project_list, name="project_list"),
     path("estimates/", views.estimate_list, name="estimate_list"),
+    path("estimates/create/", views.create_estimate, name="create_estimate"),
+    path("estimates/<int:pk>/edit/", views.edit_estimate, name="edit_estimate"),
     path("estimates/<int:pk>/delete/", views.delete_estimate, name="delete_estimate"),
     path("estimates/<int:pk>/accept/", views.accept_estimate, name="accept_estimate"),
+    path("estimates/<int:pk>/duplicate/", views.duplicate_estimate, name="duplicate_estimate"),
+    path("estimates/<int:pk>/email/", views.email_estimate, name="email_estimate"),
     path(
         "estimates/<int:pk>/add-entry/",
         views.add_estimate_entry,
         name="add_estimate_entry",
+    ),
+    path(
+        "estimates/<int:pk>/customer-report/",
+        views.customer_estimate_report,
+        name="customer_estimate_report",
+    ),
+    path(
+        "estimates/<int:pk>/internal-report/",
+        views.internal_estimate_report,
+        name="internal_estimate_report",
     ),
     path(
         "estimates/<int:pk>/report/",
