@@ -1299,7 +1299,390 @@ def get_material_templates(request):
     ]
 
     return JsonResponse({"templates": templates})
+# Add these views to the existing views.py file
 
+@login_required
+def create_estimate(request):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    assets = contractor.assets.all()
+    employees = contractor.employees.all()
+
+    if request.method == "POST":
+        # Create the estimate
+        estimate = Estimate.objects.create(
+            contractor=contractor,
+            name=request.POST.get("name"),
+            estimate_number=request.POST.get("estimate_number", ""),
+            customer_name=request.POST.get("customer_name"),
+            customer_email=request.POST.get("customer_email", ""),
+            customer_phone=request.POST.get("customer_phone", ""),
+            customer_address=request.POST.get("customer_address", ""),
+            project_location=request.POST.get("project_location"),
+            project_description=request.POST.get("project_description", ""),
+            payment_terms=request.POST.get("payment_terms", ""),
+            exclusions=request.POST.get("exclusions", ""),
+            special_terms=request.POST.get("special_terms", ""),
+            liability_statement=request.POST.get("liability_statement", ""),
+            notes=request.POST.get("notes", ""),
+            created_date=request.POST.get("created_date"),
+            valid_until=request.POST.get("valid_until") or None,
+        )
+
+        entries_created = 0
+        date = request.POST.get("created_date")
+
+        # Process labor/equipment entries
+        hours_list = request.POST.getlist("hours[]")
+        asset_ids = request.POST.getlist("asset[]")
+        employee_ids = request.POST.getlist("employee[]")
+        descriptions = request.POST.getlist("description[]")
+
+        # Create labor/equipment entries
+        for hours, asset_id, employee_id, desc in zip(hours_list, asset_ids, employee_ids, descriptions):
+            if not any([hours, asset_id, employee_id, desc]):
+                continue
+
+            asset = assets.filter(pk=asset_id).first() if asset_id else None
+            employee = employees.filter(pk=employee_id).first() if employee_id else None
+            hours_dec = Decimal(hours or 0)
+
+            if hours_dec > 0 or asset or employee:
+                EstimateEntry.objects.create(
+                    estimate=estimate,
+                    date=date,
+                    hours=hours_dec,
+                    asset=asset,
+                    employee=employee,
+                    material_description="",
+                    material_cost=None,
+                    description=desc or "",
+                )
+                entries_created += 1
+
+        # Process materials entries
+        material_descriptions = request.POST.getlist("material_description[]")
+        material_quantities = request.POST.getlist("material_quantity[]")
+        material_units = request.POST.getlist("material_unit[]")
+        material_costs = request.POST.getlist("material_cost[]")
+
+        if material_descriptions:
+            for desc, qty, unit, cost in zip(
+                material_descriptions, material_quantities, material_units, material_costs
+            ):
+                if not any([desc, qty, cost]):
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    EstimateEntry.objects.create(
+                        estimate=estimate,
+                        date=date,
+                        hours=qty_dec,
+                        asset=None,
+                        employee=None,
+                        material_description=full_desc,
+                        material_cost=cost_dec,
+                        description=f"Material: {full_desc}",
+                    )
+                    entries_created += 1
+
+        # Process services entries
+        service_descriptions = request.POST.getlist("service_description[]")
+        service_quantities = request.POST.getlist("service_quantity[]")
+        service_units = request.POST.getlist("service_unit[]")
+        service_costs = request.POST.getlist("service_cost[]")
+        service_markups = request.POST.getlist("service_markup[]")
+
+        if service_descriptions:
+            for desc, qty, unit, cost, markup in zip(
+                service_descriptions, service_quantities, service_units, service_costs, service_markups
+            ):
+                if not any([desc, qty, cost]):
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+                markup_dec = Decimal(markup or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    EstimateEntry.objects.create(
+                        estimate=estimate,
+                        date=date,
+                        hours=qty_dec,
+                        asset=None,
+                        employee=None,
+                        material_description=full_desc,
+                        material_cost=cost_dec,
+                        service_markup=markup_dec,
+                        description=f"Outside Service: {full_desc}",
+                    )
+                    entries_created += 1
+
+        if entries_created > 0:
+            messages.success(
+                request, f"Estimate '{estimate.name}' created successfully with {entries_created} entries."
+            )
+        else:
+            messages.warning(request, f"Estimate '{estimate.name}' created but no entries were added.")
+
+        return redirect("dashboard:estimate_list")
+
+    return render(
+        request,
+        "dashboard/create_estimate.html",
+        {
+            "assets": assets,
+            "employees": employees,
+            "margin": contractor.material_margin,
+        },
+    )
+
+
+@login_required
+def edit_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    assets = contractor.assets.all()
+    employees = contractor.employees.all()
+
+    if request.method == "POST":
+        # Update the estimate
+        estimate.name = request.POST.get("name")
+        estimate.estimate_number = request.POST.get("estimate_number", "")
+        estimate.customer_name = request.POST.get("customer_name")
+        estimate.customer_email = request.POST.get("customer_email", "")
+        estimate.customer_phone = request.POST.get("customer_phone", "")
+        estimate.customer_address = request.POST.get("customer_address", "")
+        estimate.project_location = request.POST.get("project_location")
+        estimate.project_description = request.POST.get("project_description", "")
+        estimate.payment_terms = request.POST.get("payment_terms", "")
+        estimate.exclusions = request.POST.get("exclusions", "")
+        estimate.special_terms = request.POST.get("special_terms", "")
+        estimate.liability_statement = request.POST.get("liability_statement", "")
+        estimate.notes = request.POST.get("notes", "")
+        estimate.created_date = request.POST.get("created_date")
+        estimate.valid_until = request.POST.get("valid_until") or None
+        estimate.save()
+
+        # Clear existing entries and recreate them
+        estimate.entries.all().delete()
+
+        entries_created = 0
+        date = request.POST.get("created_date")
+
+        # Process entries (same logic as create_estimate)
+        # ... (copy the entry processing logic from create_estimate)
+
+        messages.success(request, f"Estimate '{estimate.name}' updated successfully.")
+        return redirect("dashboard:estimate_list")
+
+    return render(
+        request,
+        "dashboard/edit_estimate.html",
+        {
+            "estimate": estimate,
+            "assets": assets,
+            "employees": employees,
+            "margin": contractor.material_margin,
+        },
+    )
+
+
+@login_required
+def duplicate_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    original = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+
+    if request.method == "POST":
+        # Create duplicate estimate
+        duplicate = Estimate.objects.create(
+            contractor=contractor,
+            name=f"{original.name} (Copy)",
+            customer_name=original.customer_name,
+            customer_email=original.customer_email,
+            customer_phone=original.customer_phone,
+            customer_address=original.customer_address,
+            project_location=original.project_location,
+            project_description=original.project_description,
+            payment_terms=original.payment_terms,
+            exclusions=original.exclusions,
+            special_terms=original.special_terms,
+            liability_statement=original.liability_statement,
+            notes=original.notes,
+            created_date=timezone.now().date(),
+            valid_until=None,
+        )
+
+        # Duplicate all entries
+        for entry in original.entries.all():
+            EstimateEntry.objects.create(
+                estimate=duplicate,
+                date=duplicate.created_date,
+                hours=entry.hours,
+                asset=entry.asset,
+                employee=entry.employee,
+                material_description=entry.material_description,
+                material_cost=entry.material_cost,
+                service_markup=entry.service_markup,
+                description=entry.description,
+            )
+
+        messages.success(request, f"Estimate duplicated as '{duplicate.name}'.")
+        return redirect("dashboard:edit_estimate", pk=duplicate.pk)
+
+    return redirect("dashboard:estimate_list")
+
+
+@login_required
+def email_estimate(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    
+    # TODO: Implement email functionality
+    messages.info(request, "Email functionality will be implemented in a future update.")
+    return redirect("dashboard:estimate_list")
+
+
+@login_required
+def customer_estimate_report(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    
+    # Group entries for customer presentation
+    labor_equipment_entries = estimate.entries.filter(
+        models.Q(asset__isnull=False) | models.Q(employee__isnull=False)
+    ).exclude(material_description__isnull=False, material_description__gt='')
+    
+    material_entries = estimate.entries.filter(
+        material_description__isnull=False,
+        material_description__gt='',
+        description__startswith='Material:'
+    )
+    
+    service_entries = estimate.entries.filter(
+        material_description__isnull=False,
+        material_description__gt='',
+        description__startswith='Outside Service:'
+    )
+    
+    # Calculate totals
+    labor_equipment_total = sum((entry.billable_amount or 0) for entry in labor_equipment_entries)
+    materials_total = sum((entry.billable_amount or 0) for entry in material_entries)
+    services_total = sum((entry.billable_amount or 0) for entry in service_entries)
+    grand_total = labor_equipment_total + materials_total + services_total
+
+    export_pdf = request.GET.get("export") == "pdf"
+
+    context = {
+        "contractor": contractor,
+        "estimate": estimate,
+        "labor_equipment_entries": labor_equipment_entries,
+        "material_entries": material_entries,
+        "service_entries": service_entries,
+        "labor_equipment_total": labor_equipment_total,
+        "materials_total": materials_total,
+        "services_total": services_total,
+        "grand_total": grand_total,
+        "report": export_pdf,
+    }
+
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/customer_estimate_report.html", context, f"estimate_{estimate.estimate_number}.pdf"
+        )
+        if pdf:
+            return pdf
+
+    return render(request, "dashboard/customer_estimate_report.html", context)
+
+
+@login_required
+def internal_estimate_report(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    entries = list(estimate.entries.all().order_by("-date"))
+    
+    # Calculate detailed totals and margins
+    total_billable = estimate.total_billable
+    total_cost = estimate.total_cost
+    total_profit = estimate.total_profit
+    overall_margin = estimate.profit_margin
+
+    # Category breakdowns
+    labor_cost = equipment_cost = material_cost = service_cost = Decimal("0")
+    labor_billable = equipment_billable = material_billable = service_billable = Decimal("0")
+
+    for entry in entries:
+        if entry.asset and not entry.material_description:
+            equipment_cost += (entry.asset.cost_rate * entry.hours) if entry.asset else Decimal("0")
+            equipment_billable += (entry.asset.billable_rate * entry.hours) if entry.asset else Decimal("0")
+        
+        if entry.employee and not entry.material_description:
+            labor_cost += (entry.employee.cost_rate * entry.hours) if entry.employee else Decimal("0")
+            labor_billable += (entry.employee.billable_rate * entry.hours) if entry.employee else Decimal("0")
+        
+        if entry.material_description:
+            mat_cost = (entry.material_cost * entry.hours) if entry.material_cost else Decimal("0")
+            if "Outside Service:" in entry.description:
+                service_cost += mat_cost
+                service_billable += entry.billable_amount or Decimal("0")
+            else:
+                material_cost += mat_cost
+                material_billable += entry.billable_amount or Decimal("0")
+
+    export_pdf = request.GET.get("export") == "pdf"
+
+    context = {
+        "contractor": contractor,
+        "estimate": estimate,
+        "entries": entries,
+        "total_billable": total_billable,
+        "total_cost": total_cost,
+        "total_profit": total_profit,
+        "overall_margin": overall_margin,
+        "labor_cost": labor_cost,
+        "labor_billable": labor_billable,
+        "equipment_cost": equipment_cost,
+        "equipment_billable": equipment_billable,
+        "material_cost": material_cost,
+        "material_billable": material_billable,
+        "service_cost": service_cost,
+        "service_billable": service_billable,
+        "report": export_pdf,
+    }
+
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/internal_estimate_report.html", context, f"internal_estimate_{estimate.estimate_number}.pdf"
+        )
+        if pdf:
+            return pdf
+
+    return render(request, "dashboard/internal_estimate_report.html", context)
 
 @login_required
 def project_analytics_data(request, pk):
