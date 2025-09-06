@@ -185,7 +185,7 @@ def estimate_list(request):
     if contractor is None:
         return redirect("login")
 
-    estimates = contractor.estimates.prefetch_related("entries")
+    estimates = contractor.estimates.all().prefetch_related("entries")
     
     # Calculate totals and summary statistics
     total_value = Decimal("0")

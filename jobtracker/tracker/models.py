@@ -6,6 +6,7 @@ from io import BytesIO
 from PIL import Image
 import os
 from django.utils import timezone
+from datetime import datetime
 
 
 class GlobalSettings(models.Model):
@@ -203,6 +204,12 @@ class Estimate(models.Model):
         return f"{self.estimate_number or self.name} - {self.customer_name}"
 
     def save(self, *args, **kwargs):
+        if isinstance(self.created_date, str):
+            try:
+                self.created_date = datetime.strptime(self.created_date, "%Y-%m-%d").date()
+            except ValueError:
+                self.created_date = timezone.now().date()
+
         # Auto-generate estimate number if not provided
         if not self.estimate_number:
             year = self.created_date.year
