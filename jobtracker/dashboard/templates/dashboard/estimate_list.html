@@ -2,55 +2,227 @@
 {% load humanize %}
 {% block title %}Estimator{% endblock %}
 {% block content %}
-<div class="container mt-4">
-    <h1 class="mb-4"><i class="fas fa-calculator me-2"></i>Estimator</h1>
-    <form method="post" action="{% url 'dashboard:estimate_list' %}" class="row g-3 mb-4">
-        {% csrf_token %}
-        <div class="col-auto">
-            <input type="text" name="name" class="form-control" placeholder="New estimate name">
-        </div>
-        <div class="col-auto">
-            <button type="submit" class="btn btn-primary">Add Estimate</button>
-        </div>
-    </form>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th class="text-end">Billable</th>
-                    <th class="text-end">Profit</th>
-                    <th class="text-end">Margin</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-            {% for estimate in estimates %}
-                <tr>
-                    <td>{{ estimate.name }}</td>
-                    <td class="text-end">${{ estimate.billable_total|floatformat:2|intcomma }}</td>
-                    <td class="text-end">${{ estimate.profit|floatformat:2|intcomma }}</td>
-                    <td class="text-end">{{ estimate.margin|floatformat:2 }}%</td>
-                    <td class="text-end">
-                        <a href="{% url 'dashboard:add_estimate_entry' estimate.pk %}" class="btn btn-sm btn-outline-secondary">Edit</a>
-                        <a href="{% url 'dashboard:job_estimate_report' estimate.pk %}" class="btn btn-sm btn-secondary">Report</a>
-                        <form method="post" action="{% url 'dashboard:accept_estimate' estimate.pk %}" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-success">Accept</button>
-                        </form>
-                        <form method="post" action="{% url 'dashboard:delete_estimate' estimate.pk %}" class="d-inline" onsubmit="return confirm('Delete this estimate?');">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
-                        </form>
-                    </td>
-                </tr>
-            {% empty %}
-                <tr>
-                    <td colspan="5" class="text-center">No estimates yet.</td>
-                </tr>
-            {% endfor %}
-            </tbody>
-        </table>
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-calculator me-3"></i>Professional Estimator
+        </h1>
+        <p class="text-muted mb-0">Create professional estimates and convert them to projects</p>
+    </div>
+    <div>
+        <a href="{% url 'dashboard:create_estimate' %}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus me-2"></i>Create New Estimate
+        </a>
     </div>
 </div>
+
+{% if estimates %}
+<div class="row">
+    {% for estimate in estimates %}
+    <div class="col-lg-6 col-xl-4 mb-4">
+        <div class="card h-100 estimate-card">
+            <div class="card-header bg-white border-bottom">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                        <h6 class="mb-1 fw-bold">{{ estimate.estimate_number }}</h6>
+                        <h5 class="mb-0">{{ estimate.customer_name }}</h5>
+                    </div>
+                    <span class="badge bg-{{ estimate.status|default:'draft' }}">
+                        {{ estimate.get_status_display|default:'Draft' }}
+                    </span>
+                </div>
+            </div>
+            
+            <div class="card-body">
+                <div class="row text-center mb-3">
+                    <div class="col-4 border-end">
+                        <div class="fw-bold text-primary">${{ estimate.total_billable|floatformat:0|intcomma }}</div>
+                        <small class="text-muted">Total</small>
+                    </div>
+                    <div class="col-4 border-end">
+                        <div class="fw-bold text-success">${{ estimate.total_profit|floatformat:0|intcomma }}</div>
+                        <small class="text-muted">Profit</small>
+                    </div>
+                    <div class="col-4">
+                        <div class="fw-bold {% if estimate.profit_margin >= 20 %}text-success{% elif estimate.profit_margin >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ estimate.profit_margin|floatformat:1 }}%
+                        </div>
+                        <small class="text-muted">Margin</small>
+                    </div>
+                </div>
+                
+                <div class="estimate-details mb-3">
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Created:</small>
+                        <small>{{ estimate.created_date|date:"M d, Y" }}</small>
+                    </div>
+                    {% if estimate.valid_until %}
+                    <div class="d-flex justify-content-between mb-1">
+                        <small class="text-muted">Expires:</small>
+                        <small class="{% if estimate.valid_until < today %}text-danger{% elif estimate.valid_until < week_from_now %}text-warning{% endif %}">
+                            {{ estimate.valid_until|date:"M d, Y" }}
+                        </small>
+                    </div>
+                    {% endif %}
+                    {% if estimate.project_location %}
+                    <div class="mb-1">
+                        <small class="text-muted"><i class="fas fa-map-marker-alt me-1"></i>{{ estimate.project_location|truncatechars:40 }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <div class="progress mb-3" style="height: 4px;">
+                    {% if estimate.status == 'accepted' %}
+                        <div class="progress-bar bg-success" style="width: 100%"></div>
+                    {% elif estimate.status == 'sent' %}
+                        <div class="progress-bar bg-warning" style="width: 75%"></div>
+                    {% elif estimate.status == 'rejected' or estimate.status == 'expired' %}
+                        <div class="progress-bar bg-danger" style="width: 100%"></div>
+                    {% else %}
+                        <div class="progress-bar bg-info" style="width: 25%"></div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card-footer bg-transparent">
+                <div class="d-flex gap-2 mb-2">
+                    <a href="{% url 'dashboard:edit_estimate' estimate.pk %}" class="btn btn-outline-primary btn-sm flex-fill">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <a href="{% url 'dashboard:customer_estimate_report' estimate.pk %}" class="btn btn-outline-success btn-sm flex-fill">
+                        <i class="fas fa-file-alt me-1"></i>Customer
+                    </a>
+                </div>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'dashboard:internal_estimate_report' estimate.pk %}" class="btn btn-outline-info btn-sm flex-fill">
+                        <i class="fas fa-chart-line me-1"></i>Internal
+                    </a>
+                    {% if estimate.status == 'draft' or estimate.status == 'sent' %}
+                    <form method="post" action="{% url 'dashboard:accept_estimate' estimate.pk %}" class="flex-fill">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm w-100" onclick="return confirm('Convert this estimate to an active project?')">
+                            <i class="fas fa-check me-1"></i>Accept
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+                
+                <div class="dropdown mt-2">
+                    <button class="btn btn-outline-secondary btn-sm dropdown-toggle w-100" type="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-ellipsis-h me-1"></i>More Actions
+                    </button>
+                    <ul class="dropdown-menu w-100">
+                        <li><a class="dropdown-item" href="{% url 'dashboard:duplicate_estimate' estimate.pk %}">
+                            <i class="fas fa-copy me-2"></i>Duplicate Estimate
+                        </a></li>
+                        <li><a class="dropdown-item" href="{% url 'dashboard:email_estimate' estimate.pk %}">
+                            <i class="fas fa-envelope me-2"></i>Email to Customer
+                        </a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li>
+                            <form method="post" action="{% url 'dashboard:delete_estimate' estimate.pk %}" class="d-inline w-100" onsubmit="return confirm('Delete this estimate permanently?');">
+                                {% csrf_token %}
+                                <button type="submit" class="dropdown-item text-danger">
+                                    <i class="fas fa-trash me-2"></i>Delete Estimate
+                                </button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Summary Stats -->
+<div class="card mt-4">
+    <div class="card-body">
+        <h6 class="card-title">
+            <i class="fas fa-chart-pie me-2"></i>Estimates Summary
+        </h6>
+        <div class="row text-center">
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="border-md-end">
+                    <h4 class="text-primary mb-0">{{ estimates.count }}</h4>
+                    <small class="text-muted d-block mt-0">Total Estimates</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="border-md-end">
+                    <h4 class="text-success mb-0">${{ total_value|floatformat:0|intcomma }}</h4>
+                    <small class="text-muted d-block mt-0">Total Value</small>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3 mb-md-0">
+                <div class="border-md-end">
+                    <h4 class="text-info mb-0">${{ total_profit|floatformat:0|intcomma }}</h4>
+                    <small class="text-muted d-block mt-0">Projected Profit</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <h4 class="text-warning mb-0">{{ accepted_count }}</h4>
+                <small class="text-muted d-block mt-0">Accepted</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="text-center py-5">
+    <div class="card">
+        <div class="card-body py-5">
+            <i class="fas fa-calculator fa-4x text-muted mb-4"></i>
+            <h3 class="text-muted mb-3">No Estimates Yet</h3>
+            <p class="text-muted mb-4">
+                Create professional estimates for your customers with detailed line items, terms, and automatic profit calculations.
+            </p>
+            <a href="{% url 'dashboard:create_estimate' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-plus me-2"></i>Create Your First Estimate
+            </a>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<style>
+.estimate-card {
+    transition: all 0.3s ease;
+    border: none;
+    box-shadow: var(--shadow-md);
+}
+
+.estimate-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.badge.bg-draft { background: #6c757d !important; }
+.badge.bg-sent { background: #ffc107 !important; color: #000 !important; }
+.badge.bg-accepted { background: #198754 !important; }
+.badge.bg-rejected { background: #dc3545 !important; }
+.badge.bg-expired { background: #6f42c1 !important; }
+
+.estimate-details small {
+    font-size: 0.8rem;
+}
+
+@media (max-width: 768px) {
+    .estimate-card .col-4 {
+        border-right: none !important;
+        border-bottom: 1px solid var(--border-color);
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .estimate-card .col-4:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+    }
+}
+</style>
+
 {% endblock %}
