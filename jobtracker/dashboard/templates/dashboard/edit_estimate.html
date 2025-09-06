@@ -1,0 +1,234 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% block title %}Edit Estimate - {{ estimate.estimate_number }}{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-edit me-3"></i>Edit Estimate
+        </h1>
+        <p class="text-muted mb-0">{{ estimate.estimate_number }} - {{ estimate.customer_name }}</p>
+    </div>
+    <div class="d-flex gap-2">
+        <a href="{% url 'dashboard:customer_estimate_report' estimate.pk %}" class="btn btn-outline-success" target="_blank">
+            <i class="fas fa-file-alt me-2"></i>Customer Report
+        </a>
+        <a href="{% url 'dashboard:internal_estimate_report' estimate.pk %}" class="btn btn-outline-info" target="_blank">
+            <i class="fas fa-chart-line me-2"></i>Internal Report
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <form method="post" id="estimate-form">
+            {% csrf_token %}
+            
+            <!-- Basic Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Basic Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Internal Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="name" name="name" value="{{ estimate.name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="estimate_number" class="form-label">Estimate Number</label>
+                            <input type="text" class="form-control" id="estimate_number" name="estimate_number" value="{{ estimate.estimate_number }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="created_date" class="form-label">Date Created</label>
+                            <input type="date" class="form-control" id="created_date" name="created_date" value="{{ estimate.created_date|date:'Y-m-d' }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="valid_until" class="form-label">Valid Until</label>
+                            <input type="date" class="form-control" id="valid_until" name="valid_until" value="{% if estimate.valid_until %}{{ estimate.valid_until|date:'Y-m-d' }}{% endif %}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="project_description" class="form-label">Project Description</label>
+                            <textarea class="form-control" id="project_description" name="project_description" rows="3">{{ estimate.project_description }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Customer Information -->
+            <div class="card mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>Customer Information
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="customer_name" class="form-label">Customer Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="customer_name" name="customer_name" value="{{ estimate.customer_name }}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="customer_email" class="form-label">Email Address</label>
+                            <input type="email" class="form-control" id="customer_email" name="customer_email" value="{{ estimate.customer_email }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="customer_phone" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="customer_phone" name="customer_phone" value="{{ estimate.customer_phone }}">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="project_location" class="form-label">Project Location <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="project_location" name="project_location" value="{{ estimate.project_location }}" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="customer_address" class="form-label">Customer Billing Address</label>
+                            <textarea class="form-control" id="customer_address" name="customer_address" rows="3">{{ estimate.customer_address }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terms & Conditions -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-file-contract me-2"></i>Terms & Conditions
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="payment_terms" class="form-label">Payment Terms</label>
+                            <textarea class="form-control" id="payment_terms" name="payment_terms" rows="4">{{ estimate.payment_terms }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="liability_statement" class="form-label">Liability Statement</label>
+                            <textarea class="form-control" id="liability_statement" name="liability_statement" rows="4">{{ estimate.liability_statement }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="exclusions" class="form-label">Exclusions</label>
+                            <textarea class="form-control" id="exclusions" name="exclusions" rows="4">{{ estimate.exclusions }}</textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="special_terms" class="form-label">Special Terms</label>
+                            <textarea class="form-control" id="special_terms" name="special_terms" rows="4">{{ estimate.special_terms }}</textarea>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-12">
+                            <label for="notes" class="form-label">Internal Notes</label>
+                            <textarea class="form-control" id="notes" name="notes" rows="3">{{ estimate.notes }}</textarea>
+                            <div class="form-text">These notes are for internal use only</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Submit Buttons -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{% url 'dashboard:estimate_list' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Estimates
+                        </a>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'dashboard:add_estimate_entry' estimate.pk %}" class="btn btn-outline-info">
+                                <i class="fas fa-plus me-2"></i>Edit Line Items
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
+                                <i class="fas fa-save me-2"></i>Update Estimate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Summary Sidebar -->
+    <div class="col-lg-3">
+        <div class="sticky-top" style="top: 100px;">
+            <!-- Current Totals -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white text-center">
+                    <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Current Totals</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold">${{ estimate.total_billable|floatformat:2|intcomma }}</div>
+                    <small class="text-muted">Total Billable</small>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <span>Profit:</span>
+                        <span class="fw-bold text-success">${{ estimate.total_profit|floatformat:2|intcomma }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Margin:</span>
+                        <span class="fw-bold text-info">{{ estimate.profit_margin|floatformat:1 }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status -->
+            <div class="card mb-3">
+                <div class="card-body text-center">
+                    <h6 class="card-title">Status</h6>
+                    <span class="badge bg-{{ estimate.status|default:'draft' }} fs-6">
+                        {{ estimate.get_status_display|default:'Draft' }}
+                    </span>
+                    {% if estimate.valid_until %}
+                    <div class="mt-2">
+                        <small class="text-muted">Valid until: {{ estimate.valid_until|date:"M d, Y" }}</small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-bolt me-2"></i>Quick Actions</h6>
+                </div>
+                <div class="card-body d-grid gap-2">
+                    <a href="{% url 'dashboard:duplicate_estimate' estimate.pk %}" class="btn btn-outline-primary btn-sm">
+                        <i class="fas fa-copy me-1"></i>Duplicate
+                    </a>
+                    <a href="{% url 'dashboard:email_estimate' estimate.pk %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-envelope me-1"></i>Email Customer
+                    </a>
+                    {% if estimate.status == 'draft' or estimate.status == 'sent' %}
+                    <form method="post" action="{% url 'dashboard:accept_estimate' estimate.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success btn-sm w-100" onclick="return confirm('Convert to project?')">
+                            <i class="fas fa-check me-1"></i>Accept & Convert
+                        </button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('estimate-form').addEventListener('submit', function(e) {
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
+});
+</script>
+
+{% endblock %}
