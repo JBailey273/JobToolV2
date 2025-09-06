@@ -185,31 +185,40 @@ def estimate_list(request):
     if contractor is None:
         return redirect("login")
 
-    if request.method == "POST":
-        name = request.POST.get("name")
-        if name:
-            estimate = Estimate.objects.create(
-                contractor=contractor,
-                name=name,
-                created_date=timezone.now().date(),
-            )
-            messages.success(request, f"Estimate '{name}' created.")
-            return redirect("dashboard:add_estimate_entry", estimate.pk)
-        return redirect("dashboard:estimate_list")
-
     estimates = contractor.estimates.prefetch_related("entries")
+    
+    # Calculate totals and summary statistics
+    total_value = Decimal("0")
+    total_profit = Decimal("0")
+    accepted_count = 0
+    
+    today = timezone.now().date()
+    week_from_now = today + timedelta(days=7)
+    
     for est in estimates:
-        est.billable_total = sum(
-            (e.billable_amount or 0) for e in est.entries.all()
+        # Calculate totals for each estimate
+        est.total_billable = sum((e.billable_amount or 0) for e in est.entries.all())
+        est.total_cost = sum((e.cost_amount or 0) for e in est.entries.all())
+        est.total_profit = est.total_billable - est.total_cost
+        est.profit_margin = (
+            (est.total_profit / est.total_billable) * 100 if est.total_billable else Decimal("0")
         )
-        est.cost_total = sum((e.cost_amount or 0) for e in est.entries.all())
-        est.profit = est.billable_total - est.cost_total
-        est.margin = (
-            (est.profit / est.billable_total) * 100 if est.billable_total else Decimal("0")
-        )
+        
+        # Add to summary totals
+        total_value += est.total_billable
+        total_profit += est.total_profit
+        
+        if est.status == 'accepted':
+            accepted_count += 1
 
-    return render(request, "dashboard/estimate_list.html", {"estimates": estimates})
-
+    return render(request, "dashboard/estimate_list.html", {
+        "estimates": estimates,
+        "total_value": total_value,
+        "total_profit": total_profit,
+        "accepted_count": accepted_count,
+        "today": today,
+        "week_from_now": week_from_now,
+    })
 
 @login_required
 def accept_estimate(request, pk):
