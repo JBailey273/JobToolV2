@@ -149,11 +149,132 @@ class Estimate(models.Model):
     contractor = models.ForeignKey(
         Contractor, related_name="estimates", on_delete=models.CASCADE
     )
-    name = models.CharField(max_length=255)
+    
+    # Basic Information
+    name = models.CharField(max_length=255, help_text="Internal name for this estimate")
     created_date = models.DateField(default=timezone.now)
+    estimate_number = models.CharField(max_length=50, blank=True, help_text="Estimate number for customer reference")
+    
+    # Customer Information
+    customer_name = models.CharField(max_length=255)
+    customer_email = models.EmailField(blank=True)
+    customer_phone = models.CharField(max_length=20, blank=True)
+    customer_address = models.TextField(blank=True)
+    
+    # Project Information
+    project_location = models.TextField(blank=True, help_text="Job site address")
+    project_description = models.TextField(blank=True, help_text="Brief description of the work")
+    
+    # Terms and Conditions
+    payment_terms = models.TextField(
+        blank=True, 
+        default="50% deposit required upon acceptance. Balance due upon completion.",
+        help_text="Payment terms and conditions"
+    )
+    exclusions = models.TextField(
+        blank=True,
+        help_text="Work or materials not included in this estimate"
+    )
+    special_terms = models.TextField(
+        blank=True,
+        help_text="Additional terms, warranties, or conditions"
+    )
+    liability_statement = models.TextField(
+        blank=True,
+        default="Contractor maintains general liability insurance. Customer responsible for permits unless otherwise specified.",
+        help_text="Liability and insurance information"
+    )
+    
+    # Estimate Details
+    valid_until = models.DateField(blank=True, null=True, help_text="Estimate expiration date")
+    notes = models.TextField(blank=True, help_text="Internal notes (not shown to customer)")
+    
+    # Status
+    STATUS_CHOICES = [
+        ('draft', 'Draft'),
+        ('sent', 'Sent to Customer'),
+        ('accepted', 'Accepted'),
+        ('rejected', 'Rejected'),
+        ('expired', 'Expired'),
+    ]
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
 
-    def __str__(self) -> str:  # pragma: no cover - simple representation
-        return self.name
+    def __str__(self) -> str:
+        return f"{self.estimate_number or self.name} - {self.customer_name}"
+
+    def save(self, *args, **kwargs):
+        # Auto-generate estimate number if not provided
+        if not self.estimate_number:
+            year = self.created_date.year
+            # Get the next number for this year
+            latest = Estimate.objects.filter(
+                contractor=self.contractor,
+                created_date__year=year,
+                estimate_number__startswith=f"EST-{year}-"
+            ).order_by('-estimate_number').first()
+            
+            if latest and latest.estimate_number:
+                try:
+                    last_num = int(latest.estimate_number.split('-')[-1])
+                    next_num = last_num + 1
+                except (ValueError, IndexError):
+                    next_num = 1
+            else:
+                next_num = 1
+            
+            self.estimate_number = f"EST-{year}-{next_num:03d}"
+        
+        super().save(*args, **kwargs)
+
+    @property
+    def total_cost(self):
+        """Calculate total cost amount for internal reporting"""
+        return sum((entry.cost_amount or 0) for entry in self.entries.all())
+    
+    @property
+    def total_billable(self):
+        """Calculate total billable amount"""
+        return sum((entry.billable_amount or 0) for entry in self.entries.all())
+    
+    @property
+    def total_profit(self):
+        """Calculate total projected profit"""
+        return self.total_billable - self.total_cost
+    
+    @property
+    def profit_margin(self):
+        """Calculate profit margin percentage"""
+        if self.total_billable:
+            return (self.total_profit / self.total_billable) * 100
+        return 0
+
+    @property
+    def labor_equipment_total(self):
+        """Get total for labor and equipment combined"""
+        return sum(
+            (entry.billable_amount or 0) 
+            for entry in self.entries.filter(
+                models.Q(asset__isnull=False) | models.Q(employee__isnull=False)
+            ).exclude(material_description__isnull=False, material_description__gt='')
+        )
+    
+    @property
+    def materials_entries(self):
+        """Get all material entries"""
+        return self.entries.filter(
+            material_description__isnull=False,
+            material_description__gt='',
+            description__startswith='Material:'
+        )
+    
+    @property
+    def services_entries(self):
+        """Get all outside service entries"""
+        return self.entries.filter(
+            material_description__isnull=False,
+            material_description__gt='',
+            description__startswith='Outside Service:'
+        )
 
 
 class JobEntry(models.Model):
@@ -222,7 +343,7 @@ class EstimateEntry(models.Model):
     billable_amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
 
-    def __str__(self) -> str:  # pragma: no cover - simple representation
+    def __str__(self) -> str:
         return f"Estimate: {self.estimate.name} - {self.date}"
 
     def save(self, *args, **kwargs):
