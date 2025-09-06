@@ -1,0 +1,882 @@
+{% extends 'dashboard/base.html' %}
+{% load humanize %}
+{% block title %}Create Professional Estimate{% endblock %}
+{% block content %}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1 class="mb-2">
+            <i class="fas fa-calculator me-3"></i>Create Professional Estimate
+        </h1>
+        <p class="text-muted mb-0">Create a comprehensive estimate with customer information and line items</p>
+    </div>
+</div>
+
+<!-- Progress Steps -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div id="progress-steps" class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <div class="step-indicator active me-3">1</div>
+                <span>Basic Information</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">2</div>
+                <span>Customer Details</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">3</div>
+                <span>Line Items</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">4</div>
+                <span>Terms & Conditions</span>
+            </div>
+            <div class="d-flex align-items-center">
+                <div class="step-indicator me-3">5</div>
+                <span>Review & Save</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-9">
+        <form method="post" id="estimate-form">
+            {% csrf_token %}
+            
+            <!-- Step 1: Basic Information -->
+            <div class="step-section" id="step-1">
+                <div class="card mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>Basic Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="name" class="form-label">Internal Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="name" name="name" required 
+                                       placeholder="e.g., Johnson Driveway Project">
+                                <div class="form-text">Internal reference name for this estimate</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="estimate_number" class="form-label">Estimate Number</label>
+                                <input type="text" class="form-control" id="estimate_number" name="estimate_number" 
+                                       placeholder="Leave blank for auto-generation">
+                                <div class="form-text">Will auto-generate if left blank (EST-2025-001)</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="created_date" class="form-label">Date Created</label>
+                                <input type="date" class="form-control" id="created_date" name="created_date" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="valid_until" class="form-label">Valid Until</label>
+                                <input type="date" class="form-control" id="valid_until" name="valid_until">
+                                <div class="form-text">Estimate expiration date</div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label for="project_description" class="form-label">Project Description</label>
+                                <textarea class="form-control" id="project_description" name="project_description" rows="3"
+                                          placeholder="Brief description of the work to be performed"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 2: Customer Information -->
+            <div class="step-section" id="step-2" style="display: none;">
+                <div class="card mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-user me-2"></i>Customer Information
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="customer_name" class="form-label">Customer Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="customer_name" name="customer_name" required
+                                       placeholder="Full name or company name">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="customer_email" class="form-label">Email Address</label>
+                                <input type="email" class="form-control" id="customer_email" name="customer_email"
+                                       placeholder="customer@example.com">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="customer_phone" class="form-label">Phone Number</label>
+                                <input type="tel" class="form-control" id="customer_phone" name="customer_phone"
+                                       placeholder="(555) 123-4567">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="project_location" class="form-label">Project Location <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="project_location" name="project_location" required
+                                       placeholder="Job site address">
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label for="customer_address" class="form-label">Customer Billing Address</label>
+                                <textarea class="form-control" id="customer_address" name="customer_address" rows="3"
+                                          placeholder="Full billing address (if different from project location)"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 3: Line Items -->
+            <div class="step-section" id="step-3" style="display: none;">
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>Estimate Line Items
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Entry Type Tabs -->
+                        <ul class="nav nav-tabs" id="entryTabs" role="tablist">
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link active" id="labor-tab" data-bs-toggle="tab" data-bs-target="#labor" type="button">
+                                    <i class="fas fa-cogs me-2"></i>Labor & Equipment
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button">
+                                    <i class="fas fa-boxes me-2"></i>Materials
+                                </button>
+                            </li>
+                            <li class="nav-item" role="presentation">
+                                <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button">
+                                    <i class="fas fa-handshake me-2"></i>Outside Services
+                                </button>
+                            </li>
+                        </ul>
+
+                        <div class="tab-content border border-top-0 rounded-bottom p-3">
+                            <!-- Labor & Equipment Tab -->
+                            <div class="tab-pane fade show active" id="labor">
+                                <div id="laborEntries">
+                                    <!-- Labor entries will be added here dynamically -->
+                                </div>
+                                <button type="button" class="btn btn-outline-primary w-100" onclick="addLaborEntry()">
+                                    <i class="fas fa-plus me-2"></i>Add Labor / Equipment Entry
+                                </button>
+                            </div>
+
+                            <!-- Materials Tab -->
+                            <div class="tab-pane fade" id="materials">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="materialsTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="40%">Description</th>
+                                                <th width="15%">Quantity</th>
+                                                <th width="15%">Unit</th>
+                                                <th width="15%">Unit Cost</th>
+                                                <th width="15%">Total</th>
+                                                <th width="5%">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" class="form-control" name="material_description[]" placeholder="e.g., Concrete, Pipe, Fill"></td>
+                                                <td><input type="number" class="form-control" name="material_quantity[]" step="0.01" placeholder="1" onchange="calculateRowTotal(this)"></td>
+                                                <td>
+                                                    <select class="form-select" name="material_unit[]">
+                                                        <option value="Each">Each</option>
+                                                        <option value="Hours">Hours</option>
+                                                        <option value="Days">Days</option>
+                                                        <option value="Boxes">Boxes</option>
+                                                        <option value="Bags">Bags</option>
+                                                        <option value="Tons">Tons</option>
+                                                        <option value="Yards">Yards</option>
+                                                        <option value="Linear Ft">Linear Ft</option>
+                                                        <option value="Square Ft">Square Ft</option>
+                                                    </select>
+                                                </td>
+                                                <td><input type="number" class="form-control" name="material_cost[]" step="0.01" placeholder="0.00" onchange="calculateRowTotal(this)"></td>
+                                                <td><span class="material-total fw-bold">$0.00</span></td>
+                                                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMaterialRow(this)"><i class="fas fa-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-success" onclick="addMaterialRow()">
+                                        <i class="fas fa-plus me-2"></i>Add Material
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" onclick="bulkAddMaterials()">
+                                        <i class="fas fa-list me-2"></i>Bulk Add (5 rows)
+                                    </button>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Material Markup:</strong> Materials are automatically marked up using your {{ margin|default:25 }}% margin setting.
+                                </div>
+                            </div>
+
+                            <!-- Outside Services Tab -->
+                            <div class="tab-pane fade" id="services">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered" id="servicesTable">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th width="35%">Description</th>
+                                                <th width="15%">Quantity</th>
+                                                <th width="10%">Unit</th>
+                                                <th width="15%">Unit Cost</th>
+                                                <th width="10%">Markup %</th>
+                                                <th width="15%">Total</th>
+                                                <th width="5%">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td><input type="text" class="form-control" name="service_description[]" placeholder="e.g., Electrician, Surveyor"></td>
+                                                <td><input type="number" class="form-control" name="service_quantity[]" step="0.01" placeholder="1" onchange="calculateServiceRowTotal(this)"></td>
+                                                <td>
+                                                    <select class="form-select" name="service_unit[]">
+                                                        <option value="Each">Each</option>
+                                                        <option value="Hours">Hours</option>
+                                                        <option value="Days">Days</option>
+                                                    </select>
+                                                </td>
+                                                <td><input type="number" class="form-control" name="service_cost[]" step="0.01" placeholder="0.00" onchange="calculateServiceRowTotal(this)"></td>
+                                                <td><input type="number" class="form-control" name="service_markup[]" step="0.01" value="20" onchange="calculateServiceRowTotal(this)"></td>
+                                                <td><span class="service-total fw-bold">$0.00</span></td>
+                                                <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeServiceRow(this)"><i class="fas fa-trash"></i></button></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="d-flex gap-2 mb-3">
+                                    <button type="button" class="btn btn-outline-success" onclick="addServiceRow()">
+                                        <i class="fas fa-plus me-2"></i>Add Service
+                                    </button>
+                                    <button type="button" class="btn btn-outline-info" onclick="bulkAddServices()">
+                                        <i class="fas fa-list me-2"></i>Bulk Add (5 rows)
+                                    </button>
+                                </div>
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Service Markup:</strong> Each service can have its own markup percentage (default 20%).
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Terms & Conditions -->
+            <div class="step-section" id="step-4" style="display: none;">
+                <div class="card mb-4">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-file-contract me-2"></i>Terms & Conditions
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="payment_terms" class="form-label">Payment Terms</label>
+                                <textarea class="form-control" id="payment_terms" name="payment_terms" rows="4"
+                                          placeholder="50% deposit required upon acceptance. Balance due upon completion.">50% deposit required upon acceptance. Balance due upon completion.</textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="liability_statement" class="form-label">Liability Statement</label>
+                                <textarea class="form-control" id="liability_statement" name="liability_statement" rows="4"
+                                          placeholder="Contractor maintains general liability insurance...">Contractor maintains general liability insurance. Customer responsible for permits unless otherwise specified.</textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="exclusions" class="form-label">Exclusions</label>
+                                <textarea class="form-control" id="exclusions" name="exclusions" rows="4"
+                                          placeholder="Work or materials not included in this estimate"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label for="special_terms" class="form-label">Special Terms</label>
+                                <textarea class="form-control" id="special_terms" name="special_terms" rows="4"
+                                          placeholder="Additional terms, warranties, or conditions"></textarea>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <label for="notes" class="form-label">Internal Notes</label>
+                                <textarea class="form-control" id="notes" name="notes" rows="3"
+                                          placeholder="Internal notes (not shown to customer)"></textarea>
+                                <div class="form-text">These notes are for internal use only and will not appear on customer reports</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 5: Review -->
+            <div class="step-section" id="step-5" style="display: none;">
+                <div class="card mb-4">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-eye me-2"></i>Review & Save
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-success">
+                            <h6><i class="fas fa-check-circle me-2"></i>Ready to Create Estimate</h6>
+                            <p class="mb-2">Please review all information before creating the estimate. You can edit any section by clicking the "Previous" button or edit the estimate after creation.</p>
+                            <div class="row text-center">
+                                <div class="col-md-4">
+                                    <strong>Total Estimate: <span id="review-total">$0.00</span></strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Projected Profit: <span id="review-profit">$0.00</span></strong>
+                                </div>
+                                <div class="col-md-4">
+                                    <strong>Margin: <span id="review-margin">0%</span></strong>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="review-summary">
+                            <!-- Summary will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Navigation Buttons -->
+            <div class="card">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <button type="button" class="btn btn-outline-secondary" id="prev-btn" onclick="previousStep()" style="display: none;">
+                                <i class="fas fa-arrow-left me-2"></i>Previous
+                            </button>
+                        </div>
+                        
+                        <div class="d-flex gap-2">
+                            <a href="{% url 'dashboard:estimate_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="button" class="btn btn-primary" id="next-btn" onclick="nextStep()">
+                                Next<i class="fas fa-arrow-right ms-2"></i>
+                            </button>
+                            <button type="submit" class="btn btn-success btn-lg" id="submit-btn" style="display: none;">
+                                <i class="fas fa-save me-2"></i>Create Estimate
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+    
+    <!-- Summary Sidebar -->
+    <div class="col-lg-3">
+        <div class="sticky-top" style="top: 100px; z-index: 900;">
+            <!-- Estimate Total -->
+            <div class="card mb-3">
+                <div class="card-header bg-success text-white text-center">
+                    <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Estimate Total</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="fs-3 fw-bold" id="total-billable">$0.00</div>
+                    <small class="text-muted">Total Billable</small>
+                </div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Breakdown</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Labor/Equipment:</span>
+                        <span id="labor-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Materials:</span>
+                        <span id="materials-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Outside Services:</span>
+                        <span id="services-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="grand-total">$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-success">
+                        <strong>Projected Profit:</strong>
+                        <strong id="profit-total">$0.00</strong>
+                    </div>
+                    <div class="d-flex justify-content-between text-info">
+                        <strong>Margin:</strong>
+                        <strong id="margin-percent">0%</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0"><i class="fas fa-info-circle me-2"></i>Current Step</h6>
+                </div>
+                <div class="card-body">
+                    <div id="step-info">
+                        <strong>Step 1:</strong> Basic Information<br>
+                        <small class="text-muted">Enter the basic details for your estimate</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.step-indicator {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #e9ecef;
+    color: #6c757d;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+.step-indicator.active {
+    background: var(--primary-color);
+    color: white;
+}
+
+.step-indicator.completed {
+    background: var(--success-color);
+    color: white;
+}
+
+.entry-row {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f8f9fa;
+}
+
+.material-total,
+.service-total {
+    color: var(--success-color);
+    font-size: 1.1rem;
+}
+</style>
+
+<script>
+let currentStep = 1;
+const totalSteps = 5;
+
+// Step information content
+const stepInfo = {
+    1: { title: "Basic Information", description: "Enter the basic details for your estimate" },
+    2: { title: "Customer Information", description: "Add customer and project location details" },
+    3: { title: "Line Items", description: "Add labor, materials, and services" },
+    4: { title: "Terms & Conditions", description: "Set payment terms and conditions" },
+    5: { title: "Review & Save", description: "Review and create your estimate" }
+};
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Set today's date as default
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('created_date').value = today;
+    
+    // Set default expiration to 30 days from today
+    const expiration = new Date();
+    expiration.setDate(expiration.getDate() + 30);
+    document.getElementById('valid_until').value = expiration.toISOString().split('T')[0];
+
+    // Initialize totals
+    updateTotals();
+    updateStepInfo();
+
+    // Add initial labor entry
+    addLaborEntry();
+});
+
+function nextStep() {
+    if (validateCurrentStep()) {
+        if (currentStep < totalSteps) {
+            document.getElementById(`step-${currentStep}`).style.display = 'none';
+            setStepIndicator(currentStep, 'completed');
+            currentStep++;
+            document.getElementById(`step-${currentStep}`).style.display = 'block';
+            setStepIndicator(currentStep, 'active');
+            updateNavigation();
+            updateStepInfo();
+            
+            if (currentStep === 5) {
+                generateReviewSummary();
+            }
+        }
+    }
+}
+
+function previousStep() {
+    if (currentStep > 1) {
+        document.getElementById(`step-${currentStep}`).style.display = 'none';
+        setStepIndicator(currentStep, '');
+        currentStep--;
+        document.getElementById(`step-${currentStep}`).style.display = 'block';
+        setStepIndicator(currentStep, 'active');
+        updateNavigation();
+        updateStepInfo();
+    }
+}
+
+function setStepIndicator(step, status) {
+    const indicator = document.querySelector(`#progress-steps .step-indicator:nth-child(${step * 2 - 1})`);
+    indicator.classList.remove('active', 'completed');
+    if (status) {
+        indicator.classList.add(status);
+    }
+}
+
+function updateNavigation() {
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const submitBtn = document.getElementById('submit-btn');
+    
+    prevBtn.style.display = currentStep > 1 ? 'block' : 'none';
+    
+    if (currentStep === totalSteps) {
+        nextBtn.style.display = 'none';
+        submitBtn.style.display = 'block';
+    } else {
+        nextBtn.style.display = 'block';
+        submitBtn.style.display = 'none';
+    }
+}
+
+function updateStepInfo() {
+    const info = stepInfo[currentStep];
+    document.getElementById('step-info').innerHTML = `
+        <strong>Step ${currentStep}:</strong> ${info.title}<br>
+        <small class="text-muted">${info.description}</small>
+    `;
+}
+
+function validateCurrentStep() {
+    let isValid = true;
+    const currentStepElement = document.getElementById(`step-${currentStep}`);
+    const requiredFields = currentStepElement.querySelectorAll('input[required], select[required], textarea[required]');
+    
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            field.classList.add('is-invalid');
+            isValid = false;
+        } else {
+            field.classList.remove('is-invalid');
+        }
+    });
+    
+    if (!isValid) {
+        alert('Please fill in all required fields before continuing.');
+    }
+    
+    return isValid;
+}
+
+function addLaborEntry() {
+    const container = document.getElementById('laborEntries');
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'entry-row';
+
+    entryDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Labor / Equipment Entry</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEntry(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Hours/Quantity</label>
+                <input type="number" class="form-control" name="hours[]" step="0.25" placeholder="0.00" onchange="updateTotals()">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Equipment or Asset</label>
+                <select class="form-select" name="asset[]" onchange="updateTotals()">
+                    <option value="">Select Equipment or Asset...</option>
+                    {% for asset in assets %}
+                    <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                        {{ asset.name }} (${{ asset.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Employee</label>
+                <select class="form-select" name="employee[]" onchange="updateTotals()">
+                    <option value="">Select Employee...</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                        {{ emp.name }} (${{ emp.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <div class="text-success fw-bold entry-total">$0.00</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Work Description</label>
+                <textarea class="form-control" name="description[]" rows="2" placeholder="Description of work to be performed"></textarea>
+            </div>
+        </div>
+    `;
+
+    container.appendChild(entryDiv);
+    updateTotals();
+}
+
+function removeEntry(button) {
+    button.closest('.entry-row').remove();
+    updateTotals();
+}
+
+function addMaterialRow() {
+    const tbody = document.querySelector('#materialsTable tbody');
+    const newRow = tbody.rows[0].cloneNode(true);
+    
+    // Clear the inputs
+    newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelector('.material-total').textContent = '$0.00';
+    
+    tbody.appendChild(newRow);
+}
+
+function bulkAddMaterials() {
+    for (let i = 0; i < 5; i++) {
+        addMaterialRow();
+    }
+}
+
+function removeMaterialRow(button) {
+    const tbody = document.querySelector('#materialsTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        updateTotals();
+    }
+}
+
+function calculateRowTotal(element) {
+    const row = element.closest('tr');
+    const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
+    const cost = parseFloat(row.querySelector('input[name="material_cost[]"]').value) || 0;
+    const total = qty * cost;
+    row.querySelector('.material-total').textContent = ' + total.toFixed(2);
+    updateTotals();
+}
+
+function addServiceRow() {
+    const tbody = document.querySelector('#servicesTable tbody');
+    const newRow = tbody.rows[0].cloneNode(true);
+    newRow.querySelectorAll('input').forEach(input => input.value = '');
+    newRow.querySelector('input[name="service_markup[]"]').value = 20;
+    newRow.querySelector('.service-total').textContent = '$0.00';
+    tbody.appendChild(newRow);
+}
+
+function bulkAddServices() {
+    for (let i = 0; i < 5; i++) {
+        addServiceRow();
+    }
+}
+
+function removeServiceRow(button) {
+    const tbody = document.querySelector('#servicesTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        updateTotals();
+    }
+}
+
+function calculateServiceRowTotal(element) {
+    const row = element.closest('tr');
+    const qty = parseFloat(row.querySelector('input[name="service_quantity[]"]').value) || 0;
+    const cost = parseFloat(row.querySelector('input[name="service_cost[]"]').value) || 0;
+    const markup = parseFloat(row.querySelector('input[name="service_markup[]"]').value) || 0;
+    const total = qty * cost * (1 + markup / 100);
+    row.querySelector('.service-total').textContent = ' + total.toFixed(2);
+    updateTotals();
+}
+
+function updateTotals() {
+    let laborTotal = 0;
+    let materialsTotal = 0;
+    let servicesTotal = 0;
+    let laborCost = 0;
+    let materialsCost = 0;
+    let servicesCost = 0;
+    
+    // Calculate labor/equipment totals
+    document.querySelectorAll('.entry-row').forEach(row => {
+        const hours = parseFloat(row.querySelector('input[name="hours[]"]').value) || 0;
+        const assetSelect = row.querySelector('select[name="asset[]"]');
+        const employeeSelect = row.querySelector('select[name="employee[]"]');
+        
+        let rowTotal = 0;
+        let rowCost = 0;
+        
+        if (assetSelect.value) {
+            const assetRate = parseFloat(assetSelect.selectedOptions[0].dataset.billable) || 0;
+            const assetCost = parseFloat(assetSelect.selectedOptions[0].dataset.cost) || 0;
+            rowTotal += assetRate * hours;
+            rowCost += assetCost * hours;
+        }
+        
+        if (employeeSelect.value) {
+            const empRate = parseFloat(employeeSelect.selectedOptions[0].dataset.billable) || 0;
+            const empCost = parseFloat(employeeSelect.selectedOptions[0].dataset.cost) || 0;
+            rowTotal += empRate * hours;
+            rowCost += empCost * hours;
+        }
+        
+        laborTotal += rowTotal;
+        laborCost += rowCost;
+        row.querySelector('.entry-total').textContent = ' + rowTotal.toFixed(2);
+    });
+    
+    // Calculate materials total
+    document.querySelectorAll('#materialsTable tbody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
+        const cost = parseFloat(row.querySelector('input[name="material_cost[]"]').value) || 0;
+        const total = qty * cost;
+        materialsCost += total;
+        
+        // Apply material margin
+        const margin = {{ margin|default:25 }} / 100;
+        materialsTotal += total / (1 - margin);
+        
+        row.querySelector('.material-total').textContent = ' + (total / (1 - margin)).toFixed(2);
+    });
+
+    // Calculate services total
+    document.querySelectorAll('#servicesTable tbody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('input[name="service_quantity[]"]').value) || 0;
+        const cost = parseFloat(row.querySelector('input[name="service_cost[]"]').value) || 0;
+        const markup = parseFloat(row.querySelector('input[name="service_markup[]"]').value) || 0;
+        const total = qty * cost;
+        const billableTotal = total * (1 + markup / 100);
+        
+        servicesCost += total;
+        servicesTotal += billableTotal;
+        
+        row.querySelector('.service-total').textContent = ' + billableTotal.toFixed(2);
+    });
+
+    const grandTotal = laborTotal + materialsTotal + servicesTotal;
+    const totalCost = laborCost + materialsCost + servicesCost;
+    const profit = grandTotal - totalCost;
+    const margin = grandTotal > 0 ? (profit / grandTotal * 100) : 0;
+
+    // Update display
+    document.getElementById('labor-total').textContent = ' + laborTotal.toFixed(2);
+    document.getElementById('materials-total').textContent = ' + materialsTotal.toFixed(2);
+    document.getElementById('services-total').textContent = ' + servicesTotal.toFixed(2);
+    document.getElementById('grand-total').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('total-billable').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('profit-total').textContent = ' + profit.toFixed(2);
+    document.getElementById('margin-percent').textContent = margin.toFixed(1) + '%';
+    
+    // Update review totals
+    document.getElementById('review-total').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('review-profit').textContent = ' + profit.toFixed(2);
+    document.getElementById('review-margin').textContent = margin.toFixed(1) + '%';
+}
+
+function generateReviewSummary() {
+    const reviewContainer = document.getElementById('review-summary');
+    
+    // Get form data
+    const formData = {
+        name: document.getElementById('name').value,
+        customer_name: document.getElementById('customer_name').value,
+        project_location: document.getElementById('project_location').value,
+        created_date: document.getElementById('created_date').value,
+        valid_until: document.getElementById('valid_until').value
+    };
+    
+    let laborCount = 0;
+    let materialCount = 0;
+    let serviceCount = 0;
+    
+    // Count entries
+    document.querySelectorAll('.entry-row').forEach(row => {
+        const hours = parseFloat(row.querySelector('input[name="hours[]"]').value) || 0;
+        if (hours > 0) laborCount++;
+    });
+    
+    document.querySelectorAll('#materialsTable tbody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
+        if (qty > 0) materialCount++;
+    });
+    
+    document.querySelectorAll('#servicesTable tbody tr').forEach(row => {
+        const qty = parseFloat(row.querySelector('input[name="service_quantity[]"]').value) || 0;
+        if (qty > 0) serviceCount++;
+    });
+    
+    reviewContainer.innerHTML = `
+        <div class="row">
+            <div class="col-md-6">
+                <h6>Estimate Details</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Name:</strong> ${formData.name}</li>
+                    <li><strong>Customer:</strong> ${formData.customer_name}</li>
+                    <li><strong>Location:</strong> ${formData.project_location}</li>
+                    <li><strong>Created:</strong> ${new Date(formData.created_date).toLocaleDateString()}</li>
+                    <li><strong>Valid Until:</strong> ${formData.valid_until ? new Date(formData.valid_until).toLocaleDateString() : 'Not set'}</li>
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>Line Items Summary</h6>
+                <ul class="list-unstyled">
+                    <li><strong>Labor/Equipment Entries:</strong> ${laborCount}</li>
+                    <li><strong>Material Entries:</strong> ${materialCount}</li>
+                    <li><strong>Service Entries:</strong> ${serviceCount}</li>
+                    <li><strong>Total Entries:</strong> ${laborCount + materialCount + serviceCount}</li>
+                </ul>
+            </div>
+        </div>
+    `;
+}
+
+// Form submission
+document.getElementById('estimate-form').addEventListener('submit', function(e) {
+    if (!validateCurrentStep()) {
+        e.preventDefault();
+        return;
+    }
+    
+    const submitBtn = document.getElementById('submit-btn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Estimate...';
+});
+
+// Auto-update totals when switching tabs
+document.getElementById('labor-tab').addEventListener('shown.bs.tab', () => updateTotals());
+document.getElementById('materials-tab').addEventListener('shown.bs.tab', () => updateTotals());
+document.getElementById('services-tab').addEventListener('shown.bs.tab', () => updateTotals());
+</script>
+
+{% endblock %}
