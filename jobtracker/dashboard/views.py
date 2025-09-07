@@ -186,105 +186,49 @@ def estimate_list(request):
         return redirect("login")
 
     try:
-        print("=== ESTIMATE LIST DEBUG ===")
-        print(f"Contractor: {contractor}")
+        print("=== SUPER SIMPLE ESTIMATE LIST ===")
         
-        # Check if estimates exist
-        estimates_count = contractor.estimates.count()
-        print(f"Total estimates count: {estimates_count}")
+        # Get basic estimates without any complex operations
+        estimates = list(contractor.estimates.all())
+        print(f"Retrieved {len(estimates)} estimates as list")
         
-        estimates = contractor.estimates.all().prefetch_related("entries")
-        print(f"Estimates queryset: {estimates}")
-        
-        # Calculate totals and summary statistics
-        total_value = Decimal("0")
-        total_profit = Decimal("0")
-        accepted_count = 0
-        
-        today = timezone.now().date()
-        week_from_now = today + timedelta(days=7)
-        
-        print(f"Processing {estimates.count()} estimates...")
-        
+        # Add minimal required attributes manually
         for i, est in enumerate(estimates):
-            try:
-                print(f"Processing estimate {i+1}: {est.name}")
-                
-                # Get entries safely
-                entries = est.entries.all()
-                print(f"  - Entries count: {entries.count()}")
-                
-                # Calculate totals for each estimate with error handling
-                est.total_billable = Decimal("0")
-                est.total_cost = Decimal("0")
-                
-                for entry in entries:
-                    try:
-                        billable = entry.billable_amount or Decimal("0")
-                        cost = entry.cost_amount or Decimal("0")
-                        est.total_billable += billable
-                        est.total_cost += cost
-                    except Exception as entry_error:
-                        print(f"  - Error processing entry {entry.id}: {entry_error}")
-                        continue
-                
-                est.total_profit = est.total_billable - est.total_cost
-                
-                # Calculate margin safely
-                if est.total_billable > 0:
-                    est.profit_margin = (est.total_profit / est.total_billable) * 100
-                else:
-                    est.profit_margin = Decimal("0")
-                
-                print(f"  - Billable: ${est.total_billable}, Cost: ${est.total_cost}, Profit: ${est.total_profit}, Margin: {est.profit_margin}%")
-                
-                # Add to summary totals
-                total_value += est.total_billable
-                total_profit += est.total_profit
-                
-                # Check status safely
-                status = getattr(est, 'status', 'draft')
-                if status == 'accepted':
-                    accepted_count += 1
-                    
-            except Exception as est_error:
-                print(f"Error processing estimate {i+1} ({est.id}): {est_error}")
-                # Set defaults for this estimate
-                est.total_billable = Decimal("0")
-                est.total_cost = Decimal("0")
-                est.total_profit = Decimal("0")
-                est.profit_margin = Decimal("0")
-                continue
+            print(f"Processing estimate {i+1}: {est.name}")
+            
+            # Set simple attributes without using model properties
+            est.total_billable = Decimal("0")
+            est.total_cost = Decimal("0")
+            est.total_profit = Decimal("0") 
+            est.profit_margin = Decimal("0")
+            
+            print(f"  Set defaults for estimate {est.name}")
 
-        print(f"Summary - Total Value: ${total_value}, Total Profit: ${total_profit}, Accepted: {accepted_count}")
+        print("All estimates processed, creating context...")
 
         context = {
             "estimates": estimates,
-            "total_value": total_value,
-            "total_profit": total_profit,
-            "accepted_count": accepted_count,
-            "today": today,
-            "week_from_now": week_from_now,
-        }
-        
-        print("Rendering template with context...")
-        return render(request, "dashboard/estimate_list.html", context)
-        
-    except Exception as e:
-        print(f"CRITICAL ERROR in estimate_list: {e}")
-        import traceback
-        traceback.print_exc()
-        
-        # Return a minimal safe response
-        return render(request, "dashboard/estimate_list.html", {
-            "estimates": [],
             "total_value": Decimal("0"),
             "total_profit": Decimal("0"),
             "accepted_count": 0,
             "today": timezone.now().date(),
             "week_from_now": timezone.now().date() + timedelta(days=7),
-            "error_message": f"Error loading estimates: {e}"
-        })
+        }
+        
+        print("Context created, rendering template...")
+        return render(request, "dashboard/estimate_list.html", context)
+        
+    except Exception as e:
+        print(f"ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        
+        # Show the full error in browser for debugging
+        return HttpResponse(f"""
+        <h1>Estimate List Error</h1>
+        <p>Error: {e}</p>
+        <pre>{traceback.format_exc()}</pre>
+        """)
 @login_required
 def accept_estimate(request, pk):
     contractor = getattr(request.user, "contractor", None)
