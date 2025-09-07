@@ -17,23 +17,23 @@
     <div class="card-body">
         <div id="progress-steps" class="d-flex justify-content-between align-items-center">
             <div class="d-flex align-items-center">
-                <div class="step-indicator active me-3">1</div>
+                <div class="step-indicator active me-3" data-step="1">1</div>
                 <span>Basic Information</span>
             </div>
             <div class="d-flex align-items-center">
-                <div class="step-indicator me-3">2</div>
+                <div class="step-indicator me-3" data-step="2">2</div>
                 <span>Customer Details</span>
             </div>
             <div class="d-flex align-items-center">
-                <div class="step-indicator me-3">3</div>
+                <div class="step-indicator me-3" data-step="3">3</div>
                 <span>Line Items</span>
             </div>
             <div class="d-flex align-items-center">
-                <div class="step-indicator me-3">4</div>
+                <div class="step-indicator me-3" data-step="4">4</div>
                 <span>Terms & Conditions</span>
             </div>
             <div class="d-flex align-items-center">
-                <div class="step-indicator me-3">5</div>
+                <div class="step-indicator me-3" data-step="5">5</div>
                 <span>Review & Save</span>
             </div>
         </div>
@@ -543,10 +543,12 @@ function previousStep() {
 }
 
 function setStepIndicator(step, status) {
-    const indicator = document.querySelector(`#progress-steps .step-indicator:nth-child(${step * 2 - 1})`);
-    indicator.classList.remove('active', 'completed');
-    if (status) {
-        indicator.classList.add(status);
+    const indicator = document.querySelector(`[data-step="${step}"]`);
+    if (indicator) {
+        indicator.classList.remove('active', 'completed');
+        if (status) {
+            indicator.classList.add(status);
+        }
     }
 }
 
@@ -683,7 +685,7 @@ function calculateRowTotal(element) {
     const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
     const cost = parseFloat(row.querySelector('input[name="material_cost[]"]').value) || 0;
     const total = qty * cost;
-    row.querySelector('.material-total').textContent = '$' + total.toFixed(2);
+    row.querySelector('.material-total').textContent = ' + total.toFixed(2);
     updateTotals();
 }
 
@@ -716,7 +718,7 @@ function calculateServiceRowTotal(element) {
     const cost = parseFloat(row.querySelector('input[name="service_cost[]"]').value) || 0;
     const markup = parseFloat(row.querySelector('input[name="service_markup[]"]').value) || 0;
     const total = qty * cost * (1 + markup / 100);
-    row.querySelector('.service-total').textContent = '$' + total.toFixed(2);
+    row.querySelector('.service-total').textContent = ' + total.toFixed(2);
     updateTotals();
 }
 
@@ -753,7 +755,7 @@ function updateTotals() {
         
         laborTotal += rowTotal;
         laborCost += rowCost;
-        row.querySelector('.entry-total').textContent = '$' + rowTotal.toFixed(2);
+        row.querySelector('.entry-total').textContent = ' + rowTotal.toFixed(2);
     });
     
     // Calculate materials total
@@ -767,7 +769,7 @@ function updateTotals() {
         const margin = {{ margin|default:25 }} / 100;
         materialsTotal += total / (1 - margin);
         
-        row.querySelector('.material-total').textContent = '$' + (total / (1 - margin)).toFixed(2);
+        row.querySelector('.material-total').textContent = ' + (total / (1 - margin)).toFixed(2);
     });
 
     // Calculate services total
@@ -781,7 +783,7 @@ function updateTotals() {
         servicesCost += total;
         servicesTotal += billableTotal;
         
-        row.querySelector('.service-total').textContent = '$' + billableTotal.toFixed(2);
+        row.querySelector('.service-total').textContent = ' + billableTotal.toFixed(2);
     });
 
     const grandTotal = laborTotal + materialsTotal + servicesTotal;
@@ -790,17 +792,17 @@ function updateTotals() {
     const margin = grandTotal > 0 ? (profit / grandTotal * 100) : 0;
 
     // Update display
-    document.getElementById('labor-total').textContent = '$' + laborTotal.toFixed(2);
-    document.getElementById('materials-total').textContent = '$' + materialsTotal.toFixed(2);
-    document.getElementById('services-total').textContent = '$' + servicesTotal.toFixed(2);
-    document.getElementById('grand-total').textContent = '$' + grandTotal.toFixed(2);
-    document.getElementById('total-billable').textContent = '$' + grandTotal.toFixed(2);
-    document.getElementById('profit-total').textContent = '$' + profit.toFixed(2);
+    document.getElementById('labor-total').textContent = ' + laborTotal.toFixed(2);
+    document.getElementById('materials-total').textContent = ' + materialsTotal.toFixed(2);
+    document.getElementById('services-total').textContent = ' + servicesTotal.toFixed(2);
+    document.getElementById('grand-total').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('total-billable').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('profit-total').textContent = ' + profit.toFixed(2);
     document.getElementById('margin-percent').textContent = margin.toFixed(1) + '%';
     
     // Update review totals
-    document.getElementById('review-total').textContent = '$' + grandTotal.toFixed(2);
-    document.getElementById('review-profit').textContent = '$' + profit.toFixed(2);
+    document.getElementById('review-total').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('review-profit').textContent = ' + profit.toFixed(2);
     document.getElementById('review-margin').textContent = margin.toFixed(1) + '%';
 }
 
