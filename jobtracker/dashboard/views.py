@@ -732,6 +732,7 @@ def add_job_entry(request, pk):
         employee_ids = request.POST.getlist("employee[]") or request.POST.getlist("employee")
         descriptions = request.POST.getlist("description[]") or request.POST.getlist("description")
 
+        # Create labor/equipment entries
         labor_entries = zip(hours_list, asset_ids, employee_ids, descriptions)
         for hours, asset_id, employee_id, desc in labor_entries:
             if not any([hours, asset_id, employee_id, desc]):
@@ -742,8 +743,8 @@ def add_job_entry(request, pk):
             hours_dec = Decimal(hours or 0)
 
             if hours_dec > 0 or asset or employee:
-                EstimateEntry.objects.create(
-                    estimate=estimate,
+                JobEntry.objects.create(
+                    project=project,
                     date=date,
                     hours=hours_dec,
                     asset=asset,
@@ -754,6 +755,7 @@ def add_job_entry(request, pk):
                 )
                 entries_created += 1
 
+        # Process materials entries
         material_descriptions = request.POST.getlist("material_description[]")
         material_quantities = request.POST.getlist("material_quantity[]")
         material_units = request.POST.getlist("material_unit[]")
@@ -774,12 +776,13 @@ def add_job_entry(request, pk):
                 cost_dec = Decimal(cost or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
+                    # Create material entry with description including unit
                     full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
 
-                    EstimateEntry.objects.create(
-                        estimate=estimate,
+                    JobEntry.objects.create(
+                        project=project,
                         date=date,
-                        hours=qty_dec,
+                        hours=qty_dec,  # Use quantity as hours for materials
                         asset=None,
                         employee=None,
                         material_description=full_desc,
@@ -788,47 +791,9 @@ def add_job_entry(request, pk):
                     )
                     entries_created += 1
 
-        service_descriptions = request.POST.getlist("service_description[]")
-        service_quantities = request.POST.getlist("service_quantity[]")
-        service_units = request.POST.getlist("service_unit[]")
-        service_costs = request.POST.getlist("service_cost[]")
-        service_markups = request.POST.getlist("service_markup[]")
-
-        if service_descriptions:
-            services = zip(
-                service_descriptions,
-                service_quantities,
-                service_units,
-                service_costs,
-                service_markups,
-            )
-            for desc, qty, unit, cost, markup in services:
-                if not any([desc, qty, cost]):
-                    continue
-
-                qty_dec = Decimal(qty or 0)
-                cost_dec = Decimal(cost or 0)
-                markup_dec = Decimal(markup or 0)
-
-                if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
-
-                    EstimateEntry.objects.create(
-                        estimate=estimate,
-                        date=date,
-                        hours=qty_dec,
-                        asset=None,
-                        employee=None,
-                        material_description=full_desc,
-                        material_cost=cost_dec,
-                        service_markup=markup_dec,
-                        description=f"Outside Service: {full_desc}",
-                    )
-                    entries_created += 1
-
         if entries_created > 0:
             messages.success(
-                request, f"Successfully created {entries_created} estimate entries."
+                request, f"Successfully created {entries_created} job entries."
             )
         else:
             messages.warning(
@@ -836,13 +801,13 @@ def add_job_entry(request, pk):
                 "No entries were created. Please fill in at least one complete entry.",
             )
 
-        return redirect("dashboard:estimate_list")
+        return redirect("dashboard:project_detail", pk=project.pk)
 
     return render(
         request,
-        "dashboard/estimate_form.html",
+        "dashboard/jobentry_form.html",
         {
-            "estimate": estimate,
+            "project": project,
             "assets": assets,
             "employees": employees,
             "margin": contractor.material_margin,
@@ -1713,6 +1678,7 @@ def internal_estimate_report(request, pk):
 
     return render(request, "dashboard/internal_estimate_report.html", context)
 
+
 @login_required
 def project_analytics_data(request, pk):
     """API endpoint for project analytics data"""
@@ -1789,16 +1755,29 @@ def project_analytics_data(request, pk):
                 ),
             },
         }
-    )POST.getlist("hours")
-        asset_ids = request.POST.getlist("asset[]") or request.POST.getlist("asset")
-        employee_ids = request.POST.getlist("employee[]") or request.POST.getlist(
-            "employee"
-        )
-        descriptions = request.POST.getlist("description[]") or request.POST.getlist(
-            "description"
-        )
+    )
 
-        # Create labor/equipment entries
+
+@login_required
+def add_estimate_entry(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    assets = contractor.assets.all()
+    employees = contractor.employees.all()
+
+    if request.method == "POST":
+        date = request.POST.get("date")
+        entries_created = 0
+
+        # Process labor/equipment entries
+        hours_list = request.POST.getlist("hours[]") or request.POST.getlist("hours")
+        asset_ids = request.POST.getlist("asset[]") or request.POST.getlist("asset")
+        employee_ids = request.POST.getlist("employee[]") or request.POST.getlist("employee")
+        descriptions = request.POST.getlist("description[]") or request.POST.getlist("description")
+
         labor_entries = zip(hours_list, asset_ids, employee_ids, descriptions)
         for hours, asset_id, employee_id, desc in labor_entries:
             if not any([hours, asset_id, employee_id, desc]):
@@ -1809,8 +1788,8 @@ def project_analytics_data(request, pk):
             hours_dec = Decimal(hours or 0)
 
             if hours_dec > 0 or asset or employee:
-                JobEntry.objects.create(
-                    project=project,
+                EstimateEntry.objects.create(
+                    estimate=estimate,
                     date=date,
                     hours=hours_dec,
                     asset=asset,
@@ -1842,13 +1821,12 @@ def project_analytics_data(request, pk):
                 cost_dec = Decimal(cost or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
-                    # Create material entry with description including unit
                     full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
 
-                    JobEntry.objects.create(
-                        project=project,
+                    EstimateEntry.objects.create(
+                        estimate=estimate,
                         date=date,
-                        hours=qty_dec,  # Use quantity as hours for materials
+                        hours=qty_dec,
                         asset=None,
                         employee=None,
                         material_description=full_desc,
@@ -1857,9 +1835,48 @@ def project_analytics_data(request, pk):
                     )
                     entries_created += 1
 
+        # Process services entries
+        service_descriptions = request.POST.getlist("service_description[]")
+        service_quantities = request.POST.getlist("service_quantity[]")
+        service_units = request.POST.getlist("service_unit[]")
+        service_costs = request.POST.getlist("service_cost[]")
+        service_markups = request.POST.getlist("service_markup[]")
+
+        if service_descriptions:
+            services = zip(
+                service_descriptions,
+                service_quantities,
+                service_units,
+                service_costs,
+                service_markups,
+            )
+            for desc, qty, unit, cost, markup in services:
+                if not any([desc, qty, cost]):
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+                markup_dec = Decimal(markup or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    EstimateEntry.objects.create(
+                        estimate=estimate,
+                        date=date,
+                        hours=qty_dec,
+                        asset=None,
+                        employee=None,
+                        material_description=full_desc,
+                        material_cost=cost_dec,
+                        service_markup=markup_dec,
+                        description=f"Outside Service: {full_desc}",
+                    )
+                    entries_created += 1
+
         if entries_created > 0:
             messages.success(
-                request, f"Successfully created {entries_created} job entries."
+                request, f"Successfully created {entries_created} estimate entries."
             )
         else:
             messages.warning(
@@ -1867,32 +1884,15 @@ def project_analytics_data(request, pk):
                 "No entries were created. Please fill in at least one complete entry.",
             )
 
-        return redirect("dashboard:project_detail", pk=project.pk)
+        return redirect("dashboard:estimate_list")
 
     return render(
         request,
-        "dashboard/jobentry_form.html",
+        "dashboard/estimate_form.html",
         {
-            "project": project,
+            "estimate": estimate,
             "assets": assets,
             "employees": employees,
             "margin": contractor.material_margin,
         },
     )
-
-
-@login_required
-def add_estimate_entry(request, pk):
-    contractor = getattr(request.user, "contractor", None)
-    if contractor is None:
-        return redirect("login")
-
-    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
-    assets = contractor.assets.all()
-    employees = contractor.employees.all()
-
-    if request.method == "POST":
-        date = request.POST.get("date")
-        entries_created = 0
-
-        hours_list = request.POST.getlist("hours[]") or request.
