@@ -1580,7 +1580,7 @@ def customer_estimate_report(request, pk):
     
     # Group entries for customer presentation
     labor_equipment_entries = estimate.entries.filter(
-        models.Q(asset__isnull=False) | models.Q(employee__isnull=False)
+        Q(asset__isnull=False) | Q(employee__isnull=False)
     ).exclude(material_description__isnull=False, material_description__gt='')
     
     material_entries = estimate.entries.filter(
