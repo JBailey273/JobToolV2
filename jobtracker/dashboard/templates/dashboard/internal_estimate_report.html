@@ -37,30 +37,34 @@
         <p class="report-date">Generated: {{ estimate.created_date|date:"F j, Y" }}</p>
     </div>
 
-    <!-- Executive Summary -->
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="metric-card total-revenue">
-                <div class="metric-value">${{ total_billable|floatformat:0|intcomma }}</div>
-                <div class="metric-label">Total Revenue</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="metric-card total-cost">
-                <div class="metric-value">${{ total_cost|floatformat:0|intcomma }}</div>
-                <div class="metric-label">Total Cost</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="metric-card total-profit">
-                <div class="metric-value">${{ total_profit|floatformat:0|intcomma }}</div>
-                <div class="metric-label">Projected Profit</div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="metric-card profit-margin">
-                <div class="metric-value">{{ overall_margin|floatformat:1 }}%</div>
-                <div class="metric-label">Profit Margin</div>
+    <!-- Executive Summary - Single Compact Card -->
+    <div class="mb-3">
+        <div class="executive-summary-card">
+            <div class="row text-center">
+                <div class="col-3">
+                    <div class="metric-item">
+                        <div class="metric-value revenue">${{ total_billable|floatformat:0|intcomma }}</div>
+                        <div class="metric-label">Total Revenue</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="metric-item">
+                        <div class="metric-value cost">${{ total_cost|floatformat:0|intcomma }}</div>
+                        <div class="metric-label">Total Cost</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="metric-item">
+                        <div class="metric-value profit">${{ total_profit|floatformat:0|intcomma }}</div>
+                        <div class="metric-label">Projected Profit</div>
+                    </div>
+                </div>
+                <div class="col-3">
+                    <div class="metric-item">
+                        <div class="metric-value margin">{{ overall_margin|floatformat:1 }}%</div>
+                        <div class="metric-label">Profit Margin</div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -90,7 +94,7 @@
                         <td class="text-right amount profit-positive">${{ labor_billable|add:labor_cost|floatformat:2|intcomma }}</td>
                         <td class="text-right">
                             {% widthratio labor_billable|add:labor_cost labor_billable 100 as labor_margin %}
-                            <span class="margin-indicator {% if labor_margin >= 20 %}margin-good{% elif labor_margin >= 10 %}margin-fair{% else %}margin-poor{% endif %}">
+                            <span class="margin-indicator {% if labor_margin >= 20 %}margin-excellent{% elif labor_margin >= 10 %}margin-good{% else %}margin-fair{% endif %}">
                                 {{ labor_margin|floatformat:1 }}%
                             </span>
                         </td>
@@ -107,7 +111,7 @@
                         <td class="text-right amount profit-positive">${{ equipment_billable|add:equipment_cost|floatformat:2|intcomma }}</td>
                         <td class="text-right">
                             {% widthratio equipment_billable|add:equipment_cost equipment_billable 100 as equip_margin %}
-                            <span class="margin-indicator {% if equip_margin >= 20 %}margin-good{% elif equip_margin >= 10 %}margin-fair{% else %}margin-poor{% endif %}">
+                            <span class="margin-indicator {% if equip_margin >= 20 %}margin-excellent{% elif equip_margin >= 10 %}margin-good{% else %}margin-fair{% endif %}">
                                 {{ equip_margin|floatformat:1 }}%
                             </span>
                         </td>
@@ -124,7 +128,7 @@
                         <td class="text-right amount profit-positive">${{ material_billable|add:material_cost|floatformat:2|intcomma }}</td>
                         <td class="text-right">
                             {% widthratio material_billable|add:material_cost material_billable 100 as mat_margin %}
-                            <span class="margin-indicator {% if mat_margin >= 20 %}margin-good{% elif mat_margin >= 10 %}margin-fair{% else %}margin-poor{% endif %}">
+                            <span class="margin-indicator {% if mat_margin >= 20 %}margin-excellent{% elif mat_margin >= 10 %}margin-good{% else %}margin-fair{% endif %}">
                                 {{ mat_margin|floatformat:1 }}%
                             </span>
                         </td>
@@ -141,7 +145,7 @@
                         <td class="text-right amount profit-positive">${{ service_billable|add:service_cost|floatformat:2|intcomma }}</td>
                         <td class="text-right">
                             {% widthratio service_billable|add:service_cost service_billable 100 as service_margin %}
-                            <span class="margin-indicator {% if service_margin >= 20 %}margin-good{% elif service_margin >= 10 %}margin-fair{% else %}margin-poor{% endif %}">
+                            <span class="margin-indicator {% if service_margin >= 20 %}margin-excellent{% elif service_margin >= 10 %}margin-good{% else %}margin-fair{% endif %}">
                                 {{ service_margin|floatformat:1 }}%
                             </span>
                         </td>
@@ -157,7 +161,7 @@
                         <td class="text-right amount"><strong>${{ total_billable|floatformat:2|intcomma }}</strong></td>
                         <td class="text-right amount"><strong>${{ total_profit|floatformat:2|intcomma }}</strong></td>
                         <td class="text-right">
-                            <strong class="margin-indicator {% if overall_margin >= 20 %}margin-good{% elif overall_margin >= 10 %}margin-fair{% else %}margin-poor{% endif %}">
+                            <strong class="margin-indicator {% if overall_margin >= 20 %}margin-excellent{% elif overall_margin >= 10 %}margin-good{% else %}margin-fair{% endif %}">
                                 {{ overall_margin|floatformat:1 }}%
                             </strong>
                         </td>
@@ -194,16 +198,16 @@
                         <td>
                             <div class="entry-description">
                                 {% if entry.asset %}
-                                    <span class="badge bg-info me-1">Equipment</span>{{ entry.asset.name }}
+                                    <strong>Equipment:</strong> {{ entry.asset.name }}
                                 {% endif %}
                                 {% if entry.employee %}
-                                    <span class="badge bg-success me-1">Labor</span>{{ entry.employee.name }}
+                                    <strong>Labor:</strong> {{ entry.employee.name }}
                                 {% endif %}
                                 {% if entry.material_description %}
                                     {% if "Outside Service:" in entry.description %}
-                                        <span class="badge bg-warning me-1">Service</span>
+                                        <strong>Service:</strong>
                                     {% else %}
-                                        <span class="badge bg-secondary me-1">Material</span>
+                                        <strong>Material:</strong>
                                     {% endif %}
                                     {{ entry.material_description }}
                                 {% endif %}
@@ -221,7 +225,7 @@
                         <td class="text-right">
                             {% if entry.billable_amount > 0 %}
                                 {% widthratio entry.billable_amount|add:entry.cost_amount entry.billable_amount 100 as entry_margin %}
-                                <span class="margin-indicator {% if entry_margin >= 20 %}margin-good{% elif entry_margin >= 10 %}margin-fair{% else %}margin-poor{% endif %}">
+                                <span class="margin-indicator {% if entry_margin >= 20 %}margin-excellent{% elif entry_margin >= 10 %}margin-good{% else %}margin-fair{% endif %}">
                                     {{ entry_margin|floatformat:1 }}%
                                 </span>
                             {% else %}
@@ -400,50 +404,48 @@
     font-size: 0.9rem;
 }
 
-.metric-card {
+/* Executive Summary - Single Compact Card */
+.executive-summary-card {
     background: linear-gradient(135deg, #f8faf6 0%, #e8f0de 100%);
-    border: 2px solid #d4d4aa;
+    border: 2px solid #4a7c2a;
     border-radius: 12px;
     padding: 20px;
-    text-align: center;
-    margin-bottom: 15px;
-    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.metric-card:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-}
-
-.metric-card.total-revenue {
-    border-color: #4a7c2a;
-}
-
-.metric-card.total-cost {
-    border-color: #dc3545;
-}
-
-.metric-card.total-profit {
-    border-color: #28a745;
-}
-
-.metric-card.profit-margin {
-    border-color: #17a2b8;
+.metric-item {
+    padding: 0 10px;
 }
 
 .metric-value {
-    font-size: 2rem;
+    font-size: 1.8rem;
     font-weight: bold;
-    color: #2d5016;
     font-family: 'Courier New', monospace;
+    margin-bottom: 5px;
+}
+
+.metric-value.revenue {
+    color: #4a7c2a;
+}
+
+.metric-value.cost {
+    color: #dc3545;
+}
+
+.metric-value.profit {
+    color: #28a745;
+}
+
+.metric-value.margin {
+    color: #17a2b8;
 }
 
 .metric-label {
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     color: #666;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-top: 5px;
+    font-weight: 600;
 }
 
 .section-title {
@@ -546,19 +548,19 @@
     font-size: 0.85rem;
 }
 
-.margin-good {
+.margin-excellent {
     background: #d4edda;
     color: #155724;
+}
+
+.margin-good {
+    background: #d1ecf1;
+    color: #0c5460;
 }
 
 .margin-fair {
     background: #fff3cd;
     color: #856404;
-}
-
-.margin-poor {
-    background: #f8d7da;
-    color: #721c24;
 }
 
 .info-panel {
@@ -625,18 +627,19 @@
     margin-bottom: 10px;
 }
 
-/* Badge styles */
-.badge.bg-info { background: #17a2b8 !important; }
-.badge.bg-success { background: #28a745 !important; }
-.badge.bg-warning { background: #ffc107 !important; color: #000 !important; }
-.badge.bg-secondary { background: #6c757d !important; }
-
 /* PDF-specific styles */
 @media print {
-    .metric-card {
+    .executive-summary-card {
         background: #f5f5f5 !important;
         border: 1px solid #333 !important;
         break-inside: avoid;
+    }
+    
+    .metric-value.revenue,
+    .metric-value.cost,
+    .metric-value.profit,
+    .metric-value.margin {
+        color: #000 !important;
     }
     
     .analysis-table,
@@ -671,17 +674,29 @@
         border: 1px solid #333 !important;
     }
     
+    .margin-excellent,
     .margin-good,
-    .margin-fair,
-    .margin-poor {
+    .margin-fair {
         background: #f0f0f0 !important;
+        color: #000 !important;
+    }
+    
+    .entry-description strong {
         color: #000 !important;
     }
 }
 
 @media (max-width: 768px) {
     .metric-value {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
+    }
+    
+    .metric-label {
+        font-size: 0.7rem;
+    }
+    
+    .executive-summary-card {
+        padding: 15px;
     }
     
     .analysis-table,
