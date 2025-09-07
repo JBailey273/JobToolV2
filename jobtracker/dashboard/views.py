@@ -1320,6 +1320,17 @@ def create_estimate(request):
     employees = contractor.employees.all()
 
     if request.method == "POST":
+        # Normalize the created date; fall back to today if missing or invalid
+        created_date_str = request.POST.get("created_date")
+        try:
+            created_date = (
+                datetime.strptime(created_date_str, "%Y-%m-%d").date()
+                if created_date_str
+                else timezone.now().date()
+            )
+        except ValueError:
+            created_date = timezone.now().date()
+
         # Create the estimate
         estimate = Estimate.objects.create(
             contractor=contractor,
@@ -1336,12 +1347,12 @@ def create_estimate(request):
             special_terms=request.POST.get("special_terms", ""),
             liability_statement=request.POST.get("liability_statement", ""),
             notes=request.POST.get("notes", ""),
-            created_date=request.POST.get("created_date"),
+            created_date=created_date,
             valid_until=request.POST.get("valid_until") or None,
         )
 
         entries_created = 0
-        date = request.POST.get("created_date")
+        date = created_date
 
         # Process labor/equipment entries
         hours_list = request.POST.getlist("hours[]")
