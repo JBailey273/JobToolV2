@@ -35,21 +35,77 @@ def safe_decimal(value, default=Decimal("0")):
         return default
 
 
-def _render_pdf(template_src, context, filename):
+# Update this function in your dashboard/views.py file
+
+def _render_pdf(template_src, context, filename, request=None):
+    """Render PDF with proper base_url for images"""
     if HTML is None:
         return HttpResponse("PDF generation is unavailable", status=500)
+    
     template = get_template(template_src)
     html = template.render(context)
+    
     try:
-        pdf = HTML(string=html, base_url=str(settings.BASE_DIR)).write_pdf()
-    except Exception:
+        # Use request.build_absolute_uri() for proper image loading
+        if request:
+            base_url = request.build_absolute_uri('/')
+        else:
+            base_url = str(settings.BASE_DIR)
+            
+        pdf = HTML(
+            string=html, 
+            base_url=base_url,
+            encoding='utf-8'
+        ).write_pdf(
+            presentational_hints=True  # This helps with CSS rendering
+        )
+    except Exception as e:
+        print(f"PDF Generation Error: {e}")  # For debugging
         return HttpResponse("Error generating PDF", status=500)
+    
     start = pdf.find(b"%PDF")
     if start == -1:
         return HttpResponse("Error generating PDF", status=500)
+    
     response = HttpResponse(pdf[start:], content_type="application/pdf")
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
+
+# Update the customer_estimate_report view to pass the request
+@login_required 
+def customer_estimate_report(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
+    export_pdf = request.GET.get("export") == "pdf"
+    
+    # ... your existing context building code ...
+    
+    context = {
+        "contractor": contractor,
+        "estimate": estimate,
+        "material_entries": material_entries,
+        "service_entries": service_entries,
+        "labor_equipment_total": labor_equipment_total,
+        "materials_total": materials_total,
+        "services_total": services_total,
+        "grand_total": grand_total,
+        "report": export_pdf,
+    }
+
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/customer_estimate_report.html", 
+            context, 
+            f"estimate_{estimate.estimate_number}.pdf",
+            request  # Pass the request object
+        )
+        if pdf:
+            return pdf
+
+    return render(request, "dashboard/customer_estimate_report.html", context)
 
 
 @login_required
