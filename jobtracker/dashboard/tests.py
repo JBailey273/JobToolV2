@@ -786,3 +786,15 @@ class ProjectEstimateCRUDTests(TestCase):
         )
         self.assertRedirects(response, reverse("dashboard:estimate_list"))
         self.assertFalse(self.contractor.estimates.filter(pk=estimate.pk).exists())
+
+    def test_create_estimate_without_created_date(self):
+        response = self.client.post(
+            reverse("dashboard:create_estimate"),
+            {
+                "name": "NoDate",
+                "customer_name": "Customer",
+                "project_location": "Site",
+            },
+        )
+        self.assertRedirects(response, reverse("dashboard:estimate_list"))
+        self.assertTrue(self.contractor.estimates.filter(name="NoDate").exists())
