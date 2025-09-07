@@ -186,79 +186,83 @@ def estimate_list(request):
         return redirect("login")
 
     try:
-        print("=== SUPER SIMPLE ESTIMATE LIST ===")
+        print("=== ESTIMATE LIST DEBUG ===")
         
-        # Get basic estimates without any complex operations
-        estimates = list(contractor.estimates.all())
-        print(f"Retrieved {len(estimates)} estimates as list")
+        estimates = contractor.estimates.all().prefetch_related("entries")
+        print(f"Found {estimates.count()} estimates")
         
-        # Add minimal required attributes manually
-        for i, est in enumerate(estimates):
-            print(f"Processing estimate {i+1}: {est.name}")
-            
-            # Set simple attributes without using model properties
-            est.total_billable = Decimal("0")
-            est.total_cost = Decimal("0")
-            est.total_profit = Decimal("0") 
-            est.profit_margin = Decimal("0")
-            
-            print(f"  Set defaults for estimate {est.name}")
+        # Calculate totals and summary statistics
+        total_value = Decimal("0")
+        total_profit = Decimal("0")
+        accepted_count = 0
+        
+        today = timezone.now().date()
+        week_from_now = today + timedelta(days=7)
+        
+        estimates_list = []
+        
+        for est in estimates:
+            try:
+                print(f"Processing estimate: {est.id} - {est.name}")
+                
+                # Use the model's @property methods directly - don't try to override them
+                calculated_billable = est.total_billable  # This calls the @property method
+                calculated_cost = est.total_cost          # This calls the @property method
+                calculated_profit = est.total_profit      # This calls the @property method
+                calculated_margin = est.profit_margin     # This calls the @property method
+                
+                print(f"  Calculated totals: Billable=${calculated_billable}, Cost=${calculated_cost}")
+                
+                # Add calculated values as new attributes (not overriding properties)
+                est.display_total_billable = calculated_billable
+                est.display_total_cost = calculated_cost
+                est.display_total_profit = calculated_profit
+                est.display_profit_margin = calculated_margin
+                
+                # Add to summary totals
+                total_value += calculated_billable
+                total_profit += calculated_profit
+                
+                # Check status
+                if getattr(est, 'status', 'draft') == 'accepted':
+                    accepted_count += 1
+                
+                estimates_list.append(est)
+                    
+            except Exception as e:
+                print(f"Error processing estimate {est.id}: {e}")
+                import traceback
+                traceback.print_exc()
+                
+                # Add with safe defaults
+                est.display_total_billable = Decimal("0")
+                est.display_total_cost = Decimal("0") 
+                est.display_total_profit = Decimal("0")
+                est.display_profit_margin = Decimal("0")
+                estimates_list.append(est)
+                continue
 
-        print("All estimates processed, creating context...")
+        print(f"Summary totals: Value=${total_value}, Profit=${total_profit}, Accepted={accepted_count}")
 
-        context = {
-            "estimates": estimates,
-            "total_value": Decimal("0"),
-            "total_profit": Decimal("0"),
-            "accepted_count": 0,
-            "today": timezone.now().date(),
-            "week_from_now": timezone.now().date() + timedelta(days=7),
-        }
-        
-        print("Context created, rendering template...")
-        return render(request, "dashboard/estimate_list.html", context)
+        return render(request, "dashboard/estimate_list.html", {
+            "estimates": estimates_list,
+            "total_value": total_value,
+            "total_profit": total_profit,
+            "accepted_count": accepted_count,
+            "today": today,
+            "week_from_now": week_from_now,
+        })
         
     except Exception as e:
-        print(f"ERROR: {e}")
+        print(f"CRITICAL ERROR in estimate_list: {e}")
         import traceback
         traceback.print_exc()
         
-        # Show the full error in browser for debugging
         return HttpResponse(f"""
-        <h1>Estimate List Error</h1>
+        <h1>Critical Error in estimate_list</h1>
         <p>Error: {e}</p>
         <pre>{traceback.format_exc()}</pre>
         """)
-@login_required
-def accept_estimate(request, pk):
-    contractor = getattr(request.user, "contractor", None)
-    if contractor is None:
-        return redirect("login")
-
-    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
-
-    if request.method == "POST":
-        project = Project.objects.create(
-            contractor=contractor,
-            name=estimate.name,
-            start_date=timezone.now().date(),
-        )
-        for entry in estimate.entries.all():
-            JobEntry.objects.create(
-                project=project,
-                date=entry.date,
-                hours=entry.hours,
-                asset=entry.asset,
-                employee=entry.employee,
-                material_description=entry.material_description,
-                material_cost=entry.material_cost,
-                description=entry.description,
-            )
-        estimate.delete()
-        messages.success(request, "Estimate accepted and converted to project.")
-        return redirect("dashboard:project_detail", pk=project.pk)
-
-    return redirect("dashboard:estimate_list")
 
 
 @login_required
