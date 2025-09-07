@@ -1320,141 +1320,193 @@ def create_estimate(request):
     employees = contractor.employees.all()
 
     if request.method == "POST":
-        # Normalize the created date; fall back to today if missing or invalid
-        created_date_str = request.POST.get("created_date")
         try:
-            created_date = (
-                datetime.strptime(created_date_str, "%Y-%m-%d").date()
-                if created_date_str
-                else timezone.now().date()
-            )
-        except ValueError:
-            created_date = timezone.now().date()
+            # Debug: Print all POST data
+            print("=== CREATE ESTIMATE DEBUG ===")
+            print("POST data keys:", list(request.POST.keys()))
+            print("Form data:", dict(request.POST))
+            
+            # Create the estimate with proper error handling
+            estimate_data = {
+                'contractor': contractor,
+                'name': request.POST.get("name", "Untitled Estimate"),
+                'estimate_number': request.POST.get("estimate_number", ""),
+                'customer_name': request.POST.get("customer_name", ""),
+                'customer_email': request.POST.get("customer_email", ""),
+                'customer_phone': request.POST.get("customer_phone", ""),
+                'customer_address': request.POST.get("customer_address", ""),
+                'project_location': request.POST.get("project_location", ""),
+                'project_description': request.POST.get("project_description", ""),
+                'payment_terms': request.POST.get("payment_terms", ""),
+                'exclusions': request.POST.get("exclusions", ""),
+                'special_terms': request.POST.get("special_terms", ""),
+                'liability_statement': request.POST.get("liability_statement", ""),
+                'notes': request.POST.get("notes", ""),
+                'created_date': request.POST.get("created_date"),
+                'valid_until': request.POST.get("valid_until") or None,
+            }
+            
+            print("Creating estimate with data:", estimate_data)
+            estimate = Estimate.objects.create(**estimate_data)
+            print("Estimate created with ID:", estimate.id)
 
-        # Create the estimate
-        estimate = Estimate.objects.create(
-            contractor=contractor,
-            name=request.POST.get("name"),
-            estimate_number=request.POST.get("estimate_number", ""),
-            customer_name=request.POST.get("customer_name"),
-            customer_email=request.POST.get("customer_email", ""),
-            customer_phone=request.POST.get("customer_phone", ""),
-            customer_address=request.POST.get("customer_address", ""),
-            project_location=request.POST.get("project_location"),
-            project_description=request.POST.get("project_description", ""),
-            payment_terms=request.POST.get("payment_terms", ""),
-            exclusions=request.POST.get("exclusions", ""),
-            special_terms=request.POST.get("special_terms", ""),
-            liability_statement=request.POST.get("liability_statement", ""),
-            notes=request.POST.get("notes", ""),
-            created_date=created_date,
-            valid_until=request.POST.get("valid_until") or None,
-        )
+            entries_created = 0
+            date = request.POST.get("created_date")
+            
+            if not date:
+                date = timezone.now().date()
 
-        entries_created = 0
-        date = created_date
+            # Process labor/equipment entries
+            hours_list = request.POST.getlist("hours[]")
+            asset_ids = request.POST.getlist("asset[]")
+            employee_ids = request.POST.getlist("employee[]")
+            descriptions = request.POST.getlist("description[]")
 
-        # Process labor/equipment entries
-        hours_list = request.POST.getlist("hours[]")
-        asset_ids = request.POST.getlist("asset[]")
-        employee_ids = request.POST.getlist("employee[]")
-        descriptions = request.POST.getlist("description[]")
+            print("Labor entries - Hours:", hours_list)
+            print("Labor entries - Assets:", asset_ids)
+            print("Labor entries - Employees:", employee_ids)
+            print("Labor entries - Descriptions:", descriptions)
 
-        # Create labor/equipment entries
-        for hours, asset_id, employee_id, desc in zip(hours_list, asset_ids, employee_ids, descriptions):
-            if not any([hours, asset_id, employee_id, desc]):
-                continue
+            # Create labor/equipment entries
+            if hours_list:
+                for i, (hours, asset_id, employee_id, desc) in enumerate(zip(hours_list, asset_ids, employee_ids, descriptions)):
+                    try:
+                        if not any([hours, asset_id, employee_id]):
+                            continue
 
-            asset = assets.filter(pk=asset_id).first() if asset_id else None
-            employee = employees.filter(pk=employee_id).first() if employee_id else None
-            hours_dec = Decimal(hours or 0)
+                        asset = None
+                        employee = None
+                        
+                        if asset_id:
+                            asset = assets.filter(pk=asset_id).first()
+                        if employee_id:
+                            employee = employees.filter(pk=employee_id).first()
+                            
+                        hours_dec = Decimal(hours or 0)
 
-            if hours_dec > 0 or asset or employee:
-                EstimateEntry.objects.create(
-                    estimate=estimate,
-                    date=date,
-                    hours=hours_dec,
-                    asset=asset,
-                    employee=employee,
-                    material_description="",
-                    material_cost=None,
-                    description=desc or "",
+                        if hours_dec > 0 and (asset or employee):
+                            EstimateEntry.objects.create(
+                                estimate=estimate,
+                                date=date,
+                                hours=hours_dec,
+                                asset=asset,
+                                employee=employee,
+                                material_description="",
+                                material_cost=None,
+                                description=desc or "",
+                            )
+                            entries_created += 1
+                            print(f"Created labor entry {i+1}")
+                            
+                    except Exception as e:
+                        print(f"Error creating labor entry {i+1}: {e}")
+                        continue
+
+            # Process materials entries
+            material_descriptions = request.POST.getlist("material_description[]")
+            material_quantities = request.POST.getlist("material_quantity[]")
+            material_units = request.POST.getlist("material_unit[]")
+            material_costs = request.POST.getlist("material_cost[]")
+
+            print("Material entries - Descriptions:", material_descriptions)
+            print("Material entries - Quantities:", material_quantities)
+            print("Material entries - Units:", material_units)
+            print("Material entries - Costs:", material_costs)
+
+            if material_descriptions:
+                for i, (desc, qty, unit, cost) in enumerate(zip(
+                    material_descriptions, material_quantities, material_units, material_costs
+                )):
+                    try:
+                        if not desc or not qty or not cost:
+                            continue
+
+                        qty_dec = Decimal(qty or 0)
+                        cost_dec = Decimal(cost or 0)
+
+                        if desc and qty_dec > 0 and cost_dec > 0:
+                            full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                            EstimateEntry.objects.create(
+                                estimate=estimate,
+                                date=date,
+                                hours=qty_dec,
+                                asset=None,
+                                employee=None,
+                                material_description=full_desc,
+                                material_cost=cost_dec,
+                                description=f"Material: {full_desc}",
+                            )
+                            entries_created += 1
+                            print(f"Created material entry {i+1}")
+                            
+                    except Exception as e:
+                        print(f"Error creating material entry {i+1}: {e}")
+                        continue
+
+            # Process services entries
+            service_descriptions = request.POST.getlist("service_description[]")
+            service_quantities = request.POST.getlist("service_quantity[]")
+            service_units = request.POST.getlist("service_unit[]")
+            service_costs = request.POST.getlist("service_cost[]")
+            service_markups = request.POST.getlist("service_markup[]")
+
+            print("Service entries - Descriptions:", service_descriptions)
+            print("Service entries - Quantities:", service_quantities)
+            print("Service entries - Units:", service_units)
+            print("Service entries - Costs:", service_costs)
+            print("Service entries - Markups:", service_markups)
+
+            if service_descriptions:
+                for i, (desc, qty, unit, cost, markup) in enumerate(zip(
+                    service_descriptions, service_quantities, service_units, service_costs, service_markups
+                )):
+                    try:
+                        if not desc or not qty or not cost:
+                            continue
+
+                        qty_dec = Decimal(qty or 0)
+                        cost_dec = Decimal(cost or 0)
+                        markup_dec = Decimal(markup or 0)
+
+                        if desc and qty_dec > 0 and cost_dec > 0:
+                            full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                            EstimateEntry.objects.create(
+                                estimate=estimate,
+                                date=date,
+                                hours=qty_dec,
+                                asset=None,
+                                employee=None,
+                                material_description=full_desc,
+                                material_cost=cost_dec,
+                                service_markup=markup_dec,
+                                description=f"Outside Service: {full_desc}",
+                            )
+                            entries_created += 1
+                            print(f"Created service entry {i+1}")
+                            
+                    except Exception as e:
+                        print(f"Error creating service entry {i+1}: {e}")
+                        continue
+
+            print(f"Total entries created: {entries_created}")
+
+            if entries_created > 0:
+                messages.success(
+                    request, f"Estimate '{estimate.name}' created successfully with {entries_created} entries."
                 )
-                entries_created += 1
+            else:
+                messages.warning(request, f"Estimate '{estimate.name}' created but no entries were added.")
 
-        # Process materials entries
-        material_descriptions = request.POST.getlist("material_description[]")
-        material_quantities = request.POST.getlist("material_quantity[]")
-        material_units = request.POST.getlist("material_unit[]")
-        material_costs = request.POST.getlist("material_cost[]")
-
-        if material_descriptions:
-            for desc, qty, unit, cost in zip(
-                material_descriptions, material_quantities, material_units, material_costs
-            ):
-                if not any([desc, qty, cost]):
-                    continue
-
-                qty_dec = Decimal(qty or 0)
-                cost_dec = Decimal(cost or 0)
-
-                if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
-
-                    EstimateEntry.objects.create(
-                        estimate=estimate,
-                        date=date,
-                        hours=qty_dec,
-                        asset=None,
-                        employee=None,
-                        material_description=full_desc,
-                        material_cost=cost_dec,
-                        description=f"Material: {full_desc}",
-                    )
-                    entries_created += 1
-
-        # Process services entries
-        service_descriptions = request.POST.getlist("service_description[]")
-        service_quantities = request.POST.getlist("service_quantity[]")
-        service_units = request.POST.getlist("service_unit[]")
-        service_costs = request.POST.getlist("service_cost[]")
-        service_markups = request.POST.getlist("service_markup[]")
-
-        if service_descriptions:
-            for desc, qty, unit, cost, markup in zip(
-                service_descriptions, service_quantities, service_units, service_costs, service_markups
-            ):
-                if not any([desc, qty, cost]):
-                    continue
-
-                qty_dec = Decimal(qty or 0)
-                cost_dec = Decimal(cost or 0)
-                markup_dec = Decimal(markup or 0)
-
-                if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
-
-                    EstimateEntry.objects.create(
-                        estimate=estimate,
-                        date=date,
-                        hours=qty_dec,
-                        asset=None,
-                        employee=None,
-                        material_description=full_desc,
-                        material_cost=cost_dec,
-                        service_markup=markup_dec,
-                        description=f"Outside Service: {full_desc}",
-                    )
-                    entries_created += 1
-
-        if entries_created > 0:
-            messages.success(
-                request, f"Estimate '{estimate.name}' created successfully with {entries_created} entries."
-            )
-        else:
-            messages.warning(request, f"Estimate '{estimate.name}' created but no entries were added.")
-
-        return redirect("dashboard:estimate_list")
+            return redirect("dashboard:estimate_list")
+            
+        except Exception as e:
+            print(f"ERROR in create_estimate: {e}")
+            import traceback
+            traceback.print_exc()
+            messages.error(request, f"Error creating estimate: {e}")
+            return redirect("dashboard:estimate_list")
 
     return render(
         request,
@@ -1465,7 +1517,6 @@ def create_estimate(request):
             "margin": contractor.material_margin,
         },
     )
-
 
 @login_required
 def edit_estimate(request, pk):
