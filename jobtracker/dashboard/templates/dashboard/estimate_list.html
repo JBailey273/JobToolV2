@@ -37,16 +37,16 @@
             <div class="card-body">
                 <div class="row text-center mb-3">
                     <div class="col-4 border-end">
-                        <div class="fw-bold text-primary">${{ estimate.total_billable|floatformat:0|intcomma }}</div>
+                        <div class="fw-bold text-primary">${{ estimate.display_total_billable|floatformat:0|intcomma }}</div>
                         <small class="text-muted">Total</small>
                     </div>
                     <div class="col-4 border-end">
-                        <div class="fw-bold text-success">${{ estimate.total_profit|floatformat:0|intcomma }}</div>
+                        <div class="fw-bold text-success">${{ estimate.display_total_profit|floatformat:0|intcomma }}</div>
                         <small class="text-muted">Profit</small>
                     </div>
                     <div class="col-4">
-                        <div class="fw-bold {% if estimate.profit_margin >= 20 %}text-success{% elif estimate.profit_margin >= 10 %}text-warning{% else %}text-danger{% endif %}">
-                            {{ estimate.profit_margin|floatformat:1 }}%
+                        <div class="fw-bold {% if estimate.display_profit_margin >= 20 %}text-success{% elif estimate.display_profit_margin >= 10 %}text-warning{% else %}text-danger{% endif %}">
+                            {{ estimate.display_profit_margin|floatformat:1 }}%
                         </div>
                         <small class="text-muted">Margin</small>
                     </div>
