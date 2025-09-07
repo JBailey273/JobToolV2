@@ -27,172 +27,165 @@
     {% endif %}
     
     <!-- Header Section -->
-    <div class="report-header text-center mb-3">
-        {% if contractor.logo %}
-            <img src="{{ contractor.logo.url }}" alt="{{ contractor.name }} Logo" class="mb-2" style="max-height: 50px;">
-        {% endif %}
-        <h1 class="company-name">{{ contractor.name }}</h1>
-        <div class="company-contact">
-            {% if contractor.email %}<span>{{ contractor.email }}</span>{% endif %}
-            {% if contractor.phone %}{% if contractor.email %} • {% endif %}<span>{{ contractor.phone }}</span>{% endif %}
+    <div class="estimate-header">
+        <div class="header-left">
+            {% if contractor.logo %}
+                <img src="{{ contractor.logo.url }}" alt="{{ contractor.name }} Logo" class="company-logo">
+            {% endif %}
+            <div class="company-info">
+                <h1 class="company-name">{{ contractor.name }}</h1>
+                <div class="company-contact">
+                    {% if contractor.email %}{{ contractor.email }}{% endif %}
+                    {% if contractor.phone %}{% if contractor.email %} • {% endif %}{{ contractor.phone }}{% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="header-right">
+            <h2 class="estimate-title">ESTIMATE</h2>
+            <div class="estimate-number">{{ estimate.estimate_number }}</div>
         </div>
     </div>
 
-    <!-- Estimate Title and Customer/Project Info Row -->
-    <div class="title-section mb-3">
-        <div class="row align-items-center">
-            <div class="col-md-4 text-center">
-                <h2 class="estimate-title">PROJECT ESTIMATE</h2>
-                <p class="estimate-number">{{ estimate.estimate_number }}</p>
+    <!-- Customer and Project Info -->
+    <div class="info-section">
+        <div class="customer-info">
+            <h3 class="info-title">Bill To:</h3>
+            <div class="info-content">
+                <div class="customer-name">{{ estimate.customer_name }}</div>
+                {% if estimate.customer_email %}<div>{{ estimate.customer_email }}</div>{% endif %}
+                {% if estimate.customer_phone %}<div>{{ estimate.customer_phone }}</div>{% endif %}
             </div>
-            <div class="col-md-4">
-                <div class="info-section">
-                    <h6 class="section-title">CUSTOMER</h6>
-                    <div class="info-content">
-                        <p class="mb-1"><strong>{{ estimate.customer_name }}</strong></p>
-                        {% if estimate.customer_email %}<p class="mb-1">{{ estimate.customer_email }}</p>{% endif %}
-                        {% if estimate.customer_phone %}<p class="mb-0">{{ estimate.customer_phone }}</p>{% endif %}
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="info-section">
-                    <h6 class="section-title">PROJECT</h6>
-                    <div class="info-content">
-                        <p class="mb-1"><strong>{{ estimate.project_location }}</strong></p>
-                        <p class="mb-1">{{ estimate.created_date|date:"M j, Y" }}</p>
-                        {% if estimate.valid_until %}<p class="mb-0">Valid: {{ estimate.valid_until|date:"M j, Y" }}</p>{% endif %}
-                    </div>
-                </div>
+        </div>
+        <div class="project-info">
+            <h3 class="info-title">Project:</h3>
+            <div class="info-content">
+                <div class="project-location">{{ estimate.project_location }}</div>
+                <div class="project-date">Date: {{ estimate.created_date|date:"M j, Y" }}</div>
+                {% if estimate.valid_until %}<div class="valid-until">Valid Until: {{ estimate.valid_until|date:"M j, Y" }}</div>{% endif %}
             </div>
         </div>
     </div>
 
     {% if estimate.project_description %}
     <!-- Project Description -->
-    <div class="mb-3">
-        <h6 class="section-title">PROJECT DESCRIPTION</h6>
-        <div class="description-content">
-            {{ estimate.project_description|linebreaks }}
-        </div>
+    <div class="description-section">
+        <h3 class="section-title">Project Description</h3>
+        <div class="description-text">{{ estimate.project_description|linebreaks }}</div>
     </div>
     {% endif %}
 
-    <!-- Estimate Line Items -->
-    <div class="mb-3">
-        <h6 class="section-title">ESTIMATE BREAKDOWN</h6>
-        
-        <table class="estimate-table table table-bordered">
+    <!-- Line Items Table -->
+    <div class="items-section">
+        <table class="items-table">
             <thead>
                 <tr>
-                    <th width="70%" class="text-left">Description</th>
-                    <th width="30%" class="text-right">Amount</th>
+                    <th class="description-col">Description</th>
+                    <th class="amount-col">Amount</th>
                 </tr>
             </thead>
             <tbody>
                 <!-- Labor & Equipment (Combined) -->
                 {% if labor_equipment_total > 0 %}
                 <tr>
-                    <td class="text-left">
-                        <strong>Labor & Equipment</strong>
-                        <div class="item-details">Professional labor and equipment services</div>
+                    <td class="item-description">
+                        <div class="main-desc">Labor & Equipment</div>
+                        <div class="sub-desc">Professional labor and equipment services</div>
                     </td>
-                    <td class="text-right amount">${{ labor_equipment_total|floatformat:2|intcomma }}</td>
+                    <td class="item-amount">${{ labor_equipment_total|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endif %}
 
                 <!-- Materials (Line by Line) -->
                 {% for material in material_entries %}
                 <tr>
-                    <td class="text-left">
-                        <strong>{{ material.material_description }}</strong>
+                    <td class="item-description">
+                        <div class="main-desc">{{ material.material_description }}</div>
                         {% if material.description and "Material:" in material.description %}
-                        <div class="item-details">{{ material.description|slice:"10:" }}</div>
+                        <div class="sub-desc">{{ material.description|slice:"10:" }}</div>
                         {% endif %}
                     </td>
-                    <td class="text-right amount">${{ material.billable_amount|floatformat:2|intcomma }}</td>
+                    <td class="item-amount">${{ material.billable_amount|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endfor %}
 
                 <!-- Outside Services (Line by Line) -->
                 {% for service in service_entries %}
                 <tr>
-                    <td class="text-left">
-                        <strong>{{ service.material_description }}</strong>
+                    <td class="item-description">
+                        <div class="main-desc">{{ service.material_description }}</div>
                         {% if service.description and "Outside Service:" in service.description %}
-                        <div class="item-details">{{ service.description|slice:"17:" }}</div>
+                        <div class="sub-desc">{{ service.description|slice:"17:" }}</div>
                         {% endif %}
                     </td>
-                    <td class="text-right amount">${{ service.billable_amount|floatformat:2|intcomma }}</td>
+                    <td class="item-amount">${{ service.billable_amount|floatformat:2|intcomma }}</td>
                 </tr>
                 {% endfor %}
             </tbody>
-            <tfoot>
-                <tr class="total-row">
-                    <td class="text-left"><strong>TOTAL ESTIMATE</strong></td>
-                    <td class="text-right total-amount">${{ grand_total|floatformat:2|intcomma }}</td>
-                </tr>
-            </tfoot>
         </table>
-    </div>
 
-    <!-- Terms and Signature Section Side by Side -->
-    <div class="row mb-2">
-        <div class="col-md-8">
-            <div class="terms-section">
-                <h6 class="section-title">TERMS & CONDITIONS</h6>
-                
-                {% if estimate.payment_terms %}
-                <div class="terms-item">
-                    <span class="terms-subtitle">Payment:</span> {{ estimate.payment_terms|truncatewords:15 }}
-                </div>
-                {% endif %}
-
-                {% if estimate.exclusions %}
-                <div class="terms-item">
-                    <span class="terms-subtitle">Exclusions:</span> {{ estimate.exclusions|truncatewords:15 }}
-                </div>
-                {% endif %}
-
-                {% if estimate.special_terms %}
-                <div class="terms-item">
-                    <span class="terms-subtitle">Special Terms:</span> {{ estimate.special_terms|truncatewords:15 }}
-                </div>
-                {% endif %}
-
-                <div class="terms-item">
-                    <span class="terms-subtitle">General:</span> 
-                    This estimate is valid for the period specified. Prices may vary based on material costs. 
-                    Changes to scope may affect final price. Work performed to standard practices.
-                </div>
+        <!-- Total -->
+        <div class="total-section">
+            <div class="total-row">
+                <span class="total-label">Total:</span>
+                <span class="total-amount">${{ grand_total|floatformat:2|intcomma }}</span>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="signature-section">
-                <h6 class="section-title">ACCEPTANCE</h6>
-                <p class="signature-text">I accept this estimate and authorize {{ contractor.name }} to proceed.</p>
-                
-                <div class="signature-fields">
-                    <div class="signature-line">
-                        <div class="signature-box"></div>
-                        <span class="signature-label">Customer Signature</span>
-                    </div>
-                    <div class="signature-line">
-                        <div class="signature-box"></div>
-                        <span class="signature-label">Date</span>
-                    </div>
-                    <div class="signature-line">
-                        <div class="signature-box"></div>
-                        <span class="signature-label">Print Name</span>
-                    </div>
+    </div>
+
+    <!-- Terms and Acceptance -->
+    <div class="bottom-section">
+        <div class="terms-column">
+            <h3 class="section-title">Terms & Conditions</h3>
+            
+            {% if estimate.payment_terms %}
+            <div class="terms-item">
+                <strong>Payment:</strong> {{ estimate.payment_terms }}
+            </div>
+            {% endif %}
+
+            {% if estimate.exclusions %}
+            <div class="terms-item">
+                <strong>Exclusions:</strong> {{ estimate.exclusions }}
+            </div>
+            {% endif %}
+
+            {% if estimate.special_terms %}
+            <div class="terms-item">
+                <strong>Special Terms:</strong> {{ estimate.special_terms }}
+            </div>
+            {% endif %}
+
+            <div class="terms-item">
+                <strong>General:</strong> This estimate is valid for the period specified. Prices may vary based on material costs. Changes to scope may affect final price. Work performed to standard practices.
+            </div>
+        </div>
+
+        <div class="acceptance-column">
+            <h3 class="section-title">Acceptance</h3>
+            <div class="acceptance-text">
+                I accept this estimate and authorize {{ contractor.name }} to proceed.
+            </div>
+            
+            <div class="signature-fields">
+                <div class="signature-field">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Customer Signature</div>
+                </div>
+                <div class="signature-field">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Date</div>
+                </div>
+                <div class="signature-field">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Print Name</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Footer -->
-    <div class="report-footer text-center">
-        <small class="text-muted">Thank you for considering {{ contractor.name }} for your project needs.</small>
+    <div class="footer-text">
+        Thank you for considering {{ contractor.name }} for your project needs.
     </div>
 
     {% if not report %}
@@ -201,421 +194,413 @@
 </div>
 
 <style>
-/* Modern font family */
+/* Reset and base styles */
 * {
-    font-family: 'Inter', 'Segoe UI', 'Roboto', -apple-system, BlinkMacSystemFont, sans-serif;
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
 }
 
-/* Global spacing reductions */
-.report-container, .card-body {
-    padding: 20px !important;
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.4;
+    color: #333;
 }
 
-/* Header section - more compact */
-.report-header {
-    margin-bottom: 15px !important;
+/* Screen styles (non-print) */
+.card {
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: none;
+    border-radius: 8px;
+}
+
+.card-body {
+    padding: 40px;
+}
+
+/* Print-specific styles */
+@media print {
+    @page {
+        margin: 0.5in;
+        size: letter;
+    }
+    
+    body {
+        font-size: 11pt;
+        line-height: 1.3;
+        color: #000;
+        -webkit-print-color-adjust: exact;
+    }
+    
+    .report-container {
+        padding: 0;
+        margin: 0;
+        width: 100%;
+        max-width: none;
+    }
+    
+    /* Hide screen elements */
+    .d-print-none {
+        display: none !important;
+    }
+}
+
+/* Header Section */
+.estimate-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 2px solid #333;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.company-logo {
+    max-height: 60px;
+    max-width: 120px;
 }
 
 .company-name {
-    font-size: 1.8rem;
-    font-weight: 700;
-    color: #2d5016;
+    font-size: 24pt;
+    font-weight: bold;
+    color: #333;
     margin-bottom: 5px;
-    letter-spacing: -0.5px;
 }
 
 .company-contact {
-    color: #4a7c2a;
-    font-size: 0.9rem;
-    font-weight: 500;
+    font-size: 10pt;
+    color: #666;
 }
 
-/* Title section - horizontal layout */
-.title-section .estimate-title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: #2d5016;
-    margin-bottom: 3px;
-    letter-spacing: 0.5px;
+.header-right {
+    text-align: right;
 }
 
-.title-section .estimate-number {
-    font-size: 1rem;
-    color: #4a7c2a;
-    font-weight: 600;
-    margin-bottom: 0;
+.estimate-title {
+    font-size: 28pt;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
 }
 
-/* Compact info sections */
+.estimate-number {
+    font-size: 14pt;
+    color: #666;
+    font-weight: bold;
+}
+
+/* Info Section */
 .info-section {
-    background: #f8faf6;
-    border: 1px solid #d4d4aa;
-    border-radius: 6px;
-    padding: 12px;
-    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 25px;
+    gap: 40px;
 }
 
-.section-title {
-    color: #2d5016;
-    font-weight: 700;
+.customer-info,
+.project-info {
+    flex: 1;
+}
+
+.info-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 8px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    font-size: 0.75rem;
-    border-bottom: 1px solid #4a7c2a;
-    padding-bottom: 3px;
-    margin-bottom: 8px;
 }
 
 .info-content {
-    color: #333;
-    font-size: 0.85rem;
-    line-height: 1.3;
-}
-
-.info-content p {
-    margin-bottom: 3px !important;
-}
-
-/* Project description - compact */
-.description-content {
-    background: #f8faf6;
-    border: 1px solid #d4d4aa;
-    border-radius: 6px;
-    padding: 12px;
-    color: #333;
-    font-size: 0.9rem;
+    font-size: 10pt;
     line-height: 1.4;
 }
 
-/* Estimate table - more compact */
-.estimate-table {
-    border: 2px solid #2d5016;
-    margin-bottom: 0;
-    font-size: 0.9rem;
+.customer-name,
+.project-location {
+    font-weight: bold;
+    margin-bottom: 3px;
 }
 
-.estimate-table th {
-    background: #4a7c2a !important;
-    color: white !important;
-    border: 1px solid #2d5016;
-    padding: 8px 10px;
-    font-weight: 700;
+/* Description Section */
+.description-section {
+    margin-bottom: 25px;
+}
+
+.section-title {
+    font-size: 12pt;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 10px;
     text-transform: uppercase;
-    letter-spacing: 0.3px;
-    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 3px;
 }
 
-.estimate-table td {
-    padding: 8px 10px;
-    border: 1px solid #d4d4aa;
-    vertical-align: top;
-    line-height: 1.3;
-}
-
-.estimate-table tbody tr:nth-child(even) {
-    background-color: #f8faf6;
-}
-
-.estimate-table .item-details {
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 2px;
-    font-style: italic;
-    line-height: 1.2;
-}
-
-.estimate-table .total-row {
-    background: #e8f0de !important;
-    border-top: 3px solid #2d5016;
-}
-
-.estimate-table .total-row td {
+.description-text {
+    font-size: 10pt;
     padding: 10px;
-    font-size: 1rem;
-    font-weight: 700;
-    color: #2d5016;
+    background-color: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 3px;
 }
 
-.estimate-table .total-amount {
-    font-size: 1.2rem !important;
-    color: #2d5016 !important;
+/* Items Table */
+.items-section {
+    margin-bottom: 25px;
 }
 
-/* Compact terms section */
-.terms-section {
-    background: #f8faf6;
-    border: 1px solid #d4d4aa;
-    border-radius: 6px;
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 0;
+}
+
+.items-table th {
+    background-color: #333;
+    color: white;
     padding: 12px;
-    height: 100%;
+    text-align: left;
+    font-size: 10pt;
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.description-col {
+    width: 70%;
+}
+
+.amount-col {
+    width: 30%;
+    text-align: right;
+}
+
+.items-table td {
+    padding: 12px;
+    border-bottom: 1px solid #ddd;
+    vertical-align: top;
+}
+
+.items-table tbody tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.item-description .main-desc {
+    font-weight: bold;
+    font-size: 10pt;
+    margin-bottom: 2px;
+}
+
+.item-description .sub-desc {
+    font-size: 9pt;
+    color: #666;
+    font-style: italic;
+}
+
+.item-amount {
+    text-align: right;
+    font-size: 10pt;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+}
+
+/* Total Section */
+.total-section {
+    margin-top: 10px;
+}
+
+.total-row {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding: 15px 12px;
+    background-color: #f0f0f0;
+    border: 2px solid #333;
+    border-radius: 3px;
+}
+
+.total-label {
+    font-size: 14pt;
+    font-weight: bold;
+    margin-right: 20px;
+}
+
+.total-amount {
+    font-size: 16pt;
+    font-weight: bold;
+    font-family: 'Courier New', monospace;
+    color: #333;
+}
+
+/* Bottom Section */
+.bottom-section {
+    display: flex;
+    gap: 30px;
+    margin-bottom: 25px;
+}
+
+.terms-column {
+    flex: 2;
+}
+
+.acceptance-column {
+    flex: 1;
 }
 
 .terms-item {
     margin-bottom: 8px;
-    font-size: 0.8rem;
+    font-size: 9pt;
     line-height: 1.3;
 }
 
-.terms-item:last-child {
-    margin-bottom: 0;
+.terms-item strong {
+    color: #333;
 }
 
-.terms-subtitle {
-    color: #4a7c2a;
-    font-weight: 700;
-}
-
-/* Compact signature section */
-.signature-section {
-    background: #f8faf6;
-    border: 1px solid #4a7c2a;
-    border-radius: 6px;
-    padding: 12px;
-    height: 100%;
-}
-
-.signature-text {
-    font-size: 0.8rem;
-    margin-bottom: 10px;
+.acceptance-text {
+    font-size: 9pt;
+    margin-bottom: 20px;
     line-height: 1.3;
 }
 
 .signature-fields {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 20px;
+}
+
+.signature-field {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .signature-line {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.signature-box {
-    border-bottom: 1px solid #2d5016;
-    height: 20px;
-    flex: 1;
-    min-width: 80px;
+    border-bottom: 1px solid #333;
+    height: 25px;
+    width: 100%;
 }
 
 .signature-label {
-    font-weight: 600;
-    color: #2d5016;
-    font-size: 0.7rem;
-    white-space: nowrap;
-    min-width: 60px;
-}
-
-.amount {
-    font-family: 'SF Mono', 'Monaco', 'Roboto Mono', monospace;
-    font-weight: 600;
+    font-size: 8pt;
+    color: #666;
+    text-align: center;
 }
 
 /* Footer */
-.report-footer {
-    margin-top: 10px !important;
+.footer-text {
+    text-align: center;
+    font-size: 9pt;
+    color: #666;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #ddd;
 }
 
-.report-footer small {
-    font-size: 0.75rem;
-}
-
-/* PDF-specific styles for single page */
+/* Print optimizations */
 @media print {
-    @page {
-        margin: 0.4in;
-        size: letter;
+    .company-logo {
+        max-height: 50px;
+        max-width: 100px;
     }
     
-    body {
-        font-size: 10px !important;
-        line-height: 1.1 !important;
-    }
-    
-    .report-container, .card-body {
-        padding: 0 !important;
-        margin: 0 !important;
-    }
-    
-    .mb-2 {
-        margin-bottom: 4px !important;
-    }
-    
-    .mb-1 {
-        margin-bottom: 2px !important;
-    }
-    
-    /* Force horizontal layout in PDF */
-    .title-section .row {
-        display: flex !important;
-        flex-wrap: nowrap !important;
-    }
-    
-    .title-section .col-4 {
-        flex: 0 0 33.333333% !important;
-        max-width: 33.333333% !important;
-        width: 33.333333% !important;
-    }
-    
-    .customer-section,
-    .project-section {
-        height: 60px !important;
-        min-height: 60px !important;
-        max-height: 60px !important;
-        padding: 4px !important;
-    }
-    
-    .section-title {
-        font-size: 7px !important;
-        margin-bottom: 2px !important;
-        padding-bottom: 1px !important;
-    }
-    
-    .info-content {
-        font-size: 8px !important;
-        line-height: 1.1 !important;
-    }
-    
-    .info-content div {
-        margin-bottom: 1px !important;
+    .company-name {
+        font-size: 20pt;
     }
     
     .estimate-title {
-        font-size: 12px !important;
-        margin-bottom: 1px !important;
+        font-size: 24pt;
     }
     
     .estimate-number {
-        font-size: 9px !important;
+        font-size: 12pt;
     }
     
-    .company-name {
-        font-size: 14px !important;
-        margin-bottom: 1px !important;
+    .info-title {
+        font-size: 10pt;
     }
     
-    .company-contact {
-        font-size: 8px !important;
-        margin-bottom: 2px !important;
-    }
-    
-    .estimate-table {
-        border-collapse: collapse;
-        width: 100%;
-        font-size: 9px;
-        margin-bottom: 4px !important;
-    }
-    
-    .estimate-table th,
-    .estimate-table td {
-        border: 1px solid #333 !important;
-        padding: 3px 4px !important;
-    }
-    
-    .estimate-table th {
-        background: #e8f0de !important;
-        color: #000 !important;
-        font-size: 8px !important;
-    }
-    
-    .estimate-table .total-row {
-        background: #e8f0de !important;
-        border-top: 2px solid #000 !important;
-    }
-    
-    .estimate-table .total-row td {
-        padding: 4px !important;
-        font-size: 10px !important;
-    }
-    
-    .company-name,
-    .estimate-title,
     .section-title {
-        color: #000 !important;
+        font-size: 10pt;
     }
     
-    .info-section,
-    .description-content,
-    .terms-section,
-    .signature-section {
-        background: #f5f5f5 !important;
-        border: 1px solid #333 !important;
-        padding: 4px !important;
+    .total-label {
+        font-size: 12pt;
     }
     
-    .terms-section {
-        height: auto !important;
+    .total-amount {
+        font-size: 14pt;
     }
     
-    .signature-section {
-        height: auto !important;
-    }
-    
-    .signature-box {
-        border-bottom: 1px solid #000 !important;
-        height: 12px !important;
-    }
-    
-    .terms-item,
-    .signature-text {
-        font-size: 7px !important;
-        line-height: 1.1 !important;
-        margin-bottom: 1px !important;
-    }
-    
-    .signature-label {
-        font-size: 6px !important;
-    }
-    
-    .signature-fields {
-        gap: 2px !important;
-    }
-    
-    .description-content {
-        font-size: 8px !important;
-        line-height: 1.1 !important;
-        padding: 4px !important;
-    }
-    
-    /* Force single page */
-    .report-container {
+    /* Ensure proper page breaks */
+    .estimate-header {
         page-break-inside: avoid;
-        max-height: 10in;
-        overflow: hidden;
     }
     
-    /* Remove any extra spacing */
-    .report-footer {
-        margin-top: 2px !important;
+    .items-table {
+        page-break-inside: avoid;
     }
     
-    .report-footer small {
-        font-size: 6px !important;
+    .bottom-section {
+        page-break-inside: avoid;
+    }
+    
+    /* Remove background colors for better printing */
+    .items-table tbody tr:nth-child(even) {
+        background-color: transparent;
+    }
+    
+    .total-row {
+        background-color: #f5f5f5;
+    }
+    
+    .description-text {
+        background-color: #f5f5f5;
     }
 }
 
+/* Mobile responsiveness */
 @media (max-width: 768px) {
-    .company-name {
-        font-size: 1.4rem;
+    .estimate-header {
+        flex-direction: column;
+        gap: 20px;
+        text-align: center;
     }
     
-    .estimate-title {
-        font-size: 1.2rem;
+    .header-left {
+        flex-direction: column;
+        text-align: center;
     }
     
-    .estimate-table th,
-    .estimate-table td {
-        padding: 6px;
-        font-size: 0.8rem;
+    .header-right {
+        text-align: center;
     }
     
-    .signature-section {
-        margin-top: 15px;
+    .info-section {
+        flex-direction: column;
+        gap: 20px;
     }
     
-    .signature-fields {
-        gap: 10px;
+    .bottom-section {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .items-table {
+        font-size: 9pt;
+    }
+    
+    .items-table th,
+    .items-table td {
+        padding: 8px;
     }
 }
 </style>
