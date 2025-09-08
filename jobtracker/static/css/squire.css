@@ -1120,6 +1120,7 @@ textarea:focus {
     align-items: center;
     justify-content: center;
     font-weight: bold;
+    flex: 0 0 30px;
 }
 
 .step-indicator.active {
@@ -1130,6 +1131,37 @@ textarea:focus {
 .step-indicator.completed {
     background: var(--success-color);
     color: white;
+}
+
+#progress-steps {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+}
+
+#progress-steps > div {
+    display: flex;
+    align-items: center;
+}
+
+@media (max-width: 576px) {
+    #progress-steps {
+        justify-content: center;
+    }
+
+    #progress-steps > div {
+        flex: 1 1 45%;
+        flex-direction: column;
+        text-align: center;
+    }
+
+    #progress-steps .step-indicator {
+        margin-right: 0 !important;
+        margin-bottom: 0.25rem;
+    }
+
+    #progress-steps > div span {
+        font-size: 0.8rem;
+    }
 }
 
 .material-total {
