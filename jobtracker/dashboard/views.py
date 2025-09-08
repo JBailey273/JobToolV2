@@ -1497,6 +1497,9 @@ def create_estimate(request):
         },
     )
 
+# File: jobtracker/dashboard/views.py
+# Replace the existing edit_estimate function with this updated version
+
 @login_required
 def edit_estimate(request, pk):
     contractor = getattr(request.user, "contractor", None)
@@ -1508,35 +1511,211 @@ def edit_estimate(request, pk):
     employees = contractor.employees.all()
 
     if request.method == "POST":
-        # Update the estimate
-        estimate.name = request.POST.get("name")
-        estimate.estimate_number = request.POST.get("estimate_number", "")
-        estimate.customer_name = request.POST.get("customer_name")
-        estimate.customer_email = request.POST.get("customer_email", "")
-        estimate.customer_phone = request.POST.get("customer_phone", "")
-        estimate.customer_address = request.POST.get("customer_address", "")
-        estimate.project_location = request.POST.get("project_location")
-        estimate.project_description = request.POST.get("project_description", "")
-        estimate.payment_terms = request.POST.get("payment_terms", "")
-        estimate.exclusions = request.POST.get("exclusions", "")
-        estimate.special_terms = request.POST.get("special_terms", "")
-        estimate.liability_statement = request.POST.get("liability_statement", "")
-        estimate.notes = request.POST.get("notes", "")
-        estimate.created_date = request.POST.get("created_date")
-        estimate.valid_until = request.POST.get("valid_until") or None
-        estimate.save()
+        try:
+            # Update the estimate basic information
+            estimate.name = request.POST.get("name")
+            estimate.estimate_number = request.POST.get("estimate_number", "")
+            estimate.customer_name = request.POST.get("customer_name")
+            estimate.customer_email = request.POST.get("customer_email", "")
+            estimate.customer_phone = request.POST.get("customer_phone", "")
+            estimate.customer_address = request.POST.get("customer_address", "")
+            estimate.project_location = request.POST.get("project_location")
+            estimate.project_description = request.POST.get("project_description", "")
+            estimate.payment_terms = request.POST.get("payment_terms", "")
+            estimate.exclusions = request.POST.get("exclusions", "")
+            estimate.special_terms = request.POST.get("special_terms", "")
+            estimate.liability_statement = request.POST.get("liability_statement", "")
+            estimate.notes = request.POST.get("notes", "")
+            estimate.created_date = request.POST.get("created_date")
+            estimate.valid_until = request.POST.get("valid_until") or None
+            estimate.save()
 
-        # Clear existing entries and recreate them
-        estimate.entries.all().delete()
+            # Process existing and new line items
+            processed_entry_ids = set()
+            processed_material_ids = set()
+            processed_service_ids = set()
 
-        entries_created = 0
-        date = request.POST.get("created_date")
+            date = request.POST.get("created_date")
 
-        # Process entries (same logic as create_estimate)
-        # ... (copy the entry processing logic from create_estimate)
+            # Process labor/equipment entries
+            hours_list = request.POST.getlist("hours[]")
+            asset_ids = request.POST.getlist("asset[]")
+            employee_ids = request.POST.getlist("employee[]")
+            descriptions = request.POST.getlist("description[]")
+            entry_ids = request.POST.getlist("entry_id[]")
 
-        messages.success(request, f"Estimate '{estimate.name}' updated successfully.")
-        return redirect("dashboard:estimate_list")
+            for i, (hours, asset_id, employee_id, desc, entry_id) in enumerate(zip(
+                hours_list, asset_ids, employee_ids, descriptions, entry_ids
+            )):
+                # Skip empty entries
+                if not any([hours, asset_id, employee_id]):
+                    continue
+
+                hours_dec = Decimal(hours or 0)
+                if hours_dec <= 0 and not asset_id and not employee_id:
+                    continue
+
+                asset = assets.filter(pk=asset_id).first() if asset_id else None
+                employee = employees.filter(pk=employee_id).first() if employee_id else None
+
+                if entry_id:
+                    # Update existing entry
+                    try:
+                        entry = EstimateEntry.objects.get(pk=entry_id, estimate=estimate)
+                        entry.hours = hours_dec
+                        entry.asset = asset
+                        entry.employee = employee
+                        entry.description = desc or ""
+                        entry.material_description = ""
+                        entry.material_cost = None
+                        entry.save()
+                        processed_entry_ids.add(int(entry_id))
+                    except EstimateEntry.DoesNotExist:
+                        pass
+                else:
+                    # Create new entry
+                    EstimateEntry.objects.create(
+                        estimate=estimate,
+                        date=date,
+                        hours=hours_dec,
+                        asset=asset,
+                        employee=employee,
+                        material_description="",
+                        material_cost=None,
+                        description=desc or "",
+                    )
+
+            # Process materials entries
+            material_descriptions = request.POST.getlist("material_description[]")
+            material_quantities = request.POST.getlist("material_quantity[]")
+            material_units = request.POST.getlist("material_unit[]")
+            material_costs = request.POST.getlist("material_cost[]")
+            material_entry_ids = request.POST.getlist("material_entry_id[]")
+
+            for i, (desc, qty, unit, cost, entry_id) in enumerate(zip(
+                material_descriptions, material_quantities, material_units, 
+                material_costs, material_entry_ids
+            )):
+                if not desc or not qty or not cost:
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    if entry_id:
+                        # Update existing entry
+                        try:
+                            entry = EstimateEntry.objects.get(pk=entry_id, estimate=estimate)
+                            entry.hours = qty_dec
+                            entry.material_description = full_desc
+                            entry.material_cost = cost_dec
+                            entry.description = f"Material: {full_desc}"
+                            entry.asset = None
+                            entry.employee = None
+                            entry.save()
+                            processed_material_ids.add(int(entry_id))
+                        except EstimateEntry.DoesNotExist:
+                            pass
+                    else:
+                        # Create new entry
+                        EstimateEntry.objects.create(
+                            estimate=estimate,
+                            date=date,
+                            hours=qty_dec,
+                            asset=None,
+                            employee=None,
+                            material_description=full_desc,
+                            material_cost=cost_dec,
+                            description=f"Material: {full_desc}",
+                        )
+
+            # Process services entries
+            service_descriptions = request.POST.getlist("service_description[]")
+            service_quantities = request.POST.getlist("service_quantity[]")
+            service_units = request.POST.getlist("service_unit[]")
+            service_costs = request.POST.getlist("service_cost[]")
+            service_markups = request.POST.getlist("service_markup[]")
+            service_entry_ids = request.POST.getlist("service_entry_id[]")
+
+            for i, (desc, qty, unit, cost, markup, entry_id) in enumerate(zip(
+                service_descriptions, service_quantities, service_units,
+                service_costs, service_markups, service_entry_ids
+            )):
+                if not desc or not qty or not cost:
+                    continue
+
+                qty_dec = Decimal(qty or 0)
+                cost_dec = Decimal(cost or 0)
+                markup_dec = Decimal(markup or 0)
+
+                if desc and qty_dec > 0 and cost_dec > 0:
+                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+
+                    if entry_id:
+                        # Update existing entry
+                        try:
+                            entry = EstimateEntry.objects.get(pk=entry_id, estimate=estimate)
+                            entry.hours = qty_dec
+                            entry.material_description = full_desc
+                            entry.material_cost = cost_dec
+                            entry.service_markup = markup_dec
+                            entry.description = f"Outside Service: {full_desc}"
+                            entry.asset = None
+                            entry.employee = None
+                            entry.save()
+                            processed_service_ids.add(int(entry_id))
+                        except EstimateEntry.DoesNotExist:
+                            pass
+                    else:
+                        # Create new entry
+                        EstimateEntry.objects.create(
+                            estimate=estimate,
+                            date=date,
+                            hours=qty_dec,
+                            asset=None,
+                            employee=None,
+                            material_description=full_desc,
+                            material_cost=cost_dec,
+                            service_markup=markup_dec,
+                            description=f"Outside Service: {full_desc}",
+                        )
+
+            # Delete entries that were removed (not in processed lists)
+            all_entry_ids = set(estimate.entries.values_list('id', flat=True))
+            to_delete = all_entry_ids - processed_entry_ids - processed_material_ids - processed_service_ids
+            if to_delete:
+                EstimateEntry.objects.filter(id__in=to_delete).delete()
+
+            messages.success(request, f"Estimate '{estimate.name}' updated successfully.")
+            return redirect("dashboard:estimate_list")
+
+        except Exception as e:
+            messages.error(request, f"Error updating estimate: {e}")
+            return redirect("dashboard:edit_estimate", pk=pk)
+
+    # Prepare existing entries for the template
+    entries = estimate.entries.all()
+    
+    # Separate entries by type
+    labor_entries = entries.filter(
+        (Q(asset__isnull=False) | Q(employee__isnull=False)),
+        material_description=""
+    )
+    
+    material_entries = entries.filter(
+        material_description__isnull=False,
+        material_description__gt="",
+        description__startswith="Material:"
+    )
+    
+    service_entries = entries.filter(
+        material_description__isnull=False,
+        material_description__gt="",
+        description__startswith="Outside Service:"
+    )
 
     return render(
         request,
@@ -1546,9 +1725,11 @@ def edit_estimate(request, pk):
             "assets": assets,
             "employees": employees,
             "margin": contractor.material_margin,
+            "labor_entries": labor_entries,
+            "material_entries": material_entries,
+            "service_entries": service_entries,
         },
     )
-
 
 @login_required
 def duplicate_estimate(request, pk):
