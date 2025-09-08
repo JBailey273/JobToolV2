@@ -1,6 +1,6 @@
 {
-  "name": "Job Tracker",
-  "short_name": "JobTrack",
+  "name": "Job Tracking",
+  "short_name": "JobTracker",
   "icons": [
     {
       "src": "/static/img/web-app-manifest-192x192.png",
