@@ -71,41 +71,6 @@ def _render_pdf(template_src, context, filename, request=None):
     response["Content-Disposition"] = f"attachment; filename={filename}"
     return response
 
-# Update the customer_estimate_report view to pass the request
-@login_required 
-def customer_estimate_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
-    if contractor is None:
-        return redirect("login")
-
-    estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
-    export_pdf = request.GET.get("export") == "pdf"
-    
-    # ... your existing context building code ...
-    
-    context = {
-        "contractor": contractor,
-        "estimate": estimate,
-        "material_entries": material_entries,
-        "service_entries": service_entries,
-        "labor_equipment_total": labor_equipment_total,
-        "materials_total": materials_total,
-        "services_total": services_total,
-        "grand_total": grand_total,
-        "report": export_pdf,
-    }
-
-    if export_pdf:
-        pdf = _render_pdf(
-            "dashboard/customer_estimate_report.html", 
-            context, 
-            f"estimate_{estimate.estimate_number}.pdf",
-            request  # Pass the request object
-        )
-        if pdf:
-            return pdf
-
-    return render(request, "dashboard/customer_estimate_report.html", context)
 
 
 @login_required
@@ -1825,8 +1790,15 @@ def customer_estimate_report(request, pk):
 
     export_pdf = request.GET.get("export") == "pdf"
 
+    contractor_logo = None
+    if contractor.logo:
+        contractor_logo = (
+            f"file://{contractor.logo.path}" if export_pdf else contractor.logo.url
+        )
+
     context = {
         "contractor": contractor,
+        "contractor_logo": contractor_logo,
         "estimate": estimate,
         "labor_equipment_entries": labor_equipment_entries,
         "material_entries": material_entries,
@@ -1887,8 +1859,15 @@ def internal_estimate_report(request, pk):
 
     export_pdf = request.GET.get("export") == "pdf"
 
+    contractor_logo = None
+    if contractor.logo:
+        contractor_logo = (
+            f"file://{contractor.logo.path}" if export_pdf else contractor.logo.url
+        )
+
     context = {
         "contractor": contractor,
+        "contractor_logo": contractor_logo,
         "estimate": estimate,
         "entries": entries,
         "total_billable": total_billable,
