@@ -798,7 +798,13 @@ def add_job_entry(request, pk):
 
                 if desc and qty_dec > 0 and cost_dec > 0:
                     # Create material entry with description including unit
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                    suffix = f"({qty_dec} {unit})" if unit else ""
+                    desc_stripped = desc.strip()
+                    full_desc = (
+                        f"{desc_stripped} {suffix}".strip()
+                        if suffix and not desc_stripped.endswith(suffix)
+                        else desc_stripped
+                    )
 
                     JobEntry.objects.create(
                         project=project,
@@ -1369,7 +1375,13 @@ def create_estimate(request):
                         cost_dec = Decimal(cost or 0)
 
                         if desc and qty_dec > 0 and cost_dec > 0:
-                            full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                            suffix = f"({qty_dec} {unit})" if unit else ""
+                            desc_stripped = desc.strip()
+                            full_desc = (
+                                f"{desc_stripped} {suffix}".strip()
+                                if suffix and not desc_stripped.endswith(suffix)
+                                else desc_stripped
+                            )
 
                             EstimateEntry.objects.create(
                                 estimate=estimate,
@@ -1414,7 +1426,13 @@ def create_estimate(request):
                         markup_dec = Decimal(markup or 0)
 
                         if desc and qty_dec > 0 and cost_dec > 0:
-                            full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                            suffix = f"({qty_dec} {unit})" if unit else ""
+                            desc_stripped = desc.strip()
+                            full_desc = (
+                                f"{desc_stripped} {suffix}".strip()
+                                if suffix and not desc_stripped.endswith(suffix)
+                                else desc_stripped
+                            )
 
                             EstimateEntry.objects.create(
                                 estimate=estimate,
@@ -1568,7 +1586,13 @@ def edit_estimate(request, pk):
                 cost_dec = Decimal(cost or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                    suffix = f"({qty_dec} {unit})" if unit else ""
+                    desc_stripped = desc.strip()
+                    full_desc = (
+                        f"{desc_stripped} {suffix}".strip()
+                        if suffix and not desc_stripped.endswith(suffix)
+                        else desc_stripped
+                    )
 
                     if entry_id:
                         # Update existing entry
@@ -1617,7 +1641,13 @@ def edit_estimate(request, pk):
                 markup_dec = Decimal(markup or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                    suffix = f"({qty_dec} {unit})" if unit else ""
+                    desc_stripped = desc.strip()
+                    full_desc = (
+                        f"{desc_stripped} {suffix}".strip()
+                        if suffix and not desc_stripped.endswith(suffix)
+                        else desc_stripped
+                    )
 
                     if entry_id:
                         # Update existing entry
@@ -2037,7 +2067,13 @@ def add_estimate_entry(request, pk):
                 cost_dec = Decimal(cost or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                    suffix = f"({qty_dec} {unit})" if unit else ""
+                    desc_stripped = desc.strip()
+                    full_desc = (
+                        f"{desc_stripped} {suffix}".strip()
+                        if suffix and not desc_stripped.endswith(suffix)
+                        else desc_stripped
+                    )
 
                     EstimateEntry.objects.create(
                         estimate=estimate,
@@ -2075,7 +2111,13 @@ def add_estimate_entry(request, pk):
                 markup_dec = Decimal(markup or 0)
 
                 if desc and qty_dec > 0 and cost_dec > 0:
-                    full_desc = f"{desc} ({qty_dec} {unit})" if unit else desc
+                    suffix = f"({qty_dec} {unit})" if unit else ""
+                    desc_stripped = desc.strip()
+                    full_desc = (
+                        f"{desc_stripped} {suffix}".strip()
+                        if suffix and not desc_stripped.endswith(suffix)
+                        else desc_stripped
+                    )
 
                     EstimateEntry.objects.create(
                         estimate=estimate,
