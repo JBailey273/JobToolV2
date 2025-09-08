@@ -8,6 +8,8 @@ from django.urls import reverse
 from django.templatetags.static import static
 from django.http import HttpResponse
 
+from dashboard.templatetags.estimate_extras import dedupe_qty
+
 from tracker.models import (
     Contractor,
     ContractorUser,
@@ -18,6 +20,16 @@ from tracker.models import (
     EstimateEntry,
 )
 from dashboard.views import _render_pdf
+
+
+class DedupeQtyTests(TestCase):
+    def test_dedupe_qty_handles_decimal_variants(self):
+        text = "Tank (1 Each) (1.00 Each)"
+        self.assertEqual(dedupe_qty(text), "Tank (1 Each)")
+
+    def test_dedupe_qty_preserves_first_group(self):
+        text = "Fill (6.5 Yards) (6.50 Yards)"
+        self.assertEqual(dedupe_qty(text), "Fill (6.5 Yards)")
 
 
 class RenderPdfTests(TestCase):
