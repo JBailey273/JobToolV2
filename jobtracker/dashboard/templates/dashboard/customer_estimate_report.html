@@ -1,5 +1,5 @@
 {% extends 'dashboard/base.html' %}
-{% load humanize %}
+{% load humanize estimate_extras %}
 {% block title %}Estimate - {{ estimate.estimate_number }}{% endblock %}
 {% block content %}
 
@@ -99,10 +99,12 @@
                 {% for material in material_entries %}
                 <tr>
                     <td class="item-description">
-                        <div class="main-desc">{{ material.material_description }}</div>
-                        {% if material.description and "Material:" in material.description %}
-                        <div class="sub-desc">{{ material.description|slice:"10:" }}</div>
+                        {% with main=material.material_description|dedupe_qty sub=material.description|slice:"10:"|dedupe_qty %}
+                        <div class="main-desc">{{ main }}</div>
+                        {% if material.description and "Material:" in material.description and sub != main %}
+                        <div class="sub-desc">{{ sub }}</div>
                         {% endif %}
+                        {% endwith %}
                     </td>
                     <td class="item-amount">${{ material.billable_amount|floatformat:2|intcomma }}</td>
                 </tr>
@@ -112,10 +114,12 @@
                 {% for service in service_entries %}
                 <tr>
                     <td class="item-description">
-                        <div class="main-desc">{{ service.material_description }}</div>
-                        {% if service.description and "Outside Service:" in service.description %}
-                        <div class="sub-desc">{{ service.description|slice:"17:" }}</div>
+                        {% with main=service.material_description|dedupe_qty sub=service.description|slice:"17:"|dedupe_qty %}
+                        <div class="main-desc">{{ main }}</div>
+                        {% if service.description and "Outside Service:" in service.description and sub != main %}
+                        <div class="sub-desc">{{ sub }}</div>
                         {% endif %}
+                        {% endwith %}
                     </td>
                     <td class="item-amount">${{ service.billable_amount|floatformat:2|intcomma }}</td>
                 </tr>
