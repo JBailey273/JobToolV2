@@ -1,11 +1,14 @@
 from django import template
+
 from decimal import Decimal, InvalidOperation
+
 import re
 
 register = template.Library()
 
 @register.filter
 def dedupe_qty(value):
+
     """Remove repeated quantity/unit groups regardless of numeric formatting.
     Examples:
         'Item (1 Each) (1.00 Each)' -> 'Item (1 Each)'
