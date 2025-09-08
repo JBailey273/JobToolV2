@@ -6,6 +6,7 @@ from django.test import TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.templatetags.static import static
+from django.http import HttpResponse
 
 from tracker.models import (
     Contractor,
@@ -798,3 +799,55 @@ class ProjectEstimateCRUDTests(TestCase):
         )
         self.assertRedirects(response, reverse("dashboard:estimate_list"))
         self.assertTrue(self.contractor.estimates.filter(name="NoDate").exists())
+
+
+class EstimateReportLogoTests(TestCase):
+    def setUp(self):
+        logo_content = (
+            b"\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00"
+            b"\x00\x00\x00\xff\xff\xff!\xf9\x04\x01\n\x00\x01\x00,"
+            b"\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02D\x01\x00;"
+        )
+        logo_file = SimpleUploadedFile("logo.gif", logo_content, content_type="image/gif")
+
+        self.contractor = Contractor.objects.create(
+            name="Test Contractor", email="user@example.com", logo=logo_file
+        )
+        self.user = ContractorUser.objects.create_user(
+            email="user@example.com", password="secret", contractor=self.contractor
+        )
+        self.estimate = Estimate.objects.create(
+            contractor=self.contractor, name="Est", customer_name="Cust"
+        )
+
+        self.client.post(
+            reverse("login"), {"username": "user@example.com", "password": "secret"}
+        )
+
+    def _capture_logo(self, url):
+        captured = {}
+
+        def fake_render(template, context, filename, request=None):
+            captured["logo"] = context.get("contractor_logo")
+            return HttpResponse(b"%PDF-1.4", content_type="application/pdf")
+
+        with patch("dashboard.views._render_pdf", side_effect=fake_render):
+            self.client.get(url)
+
+        return captured.get("logo")
+
+    def test_customer_estimate_report_uses_file_logo(self):
+        url = (
+            reverse("dashboard:customer_estimate_report", args=[self.estimate.pk])
+            + "?export=pdf"
+        )
+        logo = self._capture_logo(url)
+        self.assertTrue(logo.startswith("file://"))
+
+    def test_internal_estimate_report_uses_file_logo(self):
+        url = (
+            reverse("dashboard:internal_estimate_report", args=[self.estimate.pk])
+            + "?export=pdf"
+        )
+        logo = self._capture_logo(url)
+        self.assertTrue(logo.startswith("file://"))

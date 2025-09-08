@@ -29,8 +29,8 @@
     <!-- Header Section -->
     <div class="estimate-header">
         <div class="header-left">
-            {% if contractor.logo %}
-                <img src="{{ contractor.logo.url }}" alt="{{ contractor.name }} Logo" class="company-logo">
+            {% if contractor_logo %}
+                <img src="{{ contractor_logo }}" alt="{{ contractor.name }} Logo" class="company-logo">
             {% endif %}
             <div class="company-info">
                 <h1 class="company-name">{{ contractor.name }}</h1>

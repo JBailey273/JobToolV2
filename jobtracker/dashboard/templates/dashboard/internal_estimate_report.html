@@ -28,8 +28,8 @@
     
     <!-- Header Section -->
     <div class="report-header text-center mb-4">
-        {% if contractor.logo %}
-            <img src="{{ contractor.logo.url }}" alt="{{ contractor.name }} Logo" class="mb-3" style="max-height: 60px;">
+        {% if contractor_logo %}
+            <img src="{{ contractor_logo }}" alt="{{ contractor.name }} Logo" class="mb-3" style="max-height: 60px;">
         {% endif %}
         <h1 class="company-name">{{ contractor.name }}</h1>
         <h2 class="report-title">INTERNAL ESTIMATE ANALYSIS</h2>
