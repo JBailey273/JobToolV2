@@ -99,6 +99,239 @@
                 </div>
             </div>
 
+            <!-- Line Items -->
+            <div class="card mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list me-2"></i>Estimate Line Items
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <!-- Entry Type Tabs -->
+                    <ul class="nav nav-tabs" id="entryTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="labor-tab" data-bs-toggle="tab" data-bs-target="#labor" type="button">
+                                <i class="fas fa-cogs me-2"></i>Labor & Equipment
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="materials-tab" data-bs-toggle="tab" data-bs-target="#materials" type="button">
+                                <i class="fas fa-boxes me-2"></i>Materials
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="services-tab" data-bs-toggle="tab" data-bs-target="#services" type="button">
+                                <i class="fas fa-handshake me-2"></i>Outside Services
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content border border-top-0 rounded-bottom p-3">
+                        <!-- Labor & Equipment Tab -->
+                        <div class="tab-pane fade show active" id="labor">
+                            <div id="laborEntries">
+                                <!-- Existing labor entries will be populated here -->
+                                {% for entry in labor_entries %}
+                                <div class="entry-row" data-entry-id="{{ entry.id }}">
+                                    <div class="d-flex justify-content-between align-items-center mb-3">
+                                        <h6 class="mb-0">Equipment / Labor Entry</h6>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEntry(this)">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <div class="row g-3">
+                                        <div class="col-md-3">
+                                            <label class="form-label">Hours/Quantity</label>
+                                            <input type="number" class="form-control" name="hours[]" step="0.25" value="{{ entry.hours }}" onchange="updateTotals()">
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Equipment or Asset</label>
+                                            <select class="form-select" name="asset[]" onchange="updateTotals()">
+                                                <option value="">Select Equipment or Asset...</option>
+                                                {% for asset in assets %}
+                                                <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}" {% if entry.asset_id == asset.id %}selected{% endif %}>
+                                                    {{ asset.name }} (${{ asset.billable_rate|floatformat:2 }}/hr)
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Employee</label>
+                                            <select class="form-select" name="employee[]" onchange="updateTotals()">
+                                                <option value="">Select Employee...</option>
+                                                {% for emp in employees %}
+                                                <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}" {% if entry.employee_id == emp.id %}selected{% endif %}>
+                                                    {{ emp.name }} (${{ emp.billable_rate|floatformat:2 }}/hr)
+                                                </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        <div class="col-md-1 d-flex align-items-end">
+                                            <div class="text-success fw-bold entry-total">${{ entry.billable_amount|floatformat:2 }}</div>
+                                        </div>
+                                        <div class="col-12">
+                                            <label class="form-label">Work Description</label>
+                                            <textarea class="form-control" name="description[]" rows="2">{{ entry.description }}</textarea>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="entry_id[]" value="{{ entry.id }}">
+                                </div>
+                                {% endfor %}
+                            </div>
+
+                            <button type="button" class="btn btn-outline-primary w-100" onclick="addLaborEntry()">
+                                <i class="fas fa-plus me-2"></i>Add Equipment / Labor Entry
+                            </button>
+                        </div>
+
+                        <!-- Materials Tab -->
+                        <div class="tab-pane fade" id="materials">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="materialsTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="40%">Description</th>
+                                            <th width="15%">Quantity</th>
+                                            <th width="15%">Unit</th>
+                                            <th width="15%">Unit Cost</th>
+                                            <th width="15%">Total</th>
+                                            <th width="5%">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in material_entries %}
+                                        <tr data-entry-id="{{ entry.id }}">
+                                            <td><input type="text" class="form-control" name="material_description[]" value="{{ entry.material_description }}"></td>
+                                            <td><input type="number" class="form-control" name="material_quantity[]" step="0.01" value="{{ entry.hours }}" onchange="calculateRowTotal(this)"></td>
+                                            <td>
+                                                <select class="form-select" name="material_unit[]">
+                                                    <option value="Each" {% if 'Each' in entry.material_description %}selected{% endif %}>Each</option>
+                                                    <option value="Hours" {% if 'Hours' in entry.material_description %}selected{% endif %}>Hours</option>
+                                                    <option value="Days" {% if 'Days' in entry.material_description %}selected{% endif %}>Days</option>
+                                                    <option value="Boxes" {% if 'Boxes' in entry.material_description %}selected{% endif %}>Boxes</option>
+                                                    <option value="Bags" {% if 'Bags' in entry.material_description %}selected{% endif %}>Bags</option>
+                                                    <option value="Tons" {% if 'Tons' in entry.material_description %}selected{% endif %}>Tons</option>
+                                                    <option value="Yards" {% if 'Yards' in entry.material_description %}selected{% endif %}>Yards</option>
+                                                    <option value="Linear Ft" {% if 'Linear Ft' in entry.material_description %}selected{% endif %}>Linear Ft</option>
+                                                    <option value="Square Ft" {% if 'Square Ft' in entry.material_description %}selected{% endif %}>Square Ft</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" class="form-control" name="material_cost[]" step="0.01" value="{{ entry.material_cost }}" onchange="calculateRowTotal(this)"></td>
+                                            <td><span class="material-total fw-bold">${{ entry.billable_amount|floatformat:2 }}</span></td>
+                                            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMaterialRow(this)"><i class="fas fa-trash"></i></button></td>
+                                            <input type="hidden" name="material_entry_id[]" value="{{ entry.id }}">
+                                        </tr>
+                                        {% endfor %}
+                                        <!-- Add one empty row for new entries -->
+                                        <tr>
+                                            <td><input type="text" class="form-control" name="material_description[]" placeholder="e.g., Concrete, Pipe, Fill"></td>
+                                            <td><input type="number" class="form-control" name="material_quantity[]" step="0.01" placeholder="1" onchange="calculateRowTotal(this)"></td>
+                                            <td>
+                                                <select class="form-select" name="material_unit[]">
+                                                    <option value="Each">Each</option>
+                                                    <option value="Hours">Hours</option>
+                                                    <option value="Days">Days</option>
+                                                    <option value="Boxes">Boxes</option>
+                                                    <option value="Bags">Bags</option>
+                                                    <option value="Tons">Tons</option>
+                                                    <option value="Yards">Yards</option>
+                                                    <option value="Linear Ft">Linear Ft</option>
+                                                    <option value="Square Ft">Square Ft</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" class="form-control" name="material_cost[]" step="0.01" placeholder="0.00" onchange="calculateRowTotal(this)"></td>
+                                            <td><span class="material-total fw-bold">$0.00</span></td>
+                                            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeMaterialRow(this)"><i class="fas fa-trash"></i></button></td>
+                                            <input type="hidden" name="material_entry_id[]" value="">
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex gap-2 mb-3">
+                                <button type="button" class="btn btn-outline-success" onclick="addMaterialRow()">
+                                    <i class="fas fa-plus me-2"></i>Add Material
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="bulkAddMaterials()">
+                                    <i class="fas fa-list me-2"></i>Bulk Add (5 rows)
+                                </button>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Material Markup:</strong> Materials are automatically marked up using your {{ margin|default:25 }}% margin setting.
+                            </div>
+                        </div>
+
+                        <!-- Outside Services Tab -->
+                        <div class="tab-pane fade" id="services">
+                            <div class="table-responsive">
+                                <table class="table table-bordered" id="servicesTable">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th width="35%">Description</th>
+                                            <th width="15%">Quantity</th>
+                                            <th width="10%">Unit</th>
+                                            <th width="15%">Unit Cost</th>
+                                            <th width="10%">Markup %</th>
+                                            <th width="15%">Total</th>
+                                            <th width="5%">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for entry in service_entries %}
+                                        <tr data-entry-id="{{ entry.id }}">
+                                            <td><input type="text" class="form-control" name="service_description[]" value="{{ entry.material_description }}"></td>
+                                            <td><input type="number" class="form-control" name="service_quantity[]" step="0.01" value="{{ entry.hours }}" onchange="calculateServiceRowTotal(this)"></td>
+                                            <td>
+                                                <select class="form-select" name="service_unit[]">
+                                                    <option value="Each" {% if 'Each' in entry.material_description %}selected{% endif %}>Each</option>
+                                                    <option value="Hours" {% if 'Hours' in entry.material_description %}selected{% endif %}>Hours</option>
+                                                    <option value="Days" {% if 'Days' in entry.material_description %}selected{% endif %}>Days</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" class="form-control" name="service_cost[]" step="0.01" value="{{ entry.material_cost }}" onchange="calculateServiceRowTotal(this)"></td>
+                                            <td><input type="number" class="form-control" name="service_markup[]" step="0.01" value="{{ entry.service_markup }}" onchange="calculateServiceRowTotal(this)"></td>
+                                            <td><span class="service-total fw-bold">${{ entry.billable_amount|floatformat:2 }}</span></td>
+                                            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeServiceRow(this)"><i class="fas fa-trash"></i></button></td>
+                                            <input type="hidden" name="service_entry_id[]" value="{{ entry.id }}">
+                                        </tr>
+                                        {% endfor %}
+                                        <!-- Add one empty row for new entries -->
+                                        <tr>
+                                            <td><input type="text" class="form-control" name="service_description[]" placeholder="e.g., Electrician, Surveyor"></td>
+                                            <td><input type="number" class="form-control" name="service_quantity[]" step="0.01" placeholder="1" onchange="calculateServiceRowTotal(this)"></td>
+                                            <td>
+                                                <select class="form-select" name="service_unit[]">
+                                                    <option value="Each">Each</option>
+                                                    <option value="Hours">Hours</option>
+                                                    <option value="Days">Days</option>
+                                                </select>
+                                            </td>
+                                            <td><input type="number" class="form-control" name="service_cost[]" step="0.01" placeholder="0.00" onchange="calculateServiceRowTotal(this)"></td>
+                                            <td><input type="number" class="form-control" name="service_markup[]" step="0.01" value="20" onchange="calculateServiceRowTotal(this)"></td>
+                                            <td><span class="service-total fw-bold">$0.00</span></td>
+                                            <td><button type="button" class="btn btn-sm btn-outline-danger" onclick="removeServiceRow(this)"><i class="fas fa-trash"></i></button></td>
+                                            <input type="hidden" name="service_entry_id[]" value="">
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="d-flex gap-2 mb-3">
+                                <button type="button" class="btn btn-outline-success" onclick="addServiceRow()">
+                                    <i class="fas fa-plus me-2"></i>Add Service
+                                </button>
+                                <button type="button" class="btn btn-outline-info" onclick="bulkAddServices()">
+                                    <i class="fas fa-list me-2"></i>Bulk Add (5 rows)
+                                </button>
+                            </div>
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Service Markup:</strong> Each service can have its own markup percentage (default 20%).
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Terms & Conditions -->
             <div class="card mb-4">
                 <div class="card-header bg-warning text-white">
@@ -146,9 +379,6 @@
                         </a>
                         
                         <div class="d-flex gap-2">
-                            <a href="{% url 'dashboard:add_estimate_entry' estimate.pk %}" class="btn btn-outline-info">
-                                <i class="fas fa-plus me-2"></i>Edit Line Items
-                            </a>
                             <button type="submit" class="btn btn-primary btn-lg" id="submit-btn">
                                 <i class="fas fa-save me-2"></i>Update Estimate
                             </button>
@@ -168,16 +398,40 @@
                     <h6 class="mb-0"><i class="fas fa-calculator me-2"></i>Current Totals</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="fs-3 fw-bold">${{ estimate.total_billable|floatformat:2|intcomma }}</div>
+                    <div class="fs-3 fw-bold" id="total-billable">${{ estimate.total_billable|floatformat:2|intcomma }}</div>
                     <small class="text-muted">Total Billable</small>
                     <hr>
                     <div class="d-flex justify-content-between">
                         <span>Profit:</span>
-                        <span class="fw-bold text-success">${{ estimate.total_profit|floatformat:2|intcomma }}</span>
+                        <span class="fw-bold text-success" id="profit-total">${{ estimate.total_profit|floatformat:2|intcomma }}</span>
                     </div>
                     <div class="d-flex justify-content-between">
                         <span>Margin:</span>
-                        <span class="fw-bold text-info">{{ estimate.profit_margin|floatformat:1 }}%</span>
+                        <span class="fw-bold text-info" id="margin-percent">{{ estimate.profit_margin|floatformat:1 }}%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Breakdown -->
+            <div class="card mb-3">
+                <div class="card-body">
+                    <h6 class="card-title">Breakdown</h6>
+                    <div class="d-flex justify-content-between">
+                        <span>Labor/Equipment:</span>
+                        <span id="labor-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Materials:</span>
+                        <span id="materials-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span>Outside Services:</span>
+                        <span id="services-total" class="fw-bold">$0.00</span>
+                    </div>
+                    <hr>
+                    <div class="d-flex justify-content-between">
+                        <strong>Total:</strong>
+                        <strong id="grand-total">$0.00</strong>
                     </div>
                 </div>
             </div>
@@ -223,12 +477,277 @@
     </div>
 </div>
 
+<style>
+.entry-row {
+    border: 1px solid #e9ecef;
+    border-radius: 0.375rem;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #f8f9fa;
+}
+
+.material-total,
+.service-total {
+    color: var(--success-color);
+    font-size: 1.1rem;
+}
+</style>
+
 <script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize totals calculation
+    updateTotals();
+});
+
+function addLaborEntry() {
+    const container = document.getElementById('laborEntries');
+    const entryDiv = document.createElement('div');
+    entryDiv.className = 'entry-row';
+
+    entryDiv.innerHTML = `
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h6 class="mb-0">Equipment / Labor Entry</h6>
+            <button type="button" class="btn btn-sm btn-outline-danger" onclick="removeEntry(this)">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">Hours/Quantity</label>
+                <input type="number" class="form-control" name="hours[]" step="0.25" placeholder="0.00" onchange="updateTotals()">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Equipment or Asset</label>
+                <select class="form-select" name="asset[]" onchange="updateTotals()">
+                    <option value="">Select Equipment or Asset...</option>
+                    {% for asset in assets %}
+                    <option value="{{ asset.id }}" data-cost="{{ asset.cost_rate }}" data-billable="{{ asset.billable_rate }}">
+                        {{ asset.name }} (${{ asset.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Employee</label>
+                <select class="form-select" name="employee[]" onchange="updateTotals()">
+                    <option value="">Select Employee...</option>
+                    {% for emp in employees %}
+                    <option value="{{ emp.id }}" data-cost="{{ emp.cost_rate }}" data-billable="{{ emp.billable_rate }}">
+                        {{ emp.name }} (${{ emp.billable_rate|floatformat:2 }}/hr)
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-1 d-flex align-items-end">
+                <div class="text-success fw-bold entry-total">$0.00</div>
+            </div>
+            <div class="col-12">
+                <label class="form-label">Work Description</label>
+                <textarea class="form-control" name="description[]" rows="2" placeholder="Description of work to be performed"></textarea>
+            </div>
+        </div>
+        <input type="hidden" name="entry_id[]" value="">
+    `;
+
+    container.appendChild(entryDiv);
+    updateTotals();
+}
+
+function removeEntry(button) {
+    button.closest('.entry-row').remove();
+    updateTotals();
+}
+
+function addMaterialRow() {
+    const tbody = document.querySelector('#materialsTable tbody');
+    const newRow = tbody.rows[tbody.rows.length - 1].cloneNode(true);
+    
+    // Clear the inputs
+    newRow.querySelectorAll('input').forEach(input => {
+        if (input.name === 'material_entry_id[]') {
+            input.value = '';
+        } else {
+            input.value = '';
+        }
+    });
+    newRow.querySelector('.material-total').textContent = '$0.00';
+    
+    tbody.appendChild(newRow);
+}
+
+function bulkAddMaterials() {
+    for (let i = 0; i < 5; i++) {
+        addMaterialRow();
+    }
+}
+
+function removeMaterialRow(button) {
+    const tbody = document.querySelector('#materialsTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        updateTotals();
+    }
+}
+
+function calculateRowTotal(element) {
+    const row = element.closest('tr');
+    const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]').value) || 0;
+    const cost = parseFloat(row.querySelector('input[name="material_cost[]"]').value) || 0;
+    const total = qty * cost;
+    
+    // Apply material margin
+    const margin = {{ margin|default:25 }} / 100;
+    const billableTotal = total / (1 - margin);
+    
+    row.querySelector('.material-total').textContent = ' + billableTotal.toFixed(2);
+    updateTotals();
+}
+
+function addServiceRow() {
+    const tbody = document.querySelector('#servicesTable tbody');
+    const newRow = tbody.rows[tbody.rows.length - 1].cloneNode(true);
+    
+    // Clear the inputs
+    newRow.querySelectorAll('input').forEach(input => {
+        if (input.name === 'service_entry_id[]') {
+            input.value = '';
+        } else if (input.name === 'service_markup[]') {
+            input.value = '20';
+        } else {
+            input.value = '';
+        }
+    });
+    newRow.querySelector('.service-total').textContent = '$0.00';
+    
+    tbody.appendChild(newRow);
+}
+
+function bulkAddServices() {
+    for (let i = 0; i < 5; i++) {
+        addServiceRow();
+    }
+}
+
+function removeServiceRow(button) {
+    const tbody = document.querySelector('#servicesTable tbody');
+    if (tbody.rows.length > 1) {
+        button.closest('tr').remove();
+        updateTotals();
+    }
+}
+
+function calculateServiceRowTotal(element) {
+    const row = element.closest('tr');
+    const qty = parseFloat(row.querySelector('input[name="service_quantity[]"]').value) || 0;
+    const cost = parseFloat(row.querySelector('input[name="service_cost[]"]').value) || 0;
+    const markup = parseFloat(row.querySelector('input[name="service_markup[]"]').value) || 0;
+    const total = qty * cost * (1 + markup / 100);
+    row.querySelector('.service-total').textContent = ' + total.toFixed(2);
+    updateTotals();
+}
+
+function updateTotals() {
+    let laborTotal = 0;
+    let materialsTotal = 0;
+    let servicesTotal = 0;
+    let laborCost = 0;
+    let materialsCost = 0;
+    let servicesCost = 0;
+    
+    // Calculate labor/equipment totals
+    document.querySelectorAll('.entry-row').forEach(row => {
+        const hours = parseFloat(row.querySelector('input[name="hours[]"]').value) || 0;
+        const assetSelect = row.querySelector('select[name="asset[]"]');
+        const employeeSelect = row.querySelector('select[name="employee[]"]');
+        
+        let rowTotal = 0;
+        let rowCost = 0;
+        
+        if (assetSelect && assetSelect.value) {
+            const assetRate = parseFloat(assetSelect.selectedOptions[0].dataset.billable) || 0;
+            const assetCost = parseFloat(assetSelect.selectedOptions[0].dataset.cost) || 0;
+            rowTotal += assetRate * hours;
+            rowCost += assetCost * hours;
+        }
+        
+        if (employeeSelect && employeeSelect.value) {
+            const empRate = parseFloat(employeeSelect.selectedOptions[0].dataset.billable) || 0;
+            const empCost = parseFloat(employeeSelect.selectedOptions[0].dataset.cost) || 0;
+            rowTotal += empRate * hours;
+            rowCost += empCost * hours;
+        }
+        
+        laborTotal += rowTotal;
+        laborCost += rowCost;
+        row.querySelector('.entry-total').textContent = ' + rowTotal.toFixed(2);
+    });
+    
+    // Calculate materials total
+    document.querySelectorAll('#materialsTable tbody tr').forEach(row => {
+        const totalText = row.querySelector('.material-total')?.textContent;
+        if (totalText) {
+            const total = parseFloat(totalText.replace(', '')) || 0;
+            materialsTotal += total;
+            
+            // Calculate cost
+            const qty = parseFloat(row.querySelector('input[name="material_quantity[]"]')?.value) || 0;
+            const cost = parseFloat(row.querySelector('input[name="material_cost[]"]')?.value) || 0;
+            materialsCost += qty * cost;
+        }
+    });
+
+    // Calculate services total
+    document.querySelectorAll('#servicesTable tbody tr').forEach(row => {
+        const totalText = row.querySelector('.service-total')?.textContent;
+        if (totalText) {
+            const total = parseFloat(totalText.replace(', '')) || 0;
+            servicesTotal += total;
+            
+            // Calculate cost
+            const qty = parseFloat(row.querySelector('input[name="service_quantity[]"]')?.value) || 0;
+            const cost = parseFloat(row.querySelector('input[name="service_cost[]"]')?.value) || 0;
+            servicesCost += qty * cost;
+        }
+    });
+
+    const grandTotal = laborTotal + materialsTotal + servicesTotal;
+    const totalCost = laborCost + materialsCost + servicesCost;
+    const profit = grandTotal - totalCost;
+    const margin = grandTotal > 0 ? (profit / grandTotal * 100) : 0;
+
+    // Update display
+    document.getElementById('labor-total').textContent = ' + laborTotal.toFixed(2);
+    document.getElementById('materials-total').textContent = ' + materialsTotal.toFixed(2);
+    document.getElementById('services-total').textContent = ' + servicesTotal.toFixed(2);
+    document.getElementById('grand-total').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('total-billable').textContent = ' + grandTotal.toFixed(2);
+    document.getElementById('profit-total').textContent = ' + profit.toFixed(2);
+    document.getElementById('margin-percent').textContent = margin.toFixed(1) + '%';
+}
+
+// Form submission
 document.getElementById('estimate-form').addEventListener('submit', function(e) {
     const submitBtn = document.getElementById('submit-btn');
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Updating...';
 });
+
+// Auto-update totals when switching tabs
+document.getElementById('labor-tab').addEventListener('shown.bs.tab', () => updateTotals());
+document.getElementById('materials-tab').addEventListener('shown.bs.tab', () => updateTotals());
+document.getElementById('services-tab').addEventListener('shown.bs.tab', () => updateTotals());
+
+// Expose functions for inline handlers
+window.addLaborEntry = addLaborEntry;
+window.removeEntry = removeEntry;
+window.addMaterialRow = addMaterialRow;
+window.bulkAddMaterials = bulkAddMaterials;
+window.removeMaterialRow = removeMaterialRow;
+window.calculateRowTotal = calculateRowTotal;
+window.addServiceRow = addServiceRow;
+window.bulkAddServices = bulkAddServices;
+window.removeServiceRow = removeServiceRow;
+window.calculateServiceRowTotal = calculateServiceRowTotal;
 </script>
 
 {% endblock %}
