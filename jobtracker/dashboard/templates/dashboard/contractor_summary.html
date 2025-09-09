@@ -81,19 +81,19 @@
                 </h5>
                 
                 <div class="action-buttons">
-                    <a href="{% url 'dashboard:project_list' %}" class="btn btn-info">
-                        <i class="fas fa-project-diagram me-2"></i>View All Projects
-                    </a>
-
                     {% if first_project %}
-                    <a href="{% url 'dashboard:select_job_entry_project' %}" class="btn btn-primary">
+                    <a href="{% url 'dashboard:select_job_entry_project' %}" class="btn btn-success">
                         <i class="fas fa-plus-circle me-2"></i>Quick Entry
                     </a>
 
                     <a href="{% url 'dashboard:select_payment_project' %}" class="btn btn-primary">
-                        <i class="fas fa-money-bill-wave me-2"></i>Add Payment
+                        <i class="fas fa-money-bill-wave me-2"></i>Enter Payments
                     </a>
                     {% endif %}
+
+                    <a href="{% url 'dashboard:project_list' %}" class="btn btn-info">
+                        <i class="fas fa-project-diagram me-2"></i>View All Projects
+                    </a>
 
                     <a href="{% url 'dashboard:contractor_report' %}" class="btn btn-secondary">
                         <i class="fas fa-file-alt me-2"></i>Summary Report
