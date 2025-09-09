@@ -49,11 +49,11 @@
                 
                 <div class="d-flex text-center mb-3">
                     <div class="flex-fill border-end px-2">
-                        <div class="text-primary fw-bold">${{ project.total_billable|floatformat:0|intcomma }}</div>
+                        <div class="text-success fw-bold">${{ project.total_billable|floatformat:0|intcomma }}</div>
                         <small class="text-muted text-nowrap">Billable</small>
                     </div>
                     <div class="flex-fill border-end px-2">
-                        <div class="text-success fw-bold">${{ project.total_payments|floatformat:0|intcomma }}</div>
+                        <div class="text-primary fw-bold">${{ project.total_payments|floatformat:0|intcomma }}</div>
                         <small class="text-muted text-nowrap">Paid</small>
                     </div>
                     <div class="flex-fill px-2">
@@ -66,7 +66,7 @@
                 
                 <div class="progress mb-3" style="height: 6px;">
                     {% widthratio project.total_payments project.total_billable 100 as percentage %}
-                    <div class="progress-bar bg-success" role="progressbar" 
+                    <div class="progress-bar bg-primary" role="progressbar"
                          style="width: {{ percentage|default:0 }}%"
                          aria-valuenow="{{ percentage|default:0 }}" 
                          aria-valuemin="0" 
@@ -111,7 +111,7 @@
                         <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-outline-success btn-sm" title="Add Job Entry">
                             <i class="fas fa-plus"></i>
                         </a>
-                        <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-outline-info btn-sm" title="Add Payment">
+                        <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-outline-primary btn-sm" title="Add Payment">
                             <i class="fas fa-money-bill-wave"></i>
                         </a>
                         <form method="post" action="{% url 'dashboard:delete_project' project.pk %}" onsubmit="return confirm('Delete this project?');">
@@ -149,7 +149,7 @@
               </div>
               <div class="col-md-3 mb-3 mb-md-0">
                   <div class="border-md-end">
-                      <h4 class="text-info mb-0">${{ total_payments|floatformat:0|intcomma }}</h4>
+                      <h4 class="text-primary mb-0">${{ total_payments|floatformat:0|intcomma }}</h4>
                       <small class="text-muted d-block mt-0">Total Payments</small>
                   </div>
               </div>
