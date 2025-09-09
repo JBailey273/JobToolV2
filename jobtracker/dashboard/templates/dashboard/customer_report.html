@@ -36,7 +36,7 @@ body {
     text-align: center;
     margin-bottom: 25px;
     padding: 20px 15px;
-    border: 2px solid #4a7c2a;
+    border: 2px solid var(--primary-color);
     border-radius: 6px;
     background: linear-gradient(135deg, #f8faf6 0%, #ffffff 50%, #f8faf6 100%);
     position: relative;
@@ -49,7 +49,7 @@ body {
     left: 8px;
     right: 8px;
     bottom: 8px;
-    border: 1px solid #4a7c2a;
+    border: 1px solid var(--primary-color);
     border-radius: 4px;
     opacity: 0.3;
 }
@@ -63,7 +63,7 @@ body {
 
 .report-header h2 {
     font-size: 16px;
-    color: #2d5016;
+    color: var(--primary-color);
     margin: 6px 0;
     font-weight: bold;
     position: relative;
@@ -73,7 +73,7 @@ body {
 .report-header h1 {
     font-size: 22px;
     font-weight: bold;
-    color: #4a7c2a;
+    color: var(--primary-color);
     margin: 10px 0 6px 0;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -93,7 +93,7 @@ body {
 /* Compact Project Overview Box */
 .project-overview {
     background: linear-gradient(135deg, #e8f0de 0%, #f1f5ec 100%);
-    border: 1px solid #4a7c2a;
+    border: 1px solid var(--primary-color);
     border-radius: 6px;
     padding: 15px;
     margin: 20px 0;
@@ -108,7 +108,7 @@ body {
     padding: 12px;
     border-radius: 4px;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-left: 3px solid #4a7c2a;
+    border-left: 3px solid var(--primary-color);
 }
 
 .overview-label {
@@ -123,12 +123,12 @@ body {
 .overview-value {
     font-size: 16px;
     font-weight: bold;
-    color: #2d5016;
+    color: var(--primary-color);
     font-family: 'Courier New', monospace;
 }
 
 .overview-value.amount {
-    color: #228b22;
+    color: var(--primary-color);
 }
 
 .overview-value.outstanding {
@@ -136,7 +136,7 @@ body {
 }
 
 .overview-value.outstanding.zero {
-    color: #228b22;
+    color: var(--primary-color);
 }
 
 /* Compact Work Details Table */
@@ -151,7 +151,7 @@ body {
 }
 
 .work-table thead {
-    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    background: var(--primary-gradient);
     color: white;
 }
 
@@ -208,10 +208,10 @@ body {
 
 /* Compact Totals Row */
 .work-totals-row {
-    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%) !important;
+    background: var(--primary-gradient) !important;
     color: white !important;
-    border-top: 2px solid #2d5016 !important;
-    border-bottom: 2px solid #2d5016 !important;
+    border-top: 2px solid var(--primary-color) !important;
+    border-bottom: 2px solid var(--primary-color) !important;
 }
 
 .work-totals-row td {
@@ -239,7 +239,7 @@ body {
 }
 
 .section-title {
-    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    background: var(--primary-gradient);
     color: white;
     padding: 10px 20px;
     font-size: 12px;
@@ -265,10 +265,10 @@ body {
     padding: 8px 15px;
     font-size: 9px;
     font-weight: bold;
-    color: #2d5016;
+    color: var(--primary-color);
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    border-bottom: 1px solid #4a7c2a;
+    border-bottom: 1px solid var(--primary-color);
 }
 
 .payments-table td {
@@ -280,12 +280,12 @@ body {
 
 .payments-table .payment-totals-row {
     background: #e8f0de !important;
-    border-top: 1px solid #4a7c2a;
+    border-top: 1px solid var(--primary-color);
     font-weight: bold;
 }
 
 .payments-table .payment-totals-row td {
-    color: #2d5016;
+    color: var(--primary-color);
     font-weight: bold;
 }
 
@@ -302,7 +302,7 @@ body {
 
 .balance-summary.fully-paid {
     background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-    border-color: #228b22;
+    border-color: var(--primary-color);
 }
 
 .balance-summary::before {
@@ -381,7 +381,7 @@ body {
 .status-complete {
     background: #d4edda;
     color: #155724;
-    border: 1px solid #228b22;
+    border: 1px solid var(--primary-color);
 }
 
 /* Compact Contact Information */
@@ -389,14 +389,14 @@ body {
     margin: 20px 0;
     padding: 15px;
     background: #f8faf6;
-    border: 1px solid #4a7c2a;
+    border: 1px solid var(--primary-color);
     border-radius: 6px;
     text-align: center;
 }
 
 .contact-info h4 {
     font-size: 11px;
-    color: #2d5016;
+    color: var(--primary-color);
     margin-bottom: 10px;
     font-weight: bold;
     text-transform: uppercase;
@@ -410,12 +410,12 @@ body {
 
 .contact-info .phone {
     font-weight: bold;
-    color: #4a7c2a;
+    color: var(--primary-color);
     font-size: 11px;
 }
 
 .contact-info .email {
-    color: #4a7c2a;
+    color: var(--primary-color);
     font-weight: 500;
 }
 
@@ -423,14 +423,14 @@ body {
 .report-footer {
     margin-top: 30px;
     padding: 15px 0;
-    border-top: 2px solid #4a7c2a;
+    border-top: 2px solid var(--primary-color);
     text-align: center;
     background: linear-gradient(to right, #f8faf6, #ffffff, #f8faf6);
 }
 
 .report-footer .thank-you {
     font-size: 13px;
-    color: #2d5016;
+    color: var(--primary-color);
     font-weight: bold;
     margin-bottom: 6px;
 }
