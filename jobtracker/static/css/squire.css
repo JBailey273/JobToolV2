@@ -427,6 +427,13 @@ textarea:focus {
     top: 100px;
 }
 
+/* Estimate edit sidebar */
+.estimate-sidebar {
+    position: sticky;
+    top: 80px;
+    z-index: 900;
+}
+
 .sidebar-item {
     padding: 12px 25px;
     color: var(--text-primary);
