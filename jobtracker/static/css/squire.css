@@ -631,7 +631,7 @@ textarea:focus {
 
 /* Dashboard Specific Styles */
 .dashboard-header {
-    background: var(--primary-gradient);
+    background: var(--secondary-gradient);
     color: white;
     border-radius: var(--radius-xl);
     padding: 40px;
