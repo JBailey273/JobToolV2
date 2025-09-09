@@ -17,14 +17,14 @@
 <!-- Quick Actions -->
 <div class="row mb-4">
     <div class="col-md-3 mb-3">
-        <div class="quick-action-card primary" onclick="location.href='{% url 'dashboard:select_job_entry_project' %}'">
+        <div class="quick-action-card success" onclick="location.href='{% url 'dashboard:select_job_entry_project' %}'">
             <i class="fas fa-plus-circle quick-action-icon"></i>
             <h5 class="mb-2">New Job Entry</h5>
             <p class="mb-0">Log today's work</p>
         </div>
     </div>
     <div class="col-md-3 mb-3">
-        <div class="quick-action-card success" onclick="location.href='{% url 'dashboard:select_payment_project' %}'">
+        <div class="quick-action-card primary" onclick="location.href='{% url 'dashboard:select_payment_project' %}'">
             <i class="fas fa-money-bill-wave quick-action-icon"></i>
             <h5 class="mb-2">Record Payment</h5>
             <p class="mb-0">Track incoming payments</p>
@@ -49,14 +49,14 @@
 <!-- Summary Cards -->
 <div class="row mb-4">
     <div class="col-md-4 mb-3">
-        <div class="summary-card slide-up">
+        <div class="summary-card slide-up" style="background: var(--success-gradient);">
             <i class="fas fa-dollar-sign fa-2x mb-3"></i>
             <h5 class="card-title">Total Billable</h5>
             <p class="card-text">${{ overall_billable|floatformat:2|intcomma }}</p>
         </div>
     </div>
     <div class="col-md-4 mb-3">
-        <div class="summary-card slide-up" style="background: var(--success-gradient); animation-delay: 0.1s;">
+        <div class="summary-card slide-up" style="background: var(--primary-gradient); animation-delay: 0.1s;">
             <i class="fas fa-credit-card fa-2x mb-3"></i>
             <h5 class="card-title">Total Payments</h5>
             <p class="card-text">${{ overall_payments|floatformat:2|intcomma }}</p>
@@ -90,7 +90,7 @@
                         <i class="fas fa-plus-circle me-2"></i>Quick Entry
                     </a>
 
-                    <a href="{% url 'dashboard:select_payment_project' %}" class="btn btn-success">
+                    <a href="{% url 'dashboard:select_payment_project' %}" class="btn btn-primary">
                         <i class="fas fa-money-bill-wave me-2"></i>Add Payment
                     </a>
                     {% endif %}
@@ -167,12 +167,12 @@
                             <span class="badge bg-light text-dark">{{ project.start_date|date:"M d, Y" }}</span>
                         </td>
                         <td class="text-center">
-                            <span class="fw-semibold text-primary">
+                            <span class="fw-semibold text-success">
                                 ${{ project.total_billable|floatformat:0|intcomma }}
                             </span>
                         </td>
                         <td class="text-center">
-                            <span class="fw-semibold text-success">
+                            <span class="fw-semibold text-primary">
                                 ${{ project.total_payments|floatformat:0|intcomma }}
                             </span>
                         </td>

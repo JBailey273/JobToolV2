@@ -627,7 +627,7 @@ body {
                     </span>
                 </td>
                 <td class="text-right" data-label="Billable Total">
-                    <span class="{% if report %}amount revenue{% else %}text-primary fw-semibold{% endif %}">
+                    <span class="{% if report %}amount revenue{% else %}text-success fw-semibold{% endif %}">
                         ${{ p.total_billable|default:0|floatformat:2|intcomma }}
                     </span>
                 </td>

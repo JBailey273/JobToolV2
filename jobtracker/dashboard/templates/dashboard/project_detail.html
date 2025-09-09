@@ -639,10 +639,10 @@
         <div class="row align-items-center">
             <div class="col-md-8">
                 <div class="d-flex gap-2 flex-wrap">
-                    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-primary">
+                    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-success">
                         <i class="fas fa-plus me-2"></i>Quick Entry
                     </a>
-                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
+                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-primary">
                         <i class="fas fa-money-bill-wave me-2"></i>Record Payment
                     </a>
                     <a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-warning text-white">
@@ -677,7 +677,7 @@
             <div class="metric-card">
                 <div class="metric-number text-primary">${{ total_payments|floatformat:2|intcomma }}</div>
                 <div class="metric-label">Payments Received</div>
-                <div class="metric-trend {% if payments %}text-success{% else %}text-muted{% endif %}">
+                <div class="metric-trend {% if payments %}text-primary{% else %}text-muted{% endif %}">
                     <i class="fas fa-credit-card me-1"></i>
                     {% if payments %}Last payment {{ payments.0.date|naturalday }}{% else %}No payments yet{% endif %}
                 </div>
@@ -717,7 +717,7 @@
     <div class="progress-section">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4 class="mb-0">Payment Progress</h4>
-            <span class="badge bg-success fs-6">
+            <span class="badge bg-primary fs-6">
                 {% widthratio total_payments total_billable 100 as payment_percent %}
                 {{ payment_percent|default:0 }}% Paid
             </span>
@@ -873,7 +873,7 @@
             <div class="tab-content-card">
                 <div class="d-flex justify-content-between align-items-center mb-4">
                     <h5 class="mb-0">Payment History</h5>
-                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
+                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Record Payment
                     </a>
                 </div>
@@ -897,7 +897,7 @@
                                     <br><small class="text-muted">{{ payment.date|naturalday }}</small>
                                 </td>
                                 <td>
-                                    <span class="fs-5 fw-bold text-success">${{ payment.amount|floatformat:2|intcomma }}</span>
+                                    <span class="fs-5 fw-bold text-primary">${{ payment.amount|floatformat:2|intcomma }}</span>
                                 </td>
                                 <td>
                                     {% if payment.notes %}
@@ -925,7 +925,7 @@
                             <tr class="table-light">
                                 <td colspan="4" class="text-end">
                                     <strong>Total Payments:</strong>
-                                    <span class="fs-5 text-success">${{ total_payments|floatformat:2|intcomma }}</span>
+                                    <span class="fs-5 text-primary">${{ total_payments|floatformat:2|intcomma }}</span>
                                 </td>
                             </tr>
                         </tfoot>
@@ -936,7 +936,7 @@
                     <i class="fas fa-credit-card fa-3x text-muted mb-3"></i>
                     <h5 class="text-muted">No Payments</h5>
                     <p class="text-muted mb-3">No payments have been recorded for this project yet.</p>
-                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-success">
+                    <a href="{% url 'dashboard:add_payment' project.pk %}" class="btn btn-primary">
                         <i class="fas fa-plus me-2"></i>Record First Payment
                     </a>
                 </div>
@@ -1467,10 +1467,10 @@
 
 <!-- Floating Action Buttons -->
 <div class="floating-actions">
-    <a href="{% url 'dashboard:add_payment' project.pk %}" class="floating-btn success" title="Record Payment">
+    <a href="{% url 'dashboard:add_payment' project.pk %}" class="floating-btn primary" title="Record Payment">
         <i class="fas fa-money-bill-wave"></i>
     </a>
-    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="floating-btn primary" title="Add Job Entry">
+    <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="floating-btn success" title="Add Job Entry">
         <i class="fas fa-plus"></i>
     </a>
     <a href="{% url 'dashboard:customer_report' project.pk %}" class="floating-btn warning" title="Generate Report">
