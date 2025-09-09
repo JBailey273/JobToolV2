@@ -380,7 +380,7 @@ textarea:focus {
     padding: 16px 0;
     position: sticky;
     top: 0;
-    z-index: 1000;
+    z-index: 1030;
 }
 
 .navbar-brand {
@@ -425,6 +425,13 @@ textarea:focus {
     height: fit-content;
     position: sticky;
     top: 100px;
+}
+
+/* Estimate edit sidebar */
+.estimate-sidebar {
+    position: sticky;
+    top: 80px;
+    z-index: 900;
 }
 
 .sidebar-item {
