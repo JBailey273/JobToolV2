@@ -354,7 +354,12 @@ document.addEventListener('DOMContentLoaded', function () {
         if (window.innerWidth <= 576) {
             ths.forEach(function (th, index) {
                 const cells = Array.from(table.querySelectorAll('tbody tr')).map(row => row.children[index]);
-                const hasContent = cells.some(cell => cell && cell.textContent.trim() !== '' && cell.textContent.trim() !== '—');
+                const hasContent = cells.some(cell => {
+                    if (!cell) return false;
+                    const text = cell.textContent.trim();
+                    if (text !== '' && text !== '—') return true;
+                    return !!cell.querySelector('input, select, textarea, button');
+                });
                 
                 if (!hasContent) {
                     th.style.display = 'none';
