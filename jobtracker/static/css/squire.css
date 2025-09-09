@@ -1,8 +1,8 @@
 /* Enhanced Squire Enterprises CSS with Optimized UX Design */
 
 :root {
-    /* Evergreen Primary Gradient - Deep forest to lighter evergreen */
-    --primary-gradient: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+    /* Emerald Primary Gradient - matching Today's Totals */
+    --primary-gradient: linear-gradient(135deg, #228b22 0%, #32cd32 100%);
     
     /* Complementary gradients */
     --secondary-gradient: linear-gradient(135deg, #8b4513 0%, #a0522d 100%); /* Warm brown */
@@ -12,9 +12,9 @@
     --danger-gradient: linear-gradient(135deg, #8b4513 0%, #cd853f 100%); /* Rustic brown */
     
     /* Core colors */
-    --primary-color: #4a7c2a; /* Forest green */
-    --secondary-color: #2d5016; /* Deep evergreen */
-    --accent-color: #228b22; /* Forest green accent */
+    --primary-color: #32cd32; /* Emerald green */
+    --secondary-color: #32cd32; /* Emerald green */
+    --accent-color: #32cd32; /* Emerald accent */
     --warm-accent: #daa520; /* Golden accent */
     
     /* Background and surfaces */
@@ -32,10 +32,10 @@
     /* Border and shadows */
     --border-color: #d4d4aa; /* Sage border */
     --border-light: #e6e6c7; /* Lighter sage border */
-    --shadow-sm: 0 1px 3px rgba(45, 80, 22, 0.1);
-    --shadow-md: 0 4px 6px rgba(45, 80, 22, 0.1);
-    --shadow-lg: 0 10px 25px rgba(45, 80, 22, 0.1);
-    --shadow-xl: 0 20px 25px rgba(45, 80, 22, 0.15);
+    --shadow-sm: 0 1px 3px rgba(50, 205, 50, 0.1);
+    --shadow-md: 0 4px 6px rgba(50, 205, 50, 0.1);
+    --shadow-lg: 0 10px 25px rgba(50, 205, 50, 0.1);
+    --shadow-xl: 0 20px 25px rgba(50, 205, 50, 0.15);
     
     /* Radius values */
     --radius-sm: 6px;
@@ -44,7 +44,7 @@
     --radius-xl: 16px;
     
     /* Status colors */
-    --success-color: #228b22;
+    --success-color: #32cd32;
     --warning-color: #daa520;
     --danger-color: #8b4513;
     --info-color: #2e8b57;
@@ -453,7 +453,7 @@ textarea:focus {
 .sidebar-item.active {
     background: var(--primary-gradient);
     color: white;
-    border-left-color: #2d5016;
+    border-left-color: var(--primary-color);
 }
 
 .sidebar-item i {

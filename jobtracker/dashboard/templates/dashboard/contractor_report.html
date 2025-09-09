@@ -36,7 +36,7 @@ body {
     text-align: center;
     margin-bottom: 20px;
     padding: 20px 15px;
-    border: 2px solid #4a7c2a;
+    border: 2px solid var(--primary-color);
     border-radius: 6px;
     background: linear-gradient(135deg, #f8faf6 0%, #ffffff 30%, #f8faf6 100%);
     position: relative;
@@ -52,7 +52,7 @@ body {
 .report-header h1 {
     font-size: 20px;
     font-weight: bold;
-    color: #2d5016;
+    color: var(--primary-color);
     margin: 8px 0 5px 0;
     text-transform: uppercase;
     letter-spacing: 1px;
@@ -62,7 +62,7 @@ body {
 
 .report-header .contractor-info {
     font-size: 13px;
-    color: #4a7c2a;
+    color: var(--primary-color);
     margin: 5px 0;
     font-weight: 600;
     position: relative;
@@ -86,7 +86,7 @@ body {
     margin: 20px 0;
     padding: 15px;
     background: linear-gradient(135deg, #e8f0de 0%, #f1f5ec 100%);
-    border: 1px solid #4a7c2a;
+    border: 1px solid var(--primary-color);
     border-radius: 6px;
 }
 
@@ -96,7 +96,7 @@ body {
     border-radius: 4px;
     text-align: center;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    border-left: 3px solid #4a7c2a;
+    border-left: 3px solid var(--primary-color);
     position: relative;
 }
 
@@ -114,7 +114,7 @@ body {
 .metric-value {
     font-size: 14px;
     font-weight: bold;
-    color: #2d5016;
+    color: var(--primary-color);
     font-family: 'Courier New', monospace;
     margin-bottom: 3px;
     position: relative;
@@ -122,7 +122,7 @@ body {
 }
 
 .metric-value.revenue {
-    color: #228b22;
+    color: var(--primary-color);
 }
 
 .metric-value.cost {
@@ -130,7 +130,7 @@ body {
 }
 
 .metric-value.profit {
-    color: #2d5016;
+    color: var(--primary-color);
 }
 
 .metric-change {
@@ -142,7 +142,7 @@ body {
 }
 
 .metric-change.positive {
-    color: #228b22;
+    color: var(--primary-color);
 }
 
 .metric-change.negative {
@@ -161,7 +161,7 @@ body {
 }
 
 .portfolio-table thead {
-    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    background: var(--primary-gradient);
     color: white;
 }
 
@@ -207,7 +207,7 @@ body {
 /* Project Name Styling */
 .project-name {
     font-weight: bold;
-    color: #2d5016;
+    color: var(--primary-color);
     font-size: 9px;
     margin-bottom: 2px;
 }
@@ -226,7 +226,7 @@ body {
 }
 
 .amount.revenue {
-    color: #228b22;
+    color: var(--primary-color);
 }
 
 .amount.cost {
@@ -234,7 +234,7 @@ body {
 }
 
 .amount.profit {
-    color: #2d5016;
+    color: var(--primary-color);
 }
 
 .amount.negative {
@@ -258,11 +258,11 @@ body {
 }
 
 .margin-percentage.excellent {
-    color: #228b22;
+    color: var(--primary-color);
 }
 
 .margin-percentage.good {
-    color: #4a7c2a;
+    color: var(--primary-color);
 }
 
 .margin-percentage.fair {
@@ -289,11 +289,11 @@ body {
 }
 
 .margin-fill.excellent {
-    background: linear-gradient(90deg, #228b22, #32cd32);
+    background: var(--primary-gradient);
 }
 
 .margin-fill.good {
-    background: linear-gradient(90deg, #4a7c2a, #7cb342);
+    background: var(--primary-gradient);
 }
 
 .margin-fill.fair {
@@ -309,13 +309,13 @@ body {
     margin: 25px 0;
     padding: 15px;
     background: white;
-    border: 1px solid #4a7c2a;
+    border: 1px solid var(--primary-color);
     border-radius: 6px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 .performance-header {
-    background: linear-gradient(135deg, #4a7c2a 0%, #2d5016 100%);
+    background: var(--primary-gradient);
     color: white;
     padding: 8px 15px;
     margin: -15px -15px 12px -15px;
@@ -333,13 +333,13 @@ body {
 }
 
 .analysis-section h4 {
-    color: #2d5016;
+    color: var(--primary-color);
     font-size: 10px;
     font-weight: bold;
     margin-bottom: 10px;
     text-transform: uppercase;
     letter-spacing: 0.3px;
-    border-bottom: 1px solid #4a7c2a;
+    border-bottom: 1px solid var(--primary-color);
     padding-bottom: 3px;
 }
 
@@ -365,14 +365,14 @@ body {
     font-family: 'Courier New', monospace;
     font-weight: bold;
     font-size: 8px;
-    color: #2d5016;
+    color: var(--primary-color);
 }
 
 /* Compact Summary Footer */
 .summary-totals {
     margin: 20px 0;
     padding: 15px;
-    background: linear-gradient(135deg, #2d5016 0%, #4a7c2a 100%);
+    background: var(--primary-gradient);
     color: white;
     border-radius: 6px;
     text-align: center;
@@ -413,7 +413,7 @@ body {
 .report-footer {
     margin-top: 30px;
     padding: 15px 0;
-    border-top: 2px solid #4a7c2a;
+    border-top: 2px solid var(--primary-color);
     text-align: center;
     background: linear-gradient(to right, #f8faf6, #ffffff, #f8faf6);
 }
@@ -427,7 +427,7 @@ body {
 
 .footer-section h5 {
     font-size: 8px;
-    color: #2d5016;
+    color: var(--primary-color);
     font-weight: bold;
     margin-bottom: 3px;
     text-transform: uppercase;
