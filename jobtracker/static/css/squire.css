@@ -1,18 +1,18 @@
 /* Enhanced Squire Enterprises CSS with Optimized UX Design */
 
 :root {
-    /* Primary gradient inherits the info gradient for consistency */
-    --primary-gradient: var(--info-gradient);
-    
+    /* Distinct gradients for action variations */
+    --primary-gradient: linear-gradient(135deg, #0d6efd 0%, #0b5ed7 100%); /* Vibrant blue */
+
     /* Complementary gradients */
     --secondary-gradient: linear-gradient(135deg, #8b4513 0%, #a0522d 100%); /* Warm brown */
-    --success-gradient: var(--info-gradient); /* Align success with info gradient */
+    --success-gradient: linear-gradient(135deg, #198754 0%, #157347 100%); /* Classic green */
     --warning-gradient: linear-gradient(135deg, #daa520 0%, #ffd700 100%); /* Golden yellow */
-    --info-gradient: linear-gradient(135deg, #2e8b57 0%, #3cb371 100%); /* Sea green */
+    --info-gradient: linear-gradient(135deg, #0dcaf0 0%, #31d2f2 100%); /* Bright teal */
     --danger-gradient: linear-gradient(135deg, #8b4513 0%, #cd853f 100%); /* Rustic brown */
-    
+
     /* Core colors */
-    --primary-color: #3cb371; /* Medium sea green */
+    --primary-color: #0d6efd; /* Vibrant blue */
     --secondary-color: #3cb371; /* Medium sea green */
     --accent-color: #32cd32; /* Emerald accent */
     --warm-accent: #daa520; /* Golden accent */
@@ -44,10 +44,10 @@
     --radius-xl: 16px;
     
     /* Status colors */
-    --success-color: #32cd32;
+    --success-color: #198754;
     --warning-color: #daa520;
     --danger-color: #8b4513;
-    --info-color: #2e8b57;
+    --info-color: #0dcaf0;
 }
 
 /* Base Styles */
