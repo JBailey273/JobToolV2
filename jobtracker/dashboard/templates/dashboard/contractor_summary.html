@@ -86,7 +86,7 @@
                     </a>
 
                     {% if first_project %}
-                    <a href="{% url 'dashboard:select_job_entry_project' %}" class="btn btn-success">
+                    <a href="{% url 'dashboard:select_job_entry_project' %}" class="btn btn-primary">
                         <i class="fas fa-plus-circle me-2"></i>Quick Entry
                     </a>
 
@@ -186,7 +186,7 @@
                                 <a href="{% url 'dashboard:project_detail' project.pk %}" class="btn btn-outline-primary btn-sm" title="View Details">
                                     <i class="fas fa-eye"></i>
                                 </a>
-                                <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-outline-success btn-sm" title="Add Entry">
+                                <a href="{% url 'dashboard:add_job_entry' project.pk %}" class="btn btn-outline-primary btn-sm" title="Add Entry">
                                     <i class="fas fa-plus"></i>
                                 </a>
                                 <a href="{% url 'dashboard:customer_report' project.pk %}" class="btn btn-outline-secondary btn-sm" title="Customer Report">

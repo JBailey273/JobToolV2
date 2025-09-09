@@ -631,7 +631,7 @@ textarea:focus {
 
 /* Dashboard Specific Styles */
 .dashboard-header {
-    background: var(--primary-gradient);
+    background: var(--secondary-gradient);
     color: white;
     border-radius: var(--radius-xl);
     padding: 40px;
@@ -1349,14 +1349,18 @@ textarea:focus {
 
 @media (max-width: 576px) {
     .nav-tabs-custom {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        -webkit-overflow-scrolling: touch;
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    .nav-tabs-custom .nav-item {
+        flex: 0 0 50%;
     }
 
     .nav-tabs-custom .nav-link {
-        white-space: nowrap;
-        flex: 0 0 auto;
+        width: 100%;
+        margin-right: 0;
+        margin-bottom: 10px;
     }
 }
 
