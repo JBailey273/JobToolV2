@@ -375,11 +375,20 @@ document.addEventListener('DOMContentLoaded', function() {
         return new bootstrap.Tooltip(tooltipTriggerEl);
     });
     
-    // Auto-refresh activity data every 5 minutes
-    setInterval(function() {
-        // Could implement AJAX refresh of activity feed here
-        console.log('Refreshing dashboard data...');
-    }, 300000);
+    // Automatically refresh the dashboard to keep data and greeting current
+    function refreshDashboard() {
+        window.location.reload();
+    }
+
+    // Refresh every 5 minutes
+    setInterval(refreshDashboard, 300000);
+
+    // Refresh when returning to the page after being hidden
+    document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+            refreshDashboard();
+        }
+    });
 });
 </script>
 
