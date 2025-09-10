@@ -394,7 +394,7 @@ textarea:focus {
 
 .contractor-name {
     font-weight: 700;
-    background: var(--primary-gradient);
+    background: var(--success-gradient);
     background-clip: text;
     -webkit-background-clip: text;
     color: transparent;
@@ -631,7 +631,7 @@ textarea:focus {
 
 /* Dashboard Specific Styles */
 .dashboard-header {
-    background: var(--secondary-gradient);
+    background: var(--primary-gradient);
     color: white;
     border-radius: var(--radius-xl);
     padding: 40px;
