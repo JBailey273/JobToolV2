@@ -229,19 +229,20 @@ body {
 /* Print-specific styles */
 @page {
     size: letter landscape;
-    margin: 0.4in;
+    margin: 0.3in;
+
 }
 
 @media print {
     body {
-        font-size: 10pt;
-        line-height: 1.25;
+        font-size: 9pt;
+        line-height: 1.2;
         color: #000;
         -webkit-print-color-adjust: exact;
     }
 
     .report-container {
-        padding: 28px;
+        padding: 22px;
         margin: 0;
         width: 100%;
         max-width: none;
@@ -374,9 +375,9 @@ body {
 .items-table th {
     background-color: #333;
     color: white;
-    padding: 12px;
+    padding: 10px;
     text-align: left;
-    font-size: 10pt;
+    font-size: 9.5pt;
     font-weight: bold;
     text-transform: uppercase;
     letter-spacing: 0.5px;
@@ -392,7 +393,7 @@ body {
 }
 
 .items-table td {
-    padding: 12px;
+    padding: 10px;
     border-bottom: 1px solid #ddd;
     vertical-align: top;
 }
@@ -403,19 +404,19 @@ body {
 
 .item-description .main-desc {
     font-weight: bold;
-    font-size: 10pt;
+    font-size: 9.5pt;
     margin-bottom: 2px;
 }
 
 .item-description .sub-desc {
-    font-size: 9pt;
+    font-size: 8.5pt;
     color: #666;
     font-style: italic;
 }
 
 .item-amount {
     text-align: right;
-    font-size: 10pt;
+    font-size: 9.5pt;
     font-weight: bold;
     font-family: 'Courier New', monospace;
 }
@@ -429,20 +430,20 @@ body {
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    padding: 15px 12px;
+    padding: 12px 10px;
     background-color: #f0f0f0;
     border: 2px solid #333;
     border-radius: 3px;
 }
 
 .total-label {
-    font-size: 14pt;
+    font-size: 12pt;
     font-weight: bold;
-    margin-right: 20px;
+    margin-right: 16px;
 }
 
 .total-amount {
-    font-size: 16pt;
+    font-size: 14pt;
     font-weight: bold;
     font-family: 'Courier New', monospace;
     color: #333;
@@ -451,8 +452,8 @@ body {
 /* Bottom Section */
 .bottom-section {
     display: flex;
-    gap: 30px;
-    margin-bottom: 25px;
+    gap: 24px;
+    margin-bottom: 22px;
 }
 
 .terms-column {
@@ -464,9 +465,9 @@ body {
 }
 
 .terms-item {
-    margin-bottom: 8px;
-    font-size: 9pt;
-    line-height: 1.3;
+    margin-bottom: 6px;
+    font-size: 8.5pt;
+    line-height: 1.25;
 }
 
 .terms-item strong {
@@ -474,15 +475,15 @@ body {
 }
 
 .acceptance-text {
-    font-size: 9pt;
-    margin-bottom: 20px;
-    line-height: 1.3;
+    font-size: 8.5pt;
+    margin-bottom: 16px;
+    line-height: 1.25;
 }
 
 .signature-fields {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
 }
 
 .signature-field {
@@ -493,7 +494,7 @@ body {
 
 .signature-line {
     border-bottom: 1px solid #333;
-    height: 25px;
+    height: 22px;
     width: 100%;
 }
 
@@ -506,86 +507,97 @@ body {
 /* Footer */
 .footer-text {
     text-align: center;
-    font-size: 9pt;
+    font-size: 8.5pt;
     color: #666;
-    margin-top: 20px;
-    padding-top: 15px;
+    margin-top: 18px;
+    padding-top: 12px;
     border-top: 1px solid #ddd;
 }
 
 /* Print optimizations */
 @media print {
     .company-logo {
-        max-height: 50px;
-        max-width: 100px;
+        max-height: 45px;
+        max-width: 90px;
     }
-    
-    .company-name {
-        font-size: 20pt;
-    }
-    
-    .estimate-title {
-        font-size: 24pt;
-    }
-    
-    .estimate-number {
-        font-size: 12pt;
-    }
-    
-    .info-title {
-        font-size: 10pt;
-    }
-    
-    .section-title {
-        font-size: 10pt;
-    }
-    
-    .total-label {
-        font-size: 12pt;
-    }
-    
-    .total-amount {
-        font-size: 14pt;
-    }
-    
-    /* Ensure proper page breaks */
+
     .estimate-header {
-        margin-bottom: 18px;
-        padding-bottom: 14px;
+        margin-bottom: 16px;
+        padding-bottom: 12px;
         page-break-inside: avoid;
     }
 
-    .company-info {
-        gap: 2px;
+    .company-name {
+        font-size: 20pt;
+    }
+
+    .company-contact {
+        font-size: 8.5pt;
+    }
+
+    .estimate-title {
+        font-size: 22pt;
+    }
+
+    .estimate-number {
+        font-size: 11pt;
     }
 
     .info-section {
-        margin-bottom: 18px;
-        gap: 24px;
+        margin-bottom: 16px;
+        gap: 20px;
+    }
+
+    .info-title {
+        font-size: 10pt;
+        margin-bottom: 6px;
+    }
+
+    .info-content {
+        font-size: 8.5pt;
+        line-height: 1.25;
     }
 
     .description-section {
-        margin-bottom: 18px;
+        margin-bottom: 16px;
+    }
+
+    .section-title {
+        font-size: 10.5pt;
+        margin-bottom: 8px;
+        padding-bottom: 2px;
     }
 
     .description-text {
-        padding: 8px;
-        font-size: 9pt;
+        padding: 6px;
+        font-size: 8.5pt;
         background-color: #f5f5f5;
     }
 
     .items-section {
-        margin-bottom: 18px;
+        margin-bottom: 16px;
     }
 
     .items-table th {
-        padding: 8px 10px;
-        font-size: 9pt;
+        padding: 6px 8px;
+        font-size: 8.5pt;
     }
 
     .items-table td {
-        padding: 8px 10px;
-        font-size: 9pt;
+        padding: 6px 8px;
+        font-size: 8.5pt;
+    }
+
+    .item-description .main-desc {
+        font-size: 8.5pt;
+    }
+
+    .item-description .sub-desc {
+        font-size: 7.5pt;
+    }
+
+    .item-amount {
+        font-size: 8.5pt;
     }
 
     .items-table {
@@ -593,32 +605,32 @@ body {
     }
 
     .total-row {
-        padding: 10px 12px;
+        padding: 8px 10px;
         background-color: #f5f5f5;
     }
 
     .total-label {
-        margin-right: 12px;
-        font-size: 11pt;
+        margin-right: 10px;
+        font-size: 10pt;
     }
 
     .total-amount {
-        font-size: 13pt;
+        font-size: 11pt;
     }
 
     .bottom-section {
-        gap: 20px;
-        margin-bottom: 18px;
+        gap: 18px;
+        margin-bottom: 16px;
         page-break-inside: avoid;
     }
 
     .terms-item,
     .acceptance-text {
-        font-size: 8.5pt;
+        font-size: 7.5pt;
     }
 
     .signature-fields {
-        gap: 14px;
+        gap: 12px;
     }
 
     /* Remove background colors for better printing */
