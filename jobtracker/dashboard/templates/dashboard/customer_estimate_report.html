@@ -215,26 +215,33 @@ body {
     border-radius: 8px;
 }
 
+
 .card-body {
     padding: 40px;
 }
 
+.report-container {
+    padding: 40px;
+    background-color: #fff;
+    border-radius: 8px;
+}
+
 /* Print-specific styles */
+@page {
+    size: letter landscape;
+    margin: 0.5in;
+}
+
 @media print {
-    @page {
-        margin: 0.5in;
-        size: letter;
-    }
-    
     body {
         font-size: 11pt;
         line-height: 1.3;
         color: #000;
         -webkit-print-color-adjust: exact;
     }
-    
+
     .report-container {
-        padding: 0;
+        padding: 40px;
         margin: 0;
         width: 100%;
         max-width: none;
