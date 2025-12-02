@@ -69,7 +69,7 @@ def _render_pdf(template_src, context, filename, request=None):
             base_url = request.build_absolute_uri('/')
         else:
             base_url = str(settings.BASE_DIR)
-            
+
         pdf = HTML(
             string=html,
             base_url=base_url,
@@ -80,7 +80,7 @@ def _render_pdf(template_src, context, filename, request=None):
         if request:
             messages.error(
                 request,
-                "There was a problem generating the PDF. Please try again later.",
+                "PDF generation is temporarily unavailable. Showing the HTML view instead.",
             )
         return HttpResponse("Error generating PDF", status=500)
 
@@ -89,7 +89,7 @@ def _render_pdf(template_src, context, filename, request=None):
         if request:
             messages.error(
                 request,
-                "PDF generation failed. Please try again later.",
+                "PDF generation failed. Showing the HTML view instead.",
             )
         return HttpResponse("Error generating PDF", status=500)
     

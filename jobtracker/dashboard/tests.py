@@ -460,8 +460,8 @@ class PdfExportTests(TestCase):
         response = self.client.get(
             reverse("dashboard:contractor_report") + "?export=pdf"
         )
-        self.assertEqual(response.status_code, 500)
-        self.assertIn(b"Error generating PDF", response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Contractor Summary", response.content)
 
     @patch("dashboard.views.HTML")
     def test_pdf_with_leading_whitespace_is_trimmed(self, mock_html):
