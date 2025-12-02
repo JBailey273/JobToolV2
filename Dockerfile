@@ -20,7 +20,10 @@ COPY . .
 # Collect static files
 RUN python jobtracker/manage.py collectstatic --noinput || true
 
-# Run the application. The Django project lives inside the `jobtracker/`
-# directory. Change into that folder *before* loading the WSGI module so
-# Python can import the settings correctly.
-CMD gunicorn --chdir jobtracker jobtracker.wsgi:application --bind 0.0.0.0:$PORT
+# Copy entrypoint script that applies migrations before starting the server.
+COPY docker-entrypoint.sh ./
+
+# Run the application. The entrypoint ensures migrations are applied so the
+# app does not fail with a 500 due to missing schema changes when the
+# container boots with a fresh database.
+CMD ["./docker-entrypoint.sh"]
