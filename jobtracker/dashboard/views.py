@@ -39,13 +39,22 @@ def safe_decimal(value, default=Decimal("0")):
 # Update this function in your dashboard/views.py file
 
 def _render_pdf(template_src, context, filename, request=None):
-    """Render PDF with proper base_url for images"""
+    """Render PDF with proper base_url for images.
+
+    Returns None instead of an error response when PDF generation isn't available
+    so callers can gracefully fall back to the HTML view without throwing a 500.
+    """
     if HTML is None:
-        return HttpResponse("PDF generation is unavailable", status=500)
-    
+        if request:
+            messages.error(
+                request,
+                "PDF generation is unavailable on this server. Please contact the administrator.",
+            )
+        return None
+
     template = get_template(template_src)
     html = template.render(context)
-    
+
     try:
         # Use request.build_absolute_uri() for proper image loading
         if request:
@@ -60,10 +69,22 @@ def _render_pdf(template_src, context, filename, request=None):
         ).write_pdf()
     except Exception as e:
         print(f"PDF Generation Error: {e}")  # For debugging
+        if request:
+            messages.error(
+                request,
+                "There was a problem generating the PDF. Please try again later.",
+            )
+            return None
         return HttpResponse("Error generating PDF", status=500)
-    
+
     start = pdf.find(b"%PDF")
     if start == -1:
+        if request:
+            messages.error(
+                request,
+                "PDF generation failed. Please try again later.",
+            )
+            return None
         return HttpResponse("Error generating PDF", status=500)
     
     response = HttpResponse(pdf[start:], content_type="application/pdf")
@@ -999,7 +1020,10 @@ def contractor_report(request):
 
     if export_pdf:
         pdf = _render_pdf(
-            "dashboard/contractor_report.html", context, "contractor_summary_report.pdf"
+            "dashboard/contractor_report.html",
+            context,
+            "contractor_summary_report.pdf",
+            request=request,
         )
         if pdf:
             return pdf
@@ -1040,7 +1064,10 @@ def customer_report(request, pk):
 
     if export_pdf:
         pdf = _render_pdf(
-            "dashboard/customer_report.html", context, "customer_report.pdf"
+            "dashboard/customer_report.html",
+            context,
+            "customer_report.pdf",
+            request=request,
         )
         if pdf:
             return pdf
@@ -1105,7 +1132,10 @@ def contractor_job_report(request, pk):
 
     if export_pdf:
         pdf = _render_pdf(
-            "dashboard/contractor_job_report.html", context, "contractor_job_report.pdf"
+            "dashboard/contractor_job_report.html",
+            context,
+            "contractor_job_report.pdf",
+            request=request,
         )
         if pdf:
             return pdf
@@ -1166,6 +1196,7 @@ def job_estimate_report(request, pk):
             "dashboard/job_estimate_report.html",
             context,
             "job_estimate_report.pdf",
+            request=request,
         )
         if pdf:
             return pdf
@@ -1865,7 +1896,10 @@ def customer_estimate_report(request, pk):
 
     if export_pdf:
         pdf = _render_pdf(
-            "dashboard/customer_estimate_report.html", context, f"estimate_{estimate.estimate_number}.pdf"
+            "dashboard/customer_estimate_report.html",
+            context,
+            f"estimate_{estimate.estimate_number}.pdf",
+            request=request,
         )
         if pdf:
             return pdf
@@ -1951,6 +1985,7 @@ def customer_invoice_report(request, pk):
             "dashboard/customer_estimate_report.html",
             context,
             f"invoice_{invoice_number}.pdf",
+            request=request,
         )
         if pdf:
             return pdf
