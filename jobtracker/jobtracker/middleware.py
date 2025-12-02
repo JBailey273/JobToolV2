@@ -19,28 +19,15 @@ class PendingMigrationMiddleware:
         self._has_pending = False
         self._error = None
 
-    def _check_migrations(self):
-        """Detect unapplied migrations and cache the result.
-
-        We re-run this when a pending state has been detected so that applying
-        migrations while the server is running clears the error instead of
-        permanently short-circuiting requests until the process restarts.
-        """
-
-        try:
-            executor = MigrationExecutor(connection)
-            plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
-            self._has_pending = bool(plan)
-            self._error = None
-        except Exception as exc:  # pragma: no cover - defensive
-            self._has_pending = False
-            self._error = exc
-        finally:
-            self._checked = True
-
     def __call__(self, request):
-        if not self._checked or self._has_pending or self._error:
-            self._check_migrations()
+        if not self._checked:
+            self._checked = True
+            try:
+                executor = MigrationExecutor(connection)
+                plan = executor.migration_plan(executor.loader.graph.leaf_nodes())
+                self._has_pending = bool(plan)
+            except Exception as exc:  # pragma: no cover - defensive
+                self._error = exc
 
         if self._has_pending or self._error:
             message = (
