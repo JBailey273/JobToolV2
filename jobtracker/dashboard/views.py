@@ -491,7 +491,14 @@ def project_detail(request, pk):
             if je.material_cost:
                 mat_cost = safe_decimal(je.material_cost) * hours
                 material_cost += mat_cost
-                if margin_multiplier > 0:
+
+                # Respect service markups stored on the entry (e.g., outside services)
+                entry_markup = safe_decimal(getattr(je, "service_markup", 0))
+                if entry_markup:
+                    billable_material += mat_cost * (
+                        Decimal("1") + entry_markup / Decimal("100")
+                    )
+                elif margin_multiplier > 0:
                     billable_material += mat_cost / margin_multiplier
                 else:
                     # If no margin multiplier, use the billable amount directly
