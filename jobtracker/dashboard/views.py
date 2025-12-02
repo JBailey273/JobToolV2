@@ -1,5 +1,6 @@
 from decimal import Decimal, InvalidOperation
 from collections import defaultdict
+from types import SimpleNamespace
 
 from django.conf import settings
 from django.contrib.auth.decorators import login_required
@@ -302,6 +303,7 @@ def accept_estimate(request, pk):
                 contractor=contractor,
                 name=estimate.name,
                 start_date=estimate.created_date,
+                estimate=estimate,
             )
             
             # Convert all estimate entries to job entries
@@ -314,6 +316,7 @@ def accept_estimate(request, pk):
                     employee=estimate_entry.employee,
                     material_description=estimate_entry.material_description,
                     material_cost=estimate_entry.material_cost,
+                    service_markup=estimate_entry.service_markup,
                     description=estimate_entry.description,
                 )
             
@@ -1838,11 +1841,102 @@ def customer_estimate_report(request, pk):
         "services_total": services_total,
         "grand_total": grand_total,
         "report": export_pdf,
+        "document_title": "Customer Estimate",
+        "document_type_label": "ESTIMATE",
+        "document_number": estimate.estimate_number,
+        "document_date": estimate.created_date,
+        "document_valid_until": estimate.valid_until,
+        "show_acceptance": True,
     }
 
     if export_pdf:
         pdf = _render_pdf(
             "dashboard/customer_estimate_report.html", context, f"estimate_{estimate.estimate_number}.pdf"
+        )
+        if pdf:
+            return pdf
+
+    return render(request, "dashboard/customer_estimate_report.html", context)
+
+
+@login_required
+def customer_invoice_report(request, pk):
+    contractor = getattr(request.user, "contractor", None)
+    if contractor is None:
+        return redirect("login")
+
+    project = get_object_or_404(Project, pk=pk, contractor=contractor)
+
+    labor_equipment_entries = project.job_entries.filter(
+        Q(asset__isnull=False) | Q(employee__isnull=False)
+    ).exclude(material_description__isnull=False, material_description__gt="")
+
+    material_entries = project.job_entries.filter(
+        material_description__isnull=False,
+        material_description__gt="",
+        description__startswith="Material:",
+    )
+
+    service_entries = project.job_entries.filter(
+        material_description__isnull=False,
+        material_description__gt="",
+        description__startswith="Outside Service:",
+    )
+
+    labor_equipment_total = sum((entry.billable_amount or 0) for entry in labor_equipment_entries)
+    materials_total = sum((entry.billable_amount or 0) for entry in material_entries)
+    services_total = sum((entry.billable_amount or 0) for entry in service_entries)
+    grand_total = labor_equipment_total + materials_total + services_total
+
+    export_pdf = request.GET.get("export") == "pdf"
+
+    contractor_logo = None
+    if contractor.logo:
+        contractor_logo = (
+            f"file://{contractor.logo.path}" if export_pdf else contractor.logo.url
+        )
+
+    invoice_number = f"INV-{project.pk:04d}"
+    estimate = project.estimate or SimpleNamespace(
+        customer_name=project.name,
+        customer_email="",
+        customer_phone="",
+        customer_address="",
+        project_location="",
+        created_date=project.start_date,
+        valid_until=None,
+        project_description="",
+        payment_terms="",
+        exclusions="",
+        special_terms="",
+        liability_statement="",
+    )
+
+    context = {
+        "contractor": contractor,
+        "contractor_logo": contractor_logo,
+        "estimate": estimate,
+        "labor_equipment_entries": labor_equipment_entries,
+        "material_entries": material_entries,
+        "service_entries": service_entries,
+        "labor_equipment_total": labor_equipment_total,
+        "materials_total": materials_total,
+        "services_total": services_total,
+        "grand_total": grand_total,
+        "report": export_pdf,
+        "document_title": "Invoice",
+        "document_type_label": "INVOICE",
+        "document_number": invoice_number,
+        "document_date": timezone.now().date(),
+        "document_valid_until": None,
+        "show_acceptance": False,
+    }
+
+    if export_pdf:
+        pdf = _render_pdf(
+            "dashboard/customer_estimate_report.html",
+            context,
+            f"invoice_{invoice_number}.pdf",
         )
         if pdf:
             return pdf
