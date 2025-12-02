@@ -138,6 +138,14 @@ class Project(models.Model):
     contractor = models.ForeignKey(
         Contractor, related_name="projects", on_delete=models.CASCADE
     )
+    estimate = models.ForeignKey(
+        "Estimate",
+        related_name="projects",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        help_text="Source estimate for this project, if applicable",
+    )
     name = models.CharField(max_length=255)
     start_date = models.DateField()
     end_date = models.DateField(blank=True, null=True)
@@ -157,7 +165,7 @@ class Estimate(models.Model):
     estimate_number = models.CharField(max_length=50, blank=True, help_text="Estimate number for customer reference")
     
     # Customer Information
-    customer_name = models.CharField(max_length=255)
+    customer_name = models.CharField(max_length=255, default="")
     customer_email = models.EmailField(blank=True)
     customer_phone = models.CharField(max_length=20, blank=True)
     customer_address = models.TextField(blank=True)
@@ -292,6 +300,12 @@ class JobEntry(models.Model):
     employee = models.ForeignKey(Employee, related_name='job_entries', on_delete=models.SET_NULL, blank=True, null=True)
     material_description = models.CharField(max_length=255, blank=True)
     material_cost = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    service_markup = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        default=Decimal("0"),
+        help_text="Percentage markup for outside services",
+    )
     cost_amount = models.DecimalField(max_digits=10, decimal_places=2)
     billable_amount = models.DecimalField(max_digits=10, decimal_places=2)
     description = models.TextField(blank=True)
@@ -312,8 +326,13 @@ class JobEntry(models.Model):
         if self.material_cost:
             material_total = self.material_cost * self.hours
             self.cost_amount += material_total
-            margin = contractor.material_margin / Decimal("100")
-            self.billable_amount += material_total / (Decimal("1") - margin)
+            if self.service_markup:
+                self.billable_amount += material_total * (
+                    Decimal("1") + self.service_markup / Decimal("100")
+                )
+            else:
+                margin = contractor.material_margin / Decimal("100")
+                self.billable_amount += material_total / (Decimal("1") - margin)
         self.cost_amount = self.cost_amount.quantize(Decimal("0.01"))
         self.billable_amount = self.billable_amount.quantize(Decimal("0.01"))
         super().save(*args, **kwargs)
