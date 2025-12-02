@@ -54,12 +54,10 @@ def _render_pdf(template_src, context, filename, request=None):
             base_url = str(settings.BASE_DIR)
             
         pdf = HTML(
-            string=html, 
+            string=html,
             base_url=base_url,
             encoding='utf-8'
-        ).write_pdf(
-            presentational_hints=True  # This helps with CSS rendering
-        )
+        ).write_pdf()
     except Exception as e:
         print(f"PDF Generation Error: {e}")  # For debugging
         return HttpResponse("Error generating PDF", status=500)
@@ -207,6 +205,11 @@ def estimate_list(request):
     if contractor is None:
         return redirect("login")
 
+    if request.method == "POST":
+        name = request.POST.get("name", "New Estimate")
+        estimate = contractor.estimates.create(name=name)
+        return redirect("dashboard:add_estimate_entry", pk=estimate.pk)
+
     try:
         print("=== ESTIMATE LIST DEBUG ===")
         
@@ -323,6 +326,9 @@ def accept_estimate(request, pk):
             # Update estimate status
             estimate.status = 'accepted'
             estimate.save()
+
+            # Remove the estimate record once it's converted
+            estimate.delete()
             
             messages.success(
                 request, 
@@ -603,11 +609,21 @@ def project_detail(request, pk):
     ) or 1
 
     # Additional analytics calculations
+    has_employee_entries = any(getattr(je, "employee", None) for je in job_entries)
     total_hours = sum(
         (
             safe_decimal(getattr(je, "hours", 0))
             for je in job_entries
-            if getattr(je, "employee", None)
+            if (
+                (
+                    has_employee_entries
+                    and getattr(je, "employee", None)
+                )
+                or (
+                    not has_employee_entries
+                    and getattr(je, "asset", None)
+                )
+            )
             and not getattr(je, "material_description", "")
         ),
         Decimal("0"),
@@ -1114,13 +1130,11 @@ def job_estimate_report(request, pk):
     )
     material_entries = entries.filter(material_cost__isnull=False)
     material_total = (
-        material_entries.filter(description__startswith="Material:").aggregate(
-            total=Sum("billable_amount")
-        )["total"]
+        material_entries.aggregate(total=Sum("billable_amount"))["total"]
         or Decimal("0")
     )
     service_total = (
-        material_entries.filter(description__startswith="Outside Service:").aggregate(
+        material_entries.filter(service_markup__gt=0).aggregate(
             total=Sum("billable_amount")
         )["total"]
         or Decimal("0")

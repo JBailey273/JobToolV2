@@ -212,7 +212,9 @@ class Estimate(models.Model):
         return f"{self.estimate_number or self.name} - {self.customer_name}"
 
     def save(self, *args, **kwargs):
-        if isinstance(self.created_date, str):
+        if not self.created_date:
+            self.created_date = timezone.now().date()
+        elif isinstance(self.created_date, str):
             try:
                 self.created_date = datetime.strptime(self.created_date, "%Y-%m-%d").date()
             except ValueError:
