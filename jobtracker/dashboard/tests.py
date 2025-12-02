@@ -22,6 +22,21 @@ from tracker.models import (
 from dashboard.views import _render_pdf
 
 
+class MissingContractorHandlingTests(TestCase):
+    def setUp(self):
+        self.user = ContractorUser.objects.create_user(
+            email="user@example.com",
+            password="password123",
+        )
+        self.client.login(email=self.user.email, password="password123")
+
+    def test_missing_contractor_shows_setup_page(self):
+        response = self.client.get(reverse("dashboard:contractor_summary"))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "finish setting up your account", status_code=403)
+
+
 class DedupeQtyTests(TestCase):
     def test_dedupe_qty_handles_decimal_variants(self):
         text = "Tank (1 Each) (1.00 Each)"
@@ -445,8 +460,8 @@ class PdfExportTests(TestCase):
         response = self.client.get(
             reverse("dashboard:contractor_report") + "?export=pdf"
         )
-        self.assertEqual(response.status_code, 500)
-        self.assertIn(b"Error generating PDF", response.content)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Contractor Summary", response.content)
 
     @patch("dashboard.views.HTML")
     def test_pdf_with_leading_whitespace_is_trimmed(self, mock_html):
