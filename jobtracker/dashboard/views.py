@@ -45,26 +45,6 @@ def get_contractor(user):
         return None
 
 
-def resolve_contractor(request):
-    """Return the contractor or an HTTP response when missing.
-
-    Some accounts may be created before a contractor profile exists. Redirecting
-    authenticated users back to the login page creates an infinite redirect loop
-    (login -> dashboard -> login). Instead, surface a clear 403 page that lets
-    the user know their account needs to be linked to a contractor.
-    """
-
-    contractor = get_contractor(request.user)
-    if contractor is None:
-        return None, render(
-            request,
-            "dashboard/missing_contractor.html",
-            status=403,
-        )
-
-    return contractor, None
-
-
 # Update this function in your dashboard/views.py file
 def _render_pdf(template_src, context, filename, request=None):
     """Render PDF with proper base_url for images.
@@ -102,7 +82,7 @@ def _render_pdf(template_src, context, filename, request=None):
                 request,
                 "PDF generation is temporarily unavailable. Showing the HTML view instead.",
             )
-        return None
+        return HttpResponse("Error generating PDF", status=500)
 
     start = pdf.find(b"%PDF")
     if start == -1:
@@ -111,7 +91,7 @@ def _render_pdf(template_src, context, filename, request=None):
                 request,
                 "PDF generation failed. Showing the HTML view instead.",
             )
-        return None
+        return HttpResponse("Error generating PDF", status=500)
     
     response = HttpResponse(pdf[start:], content_type="application/pdf")
     response["Content-Disposition"] = f"attachment; filename={filename}"
@@ -121,9 +101,9 @@ def _render_pdf(template_src, context, filename, request=None):
 
 @login_required
 def contractor_summary(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     projects = contractor.projects.filter(
         end_date__isnull=True
@@ -193,9 +173,9 @@ def contractor_summary(request):
 
 @login_required
 def project_list(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
     if request.method == "POST":
         name = request.POST.get("name")
         start_date = request.POST.get("start_date") or timezone.now().date()
@@ -248,9 +228,9 @@ def project_list(request):
 
 @login_required
 def estimate_list(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     if request.method == "POST":
         name = request.POST.get("name", "New Estimate")
@@ -340,9 +320,9 @@ def estimate_list(request):
 @login_required
 def accept_estimate(request, pk):
     """Convert an estimate to a project"""
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
     
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     
@@ -393,9 +373,9 @@ def accept_estimate(request, pk):
 
 @login_required
 def delete_estimate(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     if request.method == "POST":
         estimate.delete()
@@ -406,9 +386,9 @@ def delete_estimate(request, pk):
 
 @login_required
 def delete_project(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
     if request.method == "POST":
         project.delete()
@@ -420,9 +400,9 @@ def delete_project(request, pk):
 @login_required
 def reports(request):
     """Display available report links."""
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     projects = contractor.projects.filter(
         end_date__isnull=True
@@ -447,9 +427,9 @@ def reports(request):
 
 @login_required
 def project_detail(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
 
@@ -741,9 +721,9 @@ def project_detail(request, pk):
 
 @login_required
 def select_job_entry_project(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     projects = contractor.projects.filter(
         end_date__isnull=True
@@ -771,9 +751,9 @@ def select_job_entry_project(request):
 
 @login_required
 def select_payment_project(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     projects = contractor.projects.filter(
         end_date__isnull=True
@@ -801,9 +781,9 @@ def select_payment_project(request):
 
 @login_required
 def add_job_entry(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
     assets = contractor.assets.all()
@@ -910,9 +890,9 @@ def add_job_entry(request, pk):
 
 @login_required
 def edit_job_entry(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     entry = get_object_or_404(JobEntry, pk=pk, project__contractor=contractor)
     assets = contractor.assets.all()
@@ -952,9 +932,9 @@ def edit_job_entry(request, pk):
 
 @login_required
 def add_payment(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
 
@@ -986,9 +966,9 @@ def add_payment(request, pk):
 
 @login_required
 def contractor_report(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     projects_qs = contractor.projects.annotate(
         total_cost=Sum("job_entries__cost_amount"),
@@ -1059,9 +1039,9 @@ def contractor_report(request):
 
 @login_required
 def customer_report(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
     entries_qs = project.job_entries.select_related("asset", "employee").order_by(
@@ -1103,9 +1083,9 @@ def customer_report(request, pk):
 
 @login_required
 def contractor_job_report(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
     entries_qs = project.job_entries.select_related("asset", "employee").order_by(
@@ -1171,9 +1151,9 @@ def contractor_job_report(request, pk):
 
 @login_required
 def job_estimate_report(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     entries = estimate.entries.all()
@@ -1336,9 +1316,9 @@ def get_material_templates(request):
 
 @login_required
 def create_estimate(request):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     assets = contractor.assets.all()
     employees = contractor.employees.all()
@@ -1559,9 +1539,9 @@ def create_estimate(request):
 
 @login_required
 def edit_estimate(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     assets = contractor.assets.all()
@@ -1802,9 +1782,9 @@ def edit_estimate(request, pk):
 
 @login_required
 def duplicate_estimate(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     original = get_object_or_404(Estimate, pk=pk, contractor=contractor)
 
@@ -1850,9 +1830,9 @@ def duplicate_estimate(request, pk):
 
 @login_required
 def email_estimate(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     
@@ -1863,9 +1843,9 @@ def email_estimate(request, pk):
 
 @login_required
 def customer_estimate_report(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     
@@ -1935,9 +1915,9 @@ def customer_estimate_report(request, pk):
 
 @login_required
 def customer_invoice_report(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
 
@@ -2021,9 +2001,9 @@ def customer_invoice_report(request, pk):
 
 @login_required
 def internal_estimate_report(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     entries = list(estimate.entries.all().order_by("-date"))
@@ -2175,9 +2155,9 @@ def project_analytics_data(request, pk):
 
 @login_required
 def add_estimate_entry(request, pk):
-    contractor, contractor_response = resolve_contractor(request)
-    if contractor_response:
-        return contractor_response
+    contractor = get_contractor(request.user)
+    if contractor is None:
+        return redirect("login")
 
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
     assets = contractor.assets.all()

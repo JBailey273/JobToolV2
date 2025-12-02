@@ -39,7 +39,7 @@ def contractor(request):
     if getattr(user, "is_authenticated", False):
         try:
             contract = user.contractor
-        except (OperationalError, ProgrammingError, ObjectDoesNotExist):
+        except ObjectDoesNotExist:
             contract = None
 
     return {"contractor": contract}
