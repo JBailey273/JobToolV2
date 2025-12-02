@@ -56,6 +56,11 @@ urlpatterns = [
         name="customer_report",
     ),
     path(
+        "projects/<int:pk>/invoice/",
+        views.customer_invoice_report,
+        name="customer_invoice_report",
+    ),
+    path(
         "projects/<int:pk>/contractor-report/",
         views.contractor_job_report,
         name="contractor_job_report",
