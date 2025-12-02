@@ -1,5 +1,6 @@
 """Context processors used across templates."""
 
+from django.core.exceptions import ObjectDoesNotExist
 from django.db.utils import OperationalError, ProgrammingError
 
 from .models import GlobalSettings
@@ -33,9 +34,12 @@ def contractor(request):
     """
 
     user = getattr(request, "user", None)
-    contract = (
-        getattr(user, "contractor", None)
-        if getattr(user, "is_authenticated", False)
-        else None
-    )
+    contract = None
+
+    if getattr(user, "is_authenticated", False):
+        try:
+            contract = user.contractor
+        except (OperationalError, ProgrammingError, ObjectDoesNotExist):
+            contract = None
+
     return {"contractor": contract}

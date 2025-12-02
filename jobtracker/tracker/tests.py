@@ -3,6 +3,7 @@ from decimal import Decimal
 from django.test import TestCase, RequestFactory
 from django.contrib.admin.sites import AdminSite
 from django.urls import reverse
+from django.db.utils import OperationalError
 
 from tracker.models import (
     Contractor,
@@ -14,6 +15,7 @@ from tracker.models import (
 )
 from tracker.forms import ContractorForm
 from tracker.admin import ContractorAdmin
+from tracker import context_processors
 
 
 class JobEntryCalculationTests(TestCase):
@@ -85,4 +87,21 @@ class LoginRedirectTests(TestCase):
         )
         self.assertEqual(response.status_code, 302)
         self.assertEqual(response.url, "/")
+
+
+class ContractorContextProcessorTests(TestCase):
+    def test_db_errors_do_not_break_templates(self):
+        class FakeUser:
+            is_authenticated = True
+
+            @property
+            def contractor(self):  # pragma: no cover - exercised via context processor
+                raise OperationalError("contractor table missing")
+
+        request = RequestFactory().get("/")
+        request.user = FakeUser()
+
+        context = context_processors.contractor(request)
+
+        self.assertEqual(context["contractor"], None)
 
