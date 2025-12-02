@@ -2,11 +2,12 @@ from decimal import Decimal
 from types import SimpleNamespace
 from unittest.mock import patch
 
-from django.test import TestCase
+from django.test import RequestFactory, TestCase
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import reverse
 from django.templatetags.static import static
 from django.http import HttpResponse
+from django.db.utils import OperationalError
 
 from dashboard.templatetags.estimate_extras import dedupe_qty
 
@@ -19,6 +20,7 @@ from tracker.models import (
     Estimate,
     EstimateEntry,
 )
+from dashboard import views
 from dashboard.views import _render_pdf
 
 
@@ -29,9 +31,26 @@ class MissingContractorHandlingTests(TestCase):
             password="password123",
         )
         self.client.login(email=self.user.email, password="password123")
+        self.factory = RequestFactory()
 
     def test_missing_contractor_shows_setup_page(self):
         response = self.client.get(reverse("dashboard:contractor_summary"))
+
+        self.assertEqual(response.status_code, 403)
+        self.assertContains(response, "finish setting up your account", status_code=403)
+
+    def test_db_error_when_loading_contractor_shows_setup_page(self):
+        class BrokenUser:
+            is_authenticated = True
+
+            @property
+            def contractor(self):  # pragma: no cover - exercised via view
+                raise OperationalError("contractor table missing")
+
+        request = self.factory.get("/")
+        request.user = BrokenUser()
+
+        response = views.contractor_summary(request)
 
         self.assertEqual(response.status_code, 403)
         self.assertContains(response, "finish setting up your account", status_code=403)
