@@ -43,10 +43,10 @@ class RenderPdfTests(TestCase):
         assert response.status_code == 200
         assert response.content.startswith(b"%PDF")
 
-    def test_render_pdf_missing_library_returns_500(self):
+    def test_render_pdf_missing_library_returns_none(self):
         with patch("dashboard.views.HTML", None):
             response = _render_pdf("tpl.html", {}, "out.pdf")
-        assert response.status_code == 500
+        assert response is None
 
 class DashboardLogoTests(TestCase):
     def test_dashboard_displays_contractor_logo(self):
