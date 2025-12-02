@@ -82,7 +82,6 @@ def _render_pdf(template_src, context, filename, request=None):
                 request,
                 "There was a problem generating the PDF. Please try again later.",
             )
-            return None
         return HttpResponse("Error generating PDF", status=500)
 
     start = pdf.find(b"%PDF")
@@ -92,7 +91,6 @@ def _render_pdf(template_src, context, filename, request=None):
                 request,
                 "PDF generation failed. Please try again later.",
             )
-            return None
         return HttpResponse("Error generating PDF", status=500)
     
     response = HttpResponse(pdf[start:], content_type="application/pdf")
