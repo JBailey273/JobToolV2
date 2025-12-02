@@ -1,0 +1,25 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Account Setup Required{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-body p-4">
+                    <h1 class="h3 mb-3">We need to finish setting up your account</h1>
+                    <p class="text-muted">
+                        Your login is active, but it is not yet linked to a contractor profile. Please contact the site
+                        administrator so they can attach your user to the correct contractor record. Once that is done
+                        you will be able to access the dashboard.
+                    </p>
+                    <p class="mb-0">
+                        If you believe this is an error, try signing out and back in, or reach out to support with your
+                        account email so we can help.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
