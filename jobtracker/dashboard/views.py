@@ -12,6 +12,7 @@ from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime, timedelta
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.utils import OperationalError, ProgrammingError
 
 try:
     from weasyprint import HTML
@@ -41,7 +42,7 @@ def get_contractor(user):
     """Safely return the contractor associated with the given user."""
     try:
         return user.contractor
-    except ObjectDoesNotExist:
+    except (ObjectDoesNotExist, OperationalError, ProgrammingError):
         return None
 
 
