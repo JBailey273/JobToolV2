@@ -11,6 +11,7 @@ from django.template.loader import get_template
 from django.contrib import messages
 from django.utils import timezone
 from datetime import datetime, timedelta
+from django.core.exceptions import ObjectDoesNotExist
 
 try:
     from weasyprint import HTML
@@ -36,8 +37,15 @@ def safe_decimal(value, default=Decimal("0")):
         return default
 
 
-# Update this function in your dashboard/views.py file
+def get_contractor(user):
+    """Safely return the contractor associated with the given user."""
+    try:
+        return user.contractor
+    except ObjectDoesNotExist:
+        return None
 
+
+# Update this function in your dashboard/views.py file
 def _render_pdf(template_src, context, filename, request=None):
     """Render PDF with proper base_url for images.
 
@@ -95,7 +103,7 @@ def _render_pdf(template_src, context, filename, request=None):
 
 @login_required
 def contractor_summary(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -167,7 +175,7 @@ def contractor_summary(request):
 
 @login_required
 def project_list(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
     if request.method == "POST":
@@ -222,7 +230,7 @@ def project_list(request):
 
 @login_required
 def estimate_list(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -314,7 +322,7 @@ def estimate_list(request):
 @login_required
 def accept_estimate(request, pk):
     """Convert an estimate to a project"""
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
     
@@ -367,7 +375,7 @@ def accept_estimate(request, pk):
 
 @login_required
 def delete_estimate(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
     estimate = get_object_or_404(Estimate, pk=pk, contractor=contractor)
@@ -380,7 +388,7 @@ def delete_estimate(request, pk):
 
 @login_required
 def delete_project(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
     project = get_object_or_404(Project, pk=pk, contractor=contractor)
@@ -394,7 +402,7 @@ def delete_project(request, pk):
 @login_required
 def reports(request):
     """Display available report links."""
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -421,7 +429,7 @@ def reports(request):
 
 @login_required
 def project_detail(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -715,7 +723,7 @@ def project_detail(request, pk):
 
 @login_required
 def select_job_entry_project(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -745,7 +753,7 @@ def select_job_entry_project(request):
 
 @login_required
 def select_payment_project(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -775,7 +783,7 @@ def select_payment_project(request):
 
 @login_required
 def add_job_entry(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -884,7 +892,7 @@ def add_job_entry(request, pk):
 
 @login_required
 def edit_job_entry(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -926,7 +934,7 @@ def edit_job_entry(request, pk):
 
 @login_required
 def add_payment(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -960,7 +968,7 @@ def add_payment(request, pk):
 
 @login_required
 def contractor_report(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1033,7 +1041,7 @@ def contractor_report(request):
 
 @login_required
 def customer_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1077,7 +1085,7 @@ def customer_report(request, pk):
 
 @login_required
 def contractor_job_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1145,7 +1153,7 @@ def contractor_job_report(request, pk):
 
 @login_required
 def job_estimate_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1208,7 +1216,7 @@ def job_estimate_report(request, pk):
 @login_required
 def search_entries(request):
     """API endpoint for searching entries"""
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
@@ -1248,7 +1256,7 @@ def search_entries(request):
 @login_required
 def get_material_templates(request):
     """API endpoint for material templates"""
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
@@ -1310,7 +1318,7 @@ def get_material_templates(request):
 
 @login_required
 def create_estimate(request):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1533,7 +1541,7 @@ def create_estimate(request):
 
 @login_required
 def edit_estimate(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1776,7 +1784,7 @@ def edit_estimate(request, pk):
 
 @login_required
 def duplicate_estimate(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1824,7 +1832,7 @@ def duplicate_estimate(request, pk):
 
 @login_required
 def email_estimate(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1837,7 +1845,7 @@ def email_estimate(request, pk):
 
 @login_required
 def customer_estimate_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1909,7 +1917,7 @@ def customer_estimate_report(request, pk):
 
 @login_required
 def customer_invoice_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -1995,7 +2003,7 @@ def customer_invoice_report(request, pk):
 
 @login_required
 def internal_estimate_report(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
@@ -2071,7 +2079,7 @@ def internal_estimate_report(request, pk):
 @login_required
 def project_analytics_data(request, pk):
     """API endpoint for project analytics data"""
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return JsonResponse({"error": "Unauthorized"}, status=401)
 
@@ -2149,7 +2157,7 @@ def project_analytics_data(request, pk):
 
 @login_required
 def add_estimate_entry(request, pk):
-    contractor = getattr(request.user, "contractor", None)
+    contractor = get_contractor(request.user)
     if contractor is None:
         return redirect("login")
 
